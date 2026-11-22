@@ -138,15 +138,27 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
                 lines.append("|---|---:|---|")
                 for obs in observations:
                     lines.append(f"| {obs.get('currency')} | {obs.get('value')} | {obs.get('data_timestamp')} |")
-            else:
+            elif dataset.get("source") == "World Bank":
                 lines.append("| کشور | تورم سالانه CPI (%) | سال داده |")
                 lines.append("|---|---:|---:|")
                 for obs in observations:
                     lines.append(f"| {obs.get('country')} ({obs.get('country_code')}) | {obs.get('value')} | {obs.get('data_timestamp')} |")
+            elif dataset.get("source") == "US Bureau of Labor Statistics":
+                lines.append("| شاخص آمریکا | مقدار اخیر | دوره | مقدار قبلی | تغییر | واحد |")
+                lines.append("|---|---:|---|---:|---:|---|")
+                for obs in observations:
+                    latest = obs.get("latest") or {}
+                    previous = obs.get("previous") or {}
+                    lines.append(f"| {obs.get('name')} | {latest.get('value','—')} | {latest.get('period_name')} {latest.get('year')} | {previous.get('value','—')} | {obs.get('change_from_previous','—')} | {obs.get('unit')} |")
+            elif dataset.get("source") == "CFTC":
+                lines.append("| قرارداد | تاریخ گزارش | خالص موقعیت غیرتجاری | درصد از Open Interest | Open Interest |")
+                lines.append("|---|---|---:|---:|---:|")
+                for obs in observations:
+                    lines.append(f"| {obs.get('contract')} | {obs.get('report_date')} | {obs.get('noncommercial_net')} | {obs.get('noncommercial_net_pct_open_interest')}% | {obs.get('open_interest')} |")
         elif dataset.get("reason"):
             lines.append(f"خطای اتصال: {dataset.get('reason')}")
         lines.append(f"زمان جمع‌آوری UTC: {dataset.get('collected_at', 'unknown')}")
-    lines.append("این داده‌ها فقط زمینه کلان/نرخ مرجع‌اند؛ نرخ ECB جایگزین قیمت بروکر یا قیمت اجرایی نیست و تورم سالانه World Bank نباید به‌عنوان خبر روز تفسیر شود.")
+    lines.append("این داده‌ها زمینه کلان و موقعیت‌گیری هستند، نه قیمت اجرایی یا سیگنال مستقل: نرخ ECB مرجع است؛ تورم World Bank سالانه است؛ داده‌های BLS ماهانه و قابل بازبینی‌اند؛ COT هفتگی و با تاریخ موقعیت سه‌شنبه منتشر می‌شود.")
     lines += ["", "## اخبار و رویدادهای گردآوری‌شده (RSS عمومی)", ""]
     valid_news = [n for n in news if n.get("status") != "source_error"]
     relevant_news = [n for n in valid_news if n.get("relevance") == "market_relevant"]
