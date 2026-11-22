@@ -120,26 +120,50 @@ def analyze(frame: pd.DataFrame, settings: dict) -> dict:
     direction = "bullish" if bullish >= bearish + 8 and price > ef else "bearish" if bearish >= bullish + 8 and price < ef else "neutral"
     score = round(max(bullish, bearish), 1)
     stop_mult = float(cfg.get("stop_atr_multiple", 1.5))
-    target_mult = float(cfg.get("target_atr_multiple", 3.0))
     swing_low = float(low.iloc[-lookback:].min())
     swing_high = float(high.iloc[-lookback:].max())
+    pivot_start = max(2, len(data) - 32)
+    pivot_lows = [i for i in range(pivot_start, len(data)-2)
+                  if low.iloc[i] <= low.iloc[i-1] and low.iloc[i] <= low.iloc[i-2]
+                  and low.iloc[i] < low.iloc[i+1] and low.iloc[i] < low.iloc[i+2]]
+    pivot_highs = [i for i in range(pivot_start, len(data)-2)
+                   if high.iloc[i] >= high.iloc[i-1] and high.iloc[i] >= high.iloc[i-2]
+                   and high.iloc[i] > high.iloc[i+1] and high.iloc[i] > high.iloc[i+2]]
+    support = float(low.iloc[pivot_lows[-1]]) if pivot_lows else float(low.iloc[-10:].min())
+    resistance = float(high.iloc[pivot_highs[-1]]) if pivot_highs else float(high.iloc[-10:].max())
+    range_size = max(prior_high - prior_low, av)
     entry = stop = target = rr = None
     stop_basis = "not_applicable"
     target_basis = "not_applicable"
+    execution_status = "direction_not_confirmed"
     if direction == "bullish":
-        stop = min(price - stop_mult * av, swing_low)
+        stop = min(price - stop_mult * av, support - 0.1 * av)
         risk = price - stop
-        structural_target = swing_high if swing_high > price else None
-        target = structural_target if structural_target is not None and (structural_target-price) / risk >= 1.5 else price + target_mult * risk
-        entry, rr = price, (target-price) / risk if risk > 0 else None
-        stop_basis, target_basis = "max_of_ATR_buffer_and_recent_swing_low", "recent_swing_high_or_configured_R_multiple"
+        overhead = [float(high.iloc[i]) for i in pivot_highs if float(high.iloc[i]) > price]
+        structural_target = min(overhead) if overhead else None
+        target = structural_target if structural_target is not None else price + range_size
+        rr = (target-price) / risk if risk > 0 else None
+        entry = price
+        if rr is not None and rr >= 1.5:
+            execution_status = "watchlist_candidate_structural_RR"
+        else:
+            target = rr = None
+            execution_status = "no_valid_structural_target"
+        stop_basis, target_basis = "ATR_buffer_and_latest_confirmed_pivot_low", "nearest_overhead_pivot_or_20_bar_range_projection"
     elif direction == "bearish":
-        stop = max(price + stop_mult * av, swing_high)
+        stop = max(price + stop_mult * av, resistance + 0.1 * av)
         risk = stop - price
-        structural_target = swing_low if swing_low < price else None
-        target = structural_target if structural_target is not None and (price-structural_target) / risk >= 1.5 else price - target_mult * risk
-        entry, rr = price, (price-target) / risk if risk > 0 else None
-        stop_basis, target_basis = "max_of_ATR_buffer_and_recent_swing_high", "recent_swing_low_or_configured_R_multiple"
+        below = [float(low.iloc[i]) for i in pivot_lows if float(low.iloc[i]) < price]
+        structural_target = max(below) if below else None
+        target = structural_target if structural_target is not None else price - range_size
+        rr = (price-target) / risk if risk > 0 else None
+        entry = price
+        if rr is not None and rr >= 1.5:
+            execution_status = "watchlist_candidate_structural_RR"
+        else:
+            target = rr = None
+            execution_status = "no_valid_structural_target"
+        stop_basis, target_basis = "ATR_buffer_and_latest_confirmed_pivot_high", "nearest_underfoot_pivot_or_20_bar_range_projection"
 
     return {
         "status": "ok", "direction": direction, "score": score,
@@ -151,7 +175,7 @@ def analyze(frame: pd.DataFrame, settings: dict) -> dict:
         "macd_histogram": macd_value, "swing_high": swing_high, "swing_low": swing_low,
         "entry": entry, "stop_loss": stop, "take_profit": target,
         "risk_reward": round(rr, 2) if rr is not None and np.isfinite(rr) else None,
-        "stop_basis": stop_basis, "target_basis": target_basis,
+        "stop_basis": stop_basis, "target_basis": target_basis, "execution_status": execution_status,
         "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
         "score_type": "multi_factor_rule_based_strength_not_probability",
     }
