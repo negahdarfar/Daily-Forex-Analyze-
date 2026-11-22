@@ -71,11 +71,17 @@ class ProjectConfigurationTests(unittest.TestCase):
         get.assert_not_called()
         self.assertEqual(items, [])
 
-    def test_permission_restricted_sources_are_not_enabled(self):
+    def test_unconnected_sources_are_not_enabled_and_authority_order_is_preserved(self):
         registry = load_source_registry(ROOT / "config/analysis_sources.json")
-        restricted = [item for item in registry["sources"] if item["status"] == "permission_required"]
-        self.assertGreater(len(restricted), 0)
-        self.assertTrue(all(not item["enabled"] for item in restricted))
+        unconnected = [item for item in registry["sources"] if item["status"] == "registered_not_connected"]
+        self.assertEqual(len(unconnected), 97)
+        self.assertTrue(all(not item["enabled"] for item in unconnected))
+        self.assertEqual(registry["sources"][0]["name"], "Federal Reserve")
+        self.assertEqual(registry["sources"][34]["name"], "US SEC EDGAR")
+        self.assertEqual(registry["sources"][35]["name"], "Investing.com")
+        self.assertEqual(registry["sources"][49]["name"], "Investopedia")
+        self.assertEqual(registry["sources"][50]["name"], "Reuters")
+        self.assertEqual(registry["sources"][99]["name"], "FOREX.com")
 
     def test_rss_sources_are_public_and_named(self):
         config = json.loads((ROOT / "config/news_sources.json").read_text(encoding="utf-8"))
