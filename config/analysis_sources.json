@@ -56,13 +56,15 @@
       "source_type": "official_data",
       "authority_score": 99,
       "reliability_tier": "A_primary",
-      "access_method": "official_public_endpoint_validate_before_enable",
+      "access_method": "official_public_download",
       "feed_url": null,
-      "enabled": false,
-      "status": "registered_not_connected",
+      "enabled": true,
+      "status": "verified_public_csv_download",
       "allowed_content": "metadata_short_excerpt_and_original_link",
-      "rights_note": "Validate terms, API/feed availability and reuse rights before automated ingestion.",
-      "bias_note": "Use within source's specialist domain; not a trade signal by itself."
+      "rights_note": "FRED graph CSV download endpoint; cite FRED. Terms permit free access subject to terms and restrict use to personal/non-commercial contexts unless otherwise authorized.",
+      "bias_note": "Use within source's specialist domain; not a trade signal by itself.",
+      "api_endpoint": "https://fred.stlouisfed.org/graph/fredgraph.csv",
+      "integration": "src/data/official_data.py"
     },
     {
       "id": "source_003",
