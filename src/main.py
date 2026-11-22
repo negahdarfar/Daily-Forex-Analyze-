@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
+from src.data.source_registry import load_source_registry, summarize_source_registry
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
 
@@ -67,11 +68,14 @@ def main() -> None:
                 "analysis": {"status": "unavailable"}
             })
 
+    registry_path = ROOT / "config" / "analysis_sources.json"
+    source_registry = summarize_source_registry(load_source_registry(registry_path)) if registry_path.exists() else {}
+
     news_config_path = ROOT / "config" / "news_sources.json"
     news_sources = load_json(news_config_path).get("sources", []) if news_config_path.exists() else []
     news = collect_news(news_sources, settings.get("news", {}))
     local_now = datetime.now(ZoneInfo(settings.get("timezone", "Asia/Tehran")))
-    report = render_report(results, settings, local_now, news=news)
+    report = render_report(results, settings, local_now, news=news, source_registry=source_registry)
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
     out = report_dir / f"{local_now:%Y-%m-%d}.md"
