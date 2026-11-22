@@ -194,8 +194,8 @@ class OfficialMacroDataTests(unittest.TestCase):
         self.assertEqual(result["observations"][0]["noncommercial_net_pct_open_interest"], 15.0)
         self.assertEqual(result["observations"][0]["frequency"], "weekly")
         self.assertEqual(result["observations"][0]["history_weeks"], 2)
-        self.assertEqual(result["observations"][0]["net_position_52w_percentile"], 100.0)
-        self.assertEqual(result["observations"][0]["net_position_52w_zscore"], 1.0)
+        self.assertIsNone(result["observations"][0]["net_position_52w_percentile"])
+        self.assertIsNone(result["observations"][0]["net_position_52w_zscore"])
 
 
 class TechnicalAnalysisTests(unittest.TestCase):
