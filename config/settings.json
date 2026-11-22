@@ -30,11 +30,13 @@
     "max_items_per_source": 12
   },
   "official_data": {
-    "timeout_seconds": 30,
+    "timeout_seconds": 25,
     "enabled_connectors": [
       "European Central Bank",
-      "World Bank"
+      "World Bank",
+      "US Bureau of Labor Statistics",
+      "CFTC"
     ],
-    "notes": "ECB daily reference rates and World Bank annual CPI context; neither is an executable quote or intraday release."
+    "notes": "Public daily polling only. BLS v1 is keyless with conservative low-frequency usage; CFTC PRE API is keyless but must not be overused. All macro/positioning values remain contextual, not executable prices."
   }
 }
