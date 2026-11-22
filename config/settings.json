@@ -25,5 +25,9 @@
     "never_invent_missing_prices": true,
     "unverified_expert_claims_are_not_verified": true,
     "report_is_not_investment_advice": true
+  },
+  "news": {
+    "timeout_seconds": 12,
+    "max_items_per_source": 12
   }
 }
