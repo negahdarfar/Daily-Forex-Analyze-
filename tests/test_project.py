@@ -9,6 +9,7 @@ from src.technical.indicators import analyze
 from src.experts.registry import assess_profile
 from src.experts.performance import calculate_performance, realized_r_multiple, assess_trader_history
 from src.data.news import classify_relevance
+from src.experts.forecast_tracking import evaluate_forecast
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -81,6 +82,30 @@ class TechnicalAnalysisTests(unittest.TestCase):
 
     def test_news_classifier_filters_unrelated_business_headlines(self):
         self.assertEqual(classify_relevance("Retailer opens new stores", "Hiring plans expand"), "general_business")
+
+
+    def test_forecast_evaluation_ignores_prepublication_candles(self):
+        candles = pd.DataFrame(
+            {"High": [120, 111], "Low": [90, 105]},
+            index=pd.to_datetime(["2026-01-01T00:00:00Z", "2026-01-02T00:00:00Z"])
+        )
+        result = evaluate_forecast({
+            "published_at": "2026-01-01T12:00:00Z",
+            "direction": "bullish", "target": 110, "invalidation": 95
+        }, candles)
+        self.assertEqual(result["status"], "target_hit")
+        self.assertEqual(result["evaluated_candles"], 1)
+
+    def test_forecast_evaluation_marks_same_candle_touch_ambiguous(self):
+        candles = pd.DataFrame(
+            {"High": [112], "Low": [94]},
+            index=pd.to_datetime(["2026-01-02T00:00:00Z"])
+        )
+        result = evaluate_forecast({
+            "published_at": "2026-01-01T12:00:00Z",
+            "direction": "bullish", "target": 110, "invalidation": 95
+        }, candles)
+        self.assertEqual(result["status"], "ambiguous_same_candle")
 
     def test_forecast_profile_without_evidence_is_unverified(self):
         result = assess_profile({"name": "Example"})
