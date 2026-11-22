@@ -1,0 +1,1 @@
+trader_id,trade_id,asset,timeframe,opened_at,closed_at,direction,entry,stop_loss,exit_price,realized_r,fees_r,source_url,verification_status,verification_notes
