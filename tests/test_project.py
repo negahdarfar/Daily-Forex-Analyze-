@@ -173,8 +173,8 @@ class OfficialMacroDataTests(unittest.TestCase):
         class Response:
             def __init__(self, series_id):
                 self.text = (
-                    f"observation_date,{series_id}\\n"
-                    "2026-11-20,3.75\\n2026-11-19,3.70\\n"
+                    f"observation_date,{series_id}\n"
+                    "2026-11-20,3.75\n2026-11-19,3.70\n"
                 )
             def raise_for_status(self): pass
         get.side_effect = lambda *args, **kwargs: Response(kwargs["params"]["id"])
