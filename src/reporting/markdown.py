@@ -3,13 +3,14 @@ from __future__ import annotations
 from datetime import datetime
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
     analysis_candidates = analysis_candidates or []
     forex_symbols = set(forex_symbols or [])
     directional_evidence = directional_evidence or {}
     official_macro = official_macro or []
+    market_intelligence = market_intelligence or []
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
@@ -198,6 +199,31 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         "هیچ فردی بدون شواهد مستقل، نمونه کافی و ممیزی سوابق به‌عنوان تحلیلگر یا تریدر برتر معرفی نمی‌شود. تعداد دنبال‌کننده یا win rate ادعایی به‌تنهایی معیار نیست.",
         "", "## دیدگاه‌های بنیادی و سنتیمنت", "",
         "استخراج اولیه تحلیل فقط از تیتر و خلاصه RSS و با قواعد صریح انجام می‌شود؛ هنوز خواندن کامل صفحات، داوری معنایی موافق/مخالف یا سنجش عملکرد تاریخی تحلیلگر فعال نیست.",
+    lines += ["", "## موتور هوشمند چندمنبعی و قدرت نسبی ارزها", ""]
+    coverage = market_intelligence.get("coverage", {})
+    lines.append("این بخش فقط شواهدی را ترکیب می‌کند که در همین اجرا واقعاً دریافت شده‌اند. حوزه‌های غایب حذف و وزن حوزه‌های موجود مجدداً نرمال می‌شود؛ داده مفقود تأیید خنثی محسوب نمی‌شود.")
+    lines.append(
+        f"پوشش اجرا: {coverage.get('fresh_fx_pairs_with_direction', 0)} جفت‌ارز تازه جهت‌دار؛ "
+        f"{coverage.get('stale_fx_pairs', 0)} جفت‌ارز قدیمی؛ {coverage.get('news_items_received', 0)} خبر؛ "
+        f"{coverage.get('currencies_with_cot_zscore', 0)} ارز دارای COT معتبر؛ "
+        f"{coverage.get('macro_datasets_available', 0)} از {coverage.get('macro_datasets_total', 0)} مجموعه کلان."
+    )
+    currency_rows = market_intelligence.get("currency_strength", [])
+    if currency_rows:
+        lines += ["", "### قدرت نسبی ارزها", "", "| ارز | امتیاز ترکیبی | تکنیکال نسبی | نمونه جفت‌ارز | COT | سرنخ خبری | حوزه‌های استفاده‌شده |", "|---|---:|---:|---:|---:|---:|---|"]
+        for row in currency_rows:
+            fmt = lambda value: f"{value:.1f}" if isinstance(value, (int, float)) else "—"
+            lines.append(f"| {row.get('currency')} | {fmt(row.get('score'))} | {fmt(row.get('technical_score'))} | {row.get('technical_pair_samples', 0)} | {fmt(row.get('cot_score'))} | {fmt(row.get('news_score'))} ({row.get('news_items', 0)}) | {', '.join(row.get('domains_used', [])) or 'شواهد ناکافی'} |")
+    pair_rows = market_intelligence.get("pair_confluence", [])
+    if pair_rows:
+        lines += ["", "### هم‌سویی قدرت ارزها با جهت تکنیکال", "", "| جفت‌ارز | قدرت پایه | قدرت مظنه | اختلاف | جهت ترکیبی | جهت تکنیکال | هم‌سویی |", "|---|---:|---:|---:|---|---|---|"]
+        for row in pair_rows[:15]:
+            lines.append(f"| {row.get('pair')} | {row.get('base_score'):.1f} | {row.get('quote_score'):.1f} | {row.get('strength_spread'):.1f} | {row.get('ensemble_direction')} | {row.get('technical_direction')} | {row.get('confluence')} |")
+    method = market_intelligence.get("methodology", {})
+    lines.append("وزن‌های پایه: " + ", ".join(f"{key}={value:.0%}" for key, value in method.get("weights", {}).items()) + ".")
+    lines.append("محدودیت: " + method.get("limitations", "—"))
+    lines.append("امتیاز ترکیبی احتمال برد یا دستور معامله نیست؛ تأیید چندتایم‌فریمی، اسپرد، تقویم رویداد و بک‌تست همچنان لازم است.")
+
         "", "## بازار ایران", "",
         "نرخ دلار/ریال، طلای ۱۸ عیار و تتر ایران تا زمان اتصال منبع محلی معتبر و timestampدار عمداً گزارش نشده‌اند.",
         "", "## روش‌شناسی و محدودیت‌ها", "",
