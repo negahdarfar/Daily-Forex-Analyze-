@@ -173,18 +173,29 @@ class OfficialMacroDataTests(unittest.TestCase):
         class Response:
             def raise_for_status(self): pass
             def json(self):
-                return [{
-                    "cftc_contract_market_code": "099741", "market_and_exchange_names": "EURO FX",
-                    "report_date_as_yyyy_mm_dd": "2026-11-17", "open_interest_all": "100000",
-                    "noncomm_positions_long_all": "45000", "noncomm_positions_short_all": "30000",
-                    "comm_positions_long_all": "25000", "comm_positions_short_all": "40000",
-                }]
+                return [
+                    {
+                        "cftc_contract_market_code": "099741", "market_and_exchange_names": "EURO FX",
+                        "report_date_as_yyyy_mm_dd": "2026-11-17", "open_interest_all": "100000",
+                        "noncomm_positions_long_all": "45000", "noncomm_positions_short_all": "30000",
+                        "comm_positions_long_all": "25000", "comm_positions_short_all": "40000",
+                    },
+                    {
+                        "cftc_contract_market_code": "099741", "market_and_exchange_names": "EURO FX",
+                        "report_date_as_yyyy_mm_dd": "2026-11-10", "open_interest_all": "100000",
+                        "noncomm_positions_long_all": "40000", "noncomm_positions_short_all": "30000",
+                        "comm_positions_long_all": "25000", "comm_positions_short_all": "35000",
+                    },
+                ]
         get.return_value = Response()
         result = fetch_cftc_cot()
         self.assertEqual(result["status"], "available")
         self.assertEqual(result["observations"][0]["noncommercial_net"], 15000)
         self.assertEqual(result["observations"][0]["noncommercial_net_pct_open_interest"], 15.0)
         self.assertEqual(result["observations"][0]["frequency"], "weekly")
+        self.assertEqual(result["observations"][0]["history_weeks"], 2)
+        self.assertEqual(result["observations"][0]["net_position_52w_percentile"], 100.0)
+        self.assertEqual(result["observations"][0]["net_position_52w_zscore"], 1.0)
 
 
 class TechnicalAnalysisTests(unittest.TestCase):
