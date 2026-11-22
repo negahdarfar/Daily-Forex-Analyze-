@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 
 from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
-from src.data.source_registry import load_source_registry, summarize_source_registry
+from src.data.source_registry import load_source_registry, summarize_source_registry, annotate_analysis_candidates, summarize_directional_evidence
 from src.experts.analysis_ingestion import extract_analysis_candidates
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
@@ -70,16 +70,18 @@ def main() -> None:
             })
 
     registry_path = ROOT / "config" / "analysis_sources.json"
-    source_registry = summarize_source_registry(load_source_registry(registry_path)) if registry_path.exists() else {}
+    registry_data = load_source_registry(registry_path) if registry_path.exists() else {"sources": []}\n    source_registry = summarize_source_registry(registry_data) if registry_path.exists() else {}
 
     news_config_path = ROOT / "config" / "news_sources.json"
     news_sources = load_json(news_config_path).get("sources", []) if news_config_path.exists() else []
     news = collect_news(news_sources, settings.get("news", {}))
     known_symbols = [item["symbol"] for category in ("forex", "commodities", "crypto") for item in assets.get(category, []) if item.get("enabled")]
     analysis_candidates = extract_analysis_candidates(news, known_symbols)
+    analysis_candidates = annotate_analysis_candidates(analysis_candidates, registry_data)
+    directional_evidence = summarize_directional_evidence(analysis_candidates)
     forex_symbols = [item["symbol"] for item in assets.get("forex", []) if item.get("enabled")]
     local_now = datetime.now(ZoneInfo(settings.get("timezone", "Asia/Tehran")))
-    report = render_report(results, settings, local_now, news=news, source_registry=source_registry, analysis_candidates=analysis_candidates, forex_symbols=forex_symbols)
+    report = render_report(results, settings, local_now, news=news, source_registry=source_registry, analysis_candidates=analysis_candidates, forex_symbols=forex_symbols, directional_evidence=directional_evidence)
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
     out = report_dir / f"{local_now:%Y-%m-%d}.md"
