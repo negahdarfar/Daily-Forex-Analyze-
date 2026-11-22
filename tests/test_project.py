@@ -183,7 +183,12 @@ class TechnicalAnalysisTests(unittest.TestCase):
         self.assertIn("stop_basis", result)
         self.assertIn("target_basis", result)
         self.assertEqual(result["score_type"], "multi_factor_rule_based_strength_not_probability")
-        self.assertGreater(result["risk_reward"], 0)
+        if result["take_profit"] is not None:
+            self.assertGreaterEqual(result["risk_reward"], 1.5)
+        else:
+            self.assertIsNone(result["risk_reward"])
+            self.assertEqual(result["execution_status"], "no_valid_structural_target")
+        self.assertNotIn("configured_R_multiple", result["target_basis"])
 
 
     def test_realized_r_multiple_supports_long_and_short(self):
