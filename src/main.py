@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 
 from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
-from src.data.source_registry import load_source_registry, summarize_source_registry, annotate_analysis_candidates, summarize_directional_evidence
+from src.data.source_registry import load_source_registry, summarize_source_registry, annotate_analysis_candidates, summarize_directional_evidence, merge_active_rss_sources
 from src.experts.analysis_ingestion import extract_analysis_candidates
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
@@ -74,7 +74,9 @@ def main() -> None:
     source_registry = summarize_source_registry(registry_data) if registry_path.exists() else {}
 
     news_config_path = ROOT / "config" / "news_sources.json"
-    news_sources = load_json(news_config_path).get("sources", []) if news_config_path.exists() else []
+    configured_news_sources = load_json(news_config_path).get("sources", []) if news_config_path.exists() else []
+    # The 100-source registry is the single authority for activation and access method.
+    news_sources = merge_active_rss_sources(configured_news_sources, registry_data)
     news = collect_news(news_sources, settings.get("news", {}))
     known_symbols = [item["symbol"] for category in ("forex", "commodities", "crypto") for item in assets.get(category, []) if item.get("enabled")]
     analysis_candidates = extract_analysis_candidates(news, known_symbols)
