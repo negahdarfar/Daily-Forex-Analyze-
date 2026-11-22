@@ -1,0 +1,1 @@
+forecast_id,analyst_id,asset,market_timestamp,published_at,collected_at,horizon,direction,entry,stop_loss,target,thesis,invalidation,source_url,outcome_status,notes
