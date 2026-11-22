@@ -13,7 +13,10 @@
     {
       "name": "Yahoo Finance",
       "url": "https://finance.yahoo.com/news/rssindex",
-      "reliability": "unscored"
+      "reliability": "unscored",
+      "enabled": false,
+      "status": "disabled_pending_endpoint_validation",
+      "usage_note": "Disabled after HTTP 404 in a recent workflow run; do not retry until the feed endpoint is verified."
     },
     {
       "name": "FXStreet Public RSS",
