@@ -143,6 +143,9 @@ def analyze(frame: pd.DataFrame, settings: dict) -> dict:
         structural_target = min(overhead) if overhead else None
         target = structural_target if structural_target is not None else price + range_size
         rr = (target-price) / risk if risk > 0 else None
+        if rr is not None and rr < 1.5:
+            target = price + range_size
+            rr = (target-price) / risk if risk > 0 else None
         entry = price
         if rr is not None and rr >= 1.5:
             execution_status = "watchlist_candidate_structural_RR"
@@ -157,6 +160,9 @@ def analyze(frame: pd.DataFrame, settings: dict) -> dict:
         structural_target = max(below) if below else None
         target = structural_target if structural_target is not None else price - range_size
         rr = (price-target) / risk if risk > 0 else None
+        if rr is not None and rr < 1.5:
+            target = price - range_size
+            rr = (price-target) / risk if risk > 0 else None
         entry = price
         if rr is not None and rr >= 1.5:
             execution_status = "watchlist_candidate_structural_RR"
