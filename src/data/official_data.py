@@ -239,3 +239,54 @@ def fetch_cftc_cot(timeout: int = 25) -> dict[str, Any]:
         return {"source": "CFTC", "status": "source_error",
                 "collected_at": collected_at, "observations": [],
                 "reason": f"{type(exc).__name__}: {exc}"}
+
+def fetch_fred_public_series(timeout: int = 15) -> dict[str, Any]:
+    """Download selected FRED graph CSV series; no API key, one conservative request per series."""
+    from io import StringIO
+
+    series_meta = {
+        "DFF": {"name": "Effective Federal Funds Rate", "unit": "percent", "frequency": "daily", "country": "USA"},
+        "DGS2": {"name": "2-Year Treasury Constant Maturity Rate", "unit": "percent", "frequency": "daily", "country": "USA"},
+        "DGS10": {"name": "10-Year Treasury Constant Maturity Rate", "unit": "percent", "frequency": "daily", "country": "USA"},
+        "UNRATE": {"name": "Unemployment Rate", "unit": "percent", "frequency": "monthly", "country": "USA"},
+        "CPIAUCSL": {"name": "Consumer Price Index for All Urban Consumers", "unit": "index", "frequency": "monthly", "country": "USA"},
+        "PAYEMS": {"name": "All Employees: Total Nonfarm", "unit": "thousands of persons", "frequency": "monthly", "country": "USA"},
+    }
+    collected_at = _now()
+    observations = []
+    errors = []
+    for series_id, meta in series_meta.items():
+        try:
+            response = requests.get(
+                "https://fred.stlouisfed.org/graph/fredgraph.csv",
+                params={"id": series_id, "cosd": "2024-01-01"},
+                headers={"User-Agent": "DailyMarketAnalyze/1.0", "Accept": "text/csv"},
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            frame = pd.read_csv(StringIO(response.text))
+            if "observation_date" not in frame.columns or series_id not in frame.columns:
+                raise ValueError(f"Unexpected FRED CSV columns: {list(frame.columns)}")
+            frame[series_id] = pd.to_numeric(frame[series_id], errors="coerce")
+            frame = frame.dropna(subset=[series_id, "observation_date"]).sort_values("observation_date")
+            if frame.empty:
+                raise ValueError("FRED series returned no numeric observations")
+            latest = frame.iloc[-1]
+            previous = frame.iloc[-2] if len(frame) > 1 else None
+            observations.append({
+                "series_id": series_id, **meta,
+                "latest": {"date": str(latest["observation_date"]), "value": float(latest[series_id])},
+                "previous": {"date": str(previous["observation_date"]), "value": float(previous[series_id])} if previous is not None else None,
+                "change_from_previous": round(float(latest[series_id] - previous[series_id]), 6) if previous is not None else None,
+                "data_timestamp": str(latest["observation_date"]),
+                "source": "Federal Reserve Bank of St. Louis FRED", "status": "available",
+            })
+        except Exception as exc:
+            errors.append({"series_id": series_id, "reason": f"{type(exc).__name__}: {exc}"})
+    return {
+        "source": "FRED", "status": "available" if observations else "source_error",
+        "collected_at": collected_at, "observations": observations, "errors": errors,
+        "data_note": "Public CSV download from FRED graph service; no API key. The JSON FRED API is separate and requires a key. FRED terms restrict uses; this project uses the data for private, non-commercial research. Observations can be revised.",
+        "endpoint": "https://fred.stlouisfed.org/graph/fredgraph.csv",
+    }
+
