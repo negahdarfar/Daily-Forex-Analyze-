@@ -115,6 +115,36 @@ def fetch_binance_history(symbol: str, interval: str = "1d", limit: int = 180) -
         }
 
 
+def _exclude_unfinished_daily_bar(result: dict[str, Any], interval: str) -> dict[str, Any]:
+    """Yahoo daily bars can include today's still-forming candle; exclude it for crypto comparison."""
+    if interval != "1d" or result.get("status") != "available":
+        return result
+    frame = result.get("history")
+    if frame is None or frame.empty:
+        return result
+    last_stamp = pd.Timestamp(frame.index[-1])
+    if last_stamp.tzinfo is None:
+        last_stamp = last_stamp.tz_localize("UTC")
+    else:
+        last_stamp = last_stamp.tz_convert("UTC")
+    if last_stamp.date() < datetime.now(timezone.utc).date():
+        return result
+    completed = frame.iloc[:-1].copy()
+    if completed.empty:
+        return {**result, "status": "unavailable", "reason": "Yahoo Finance فقط کندل روزانه باز برگرداند."}
+    last = completed.iloc[-1]
+    updated = dict(result)
+    updated.update({
+        "history": completed,
+        "market_timestamp": _normalize_timestamp(completed.index[-1]),
+        "close": float(last["Close"]),
+        "high": float(last["High"]) if pd.notna(last.get("High")) else None,
+        "low": float(last["Low"]) if pd.notna(last.get("Low")) else None,
+        "volume": float(last["Volume"]) if pd.notna(last.get("Volume")) else None,
+        "partial_bar_excluded": True,
+    })
+    return updated
+
 def fetch_asset_history(
     asset: dict[str, Any], period: str = "6mo", interval: str = "1d"
 ) -> dict[str, Any]:
@@ -123,6 +153,7 @@ def fetch_asset_history(
     if asset.get("category") != "crypto":
         return yahoo
 
+    yahoo = _exclude_unfinished_daily_bar(yahoo, interval)
     binance = fetch_binance_history(asset["symbol"], interval=interval)
     checked = ["Yahoo Finance", "Binance public API"]
     candidates = [item for item in (yahoo, binance) if item.get("status") == "available"]
