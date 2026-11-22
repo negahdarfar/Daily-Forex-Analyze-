@@ -35,7 +35,7 @@ class ProjectConfigurationTests(unittest.TestCase):
         registry = load_source_registry(ROOT / "config/analysis_sources.json")
         summary = summarize_source_registry(registry)
         self.assertEqual(summary["total"], 100)
-        self.assertEqual(summary["enabled"], 7)
+        self.assertEqual(summary["enabled"], 8)
         self.assertEqual(len({item["id"] for item in registry["sources"]}), 100)
 
     def test_analysis_ingestion_extracts_only_explicit_fields(self):
@@ -75,7 +75,7 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_unconnected_sources_are_not_enabled_and_authority_order_is_preserved(self):
         registry = load_source_registry(ROOT / "config/analysis_sources.json")
         unconnected = [item for item in registry["sources"] if item["status"] == "registered_not_connected"]
-        self.assertEqual(len(unconnected), 93)
+        self.assertEqual(len(unconnected), 92)
         self.assertTrue(all(not item["enabled"] for item in unconnected))
         self.assertEqual(registry["sources"][0]["name"], "Federal Reserve")
         self.assertEqual(registry["sources"][34]["name"], "US SEC EDGAR")
@@ -93,8 +93,8 @@ class ProjectConfigurationTests(unittest.TestCase):
         registry = load_source_registry(ROOT / "config/analysis_sources.json")
         config = json.loads((ROOT / "config/news_sources.json").read_text(encoding="utf-8"))
         active = merge_active_rss_sources(config["sources"], registry)
-        self.assertEqual(len(active), 3)
-        self.assertEqual({item["name"] for item in active}, {"FXStreet", "CNBC", "BBC Business"})
+        self.assertEqual(len(active), 5)
+        self.assertEqual({item["name"] for item in active}, {"FXStreet", "CNBC", "BBC Business", "Federal Reserve", "US Bureau of Labor Statistics"})
         self.assertTrue(all(item["url"].startswith("https://") for item in active))
         self.assertFalse(any(item["name"] == "Yahoo Finance" for item in active))
 
