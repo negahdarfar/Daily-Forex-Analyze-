@@ -3,12 +3,13 @@ from __future__ import annotations
 from datetime import datetime
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
     analysis_candidates = analysis_candidates or []
     forex_symbols = set(forex_symbols or [])
     directional_evidence = directional_evidence or {}
+    official_macro = official_macro or []
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
@@ -37,7 +38,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             f"{fmt(a.get('take_profit'))} | {fmt(a.get('risk_reward'))} |"
         )
     if not candidates:
-        lines.append("| — | ستاپ واجد شرایط با داده تازه یافت نشد | — | — | — | — | — | — | — | — |")
+        lines.append("| — | ستاپ واجد شرایط با داده تازه یافت نشد | — | — | — | — | — | — | — | — | — | — |")
 
     # Daily FX shortlist is explicitly technical-only until fundamental evidence is ingested and scored.
     fx_candidates = [
@@ -122,6 +123,26 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             lines.append(f"| {asset} | {evidence['bullish_weight']:.1f} | {evidence['bearish_weight']:.1f} | {evidence['net_bias']:+.3f} | {evidence['bullish_publishers']} | {evidence['bearish_publishers']} |")
     else:
         lines.append("در این اجرا شواهد جهت‌دار صریح و قابل‌وزن‌دهی از منابع فعال پیدا نشد؛ جهت بنیادی نامشخص است و نباید از سکوت منابع، جهت بازار استنباط شود.")
+    lines += ["", "## داده‌های رسمی کلان و نرخ مرجع", ""]
+    for dataset in official_macro:
+        lines.append(f"### {dataset.get('source', 'Official source')} — وضعیت: {dataset.get('status', 'unknown')}")
+        lines.append(dataset.get("data_note", dataset.get("reason", "توضیحی ثبت نشده.")))
+        observations = dataset.get("observations", [])
+        if observations:
+            if dataset.get("source") == "European Central Bank":
+                lines.append("| ارز | نرخ مرجع به ازای هر یورو | تاریخ داده |")
+                lines.append("|---|---:|---|")
+                for obs in observations:
+                    lines.append(f"| {obs.get('currency')} | {obs.get('value')} | {obs.get('data_timestamp')} |")
+            else:
+                lines.append("| کشور | تورم سالانه CPI (%) | سال داده |")
+                lines.append("|---|---:|---:|")
+                for obs in observations:
+                    lines.append(f"| {obs.get('country')} ({obs.get('country_code')}) | {obs.get('value')} | {obs.get('data_timestamp')} |")
+        elif dataset.get("reason"):
+            lines.append(f"خطای اتصال: {dataset.get('reason')}")
+        lines.append(f"زمان جمع‌آوری UTC: {dataset.get('collected_at', 'unknown')}")
+    lines.append("این داده‌ها فقط زمینه کلان/نرخ مرجع‌اند؛ نرخ ECB جایگزین قیمت بروکر یا قیمت اجرایی نیست و تورم سالانه World Bank نباید به‌عنوان خبر روز تفسیر شود.")
     lines += ["", "## اخبار و رویدادهای گردآوری‌شده (RSS عمومی)", ""]
     valid_news = [n for n in news if n.get("status") != "source_error"]
     relevant_news = [n for n in valid_news if n.get("relevance") == "market_relevant"]
