@@ -18,7 +18,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         "این نسخه غربالگری چندعاملی تکنیکال (هم‌ترازی و شیب EMA، RSI، MACD، ADX/DI، شکست ساختار و حجم در صورت وجود) و گردآوری RSS عمومی را انجام می‌دهد. امتیازها احتمال موفقیت نیستند. Yahoo Finance ممکن است تأخیردار باشد؛ داده قدیمی از رتبه‌بندی ستاپ‌ها حذف می‌شود. Entry صرفاً قیمت مرجع غربالگری است، نه سفارش اجرایی.", "",
         "## پنج فرصت تکنیکال برتر (غربالگری، نه سیگنال اجرایی)", "",
         "| رتبه | دارایی | جهت | امتیاز چندعاملی | قیمت پایانی | RSI | ADX | ATR٪ | ورود مرجع | حد ضرر | هدف | R:R |",
-        "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|"
+        "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"
     ]
     candidates = [
         r for r in results
@@ -54,15 +54,16 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         return (float(item["analysis"].get("score", 0.0)) * (0.70 + 0.30 * freshness), -age)
     fx_candidates.sort(key=fx_rank, reverse=True)
     lines += ["", "## ده جفت‌ارز برتر برای بررسی ورود (رتبه‌بندی تکنیکال موقت)", ""]
-    lines.append("این رتبه‌بندی فقط از قدرت روند EMA، وضعیت RSI و تازگی داده روزانه ساخته شده است. تا زمانی که داده بنیادی/تقویم معتبر به موتور متصل و ارزیابی نشود، این جدول «رتبه ورود بنیادی+تکنیکال» یا توصیه معامله محسوب نمی‌شود.")
-    lines += ["", "| رتبه | جفت‌ارز | جهت تکنیکال | امتیاز غربالگری | قیمت | RSI | Entry مرجع | SL | TP | R:R | عمر داده (ساعت) |", "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    lines.append("این رتبه‌بندی از امتیاز چندعاملی EMA، RSI، MACD، ADX/DI، ساختار و حجم در صورت وجود، همراه با تازگی داده روزانه ساخته شده است. تا زمانی که داده بنیادی/تقویم معتبر به موتور متصل و ارزیابی نشود، این جدول «رتبه ورود بنیادی+تکنیکال» یا توصیه معامله محسوب نمی‌شود.")
+    lines += ["", "| رتبه | جفت‌ارز | جهت تکنیکال | امتیاز غربالگری | قیمت | RSI | ADX | ATR٪ | Entry مرجع | SL | TP | R:R | عمر داده (ساعت) |", "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
     for rank, item in enumerate(fx_candidates[:10], 1):
         a = item["analysis"]
         fmt = lambda x: f"{x:.5f}" if isinstance(x, (int, float)) else "—"
         lines.append(
             f"| {rank} | {item['asset']} | {a['direction']} | {fx_rank(item)[0]:.1f} | "
-            f"{fmt(a.get('close'))} | {fmt(a.get('rsi14'))} | {fmt(a.get('entry'))} | "
-            f"{fmt(a.get('stop_loss'))} | {fmt(a.get('take_profit'))} | {fmt(a.get('risk_reward'))} | {item.get('age_hours','—')} |"
+            f"{fmt(a.get('close'))} | {fmt(a.get('rsi14'))} | {fmt(a.get('adx'))} | {fmt(a.get('atr_pct'))} | "
+            f"{fmt(a.get('entry'))} | {fmt(a.get('stop_loss'))} | {fmt(a.get('take_profit'))} | "
+            f"{fmt(a.get('risk_reward'))} | {item.get('age_hours','—')} |"
         )
     if not fx_candidates:
         lines.append("| — | جفت‌ارز واجد شرایط با داده تازه و جهت‌دار موجود نیست | — | — | — | — | — | — | — | — | — |")
