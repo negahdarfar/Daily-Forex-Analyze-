@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
 from src.data.source_registry import load_source_registry, summarize_source_registry
+from src.experts.analysis_ingestion import extract_analysis_candidates
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
 
@@ -74,13 +75,16 @@ def main() -> None:
     news_config_path = ROOT / "config" / "news_sources.json"
     news_sources = load_json(news_config_path).get("sources", []) if news_config_path.exists() else []
     news = collect_news(news_sources, settings.get("news", {}))
+    known_symbols = [item["symbol"] for category in ("forex", "commodities", "crypto") for item in assets.get(category, []) if item.get("enabled")]
+    analysis_candidates = extract_analysis_candidates(news, known_symbols)
     local_now = datetime.now(ZoneInfo(settings.get("timezone", "Asia/Tehran")))
-    report = render_report(results, settings, local_now, news=news, source_registry=source_registry)
+    report = render_report(results, settings, local_now, news=news, source_registry=source_registry, analysis_candidates=analysis_candidates)
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
     out = report_dir / f"{local_now:%Y-%m-%d}.md"
     out.write_text(report, encoding="utf-8")
     print(f"News items collected: {len(news)}")
+    print(f"Analysis candidates extracted: {len(analysis_candidates)}")
     print(f"Report written: {out.relative_to(ROOT)}")
 
 
