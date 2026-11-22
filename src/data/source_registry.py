@@ -62,11 +62,13 @@ def summarize_source_registry(registry: dict[str, Any]) -> dict[str, Any]:
 def merge_active_rss_sources(news_sources: list[dict[str, Any]], registry: dict[str, Any]) -> list[dict[str, Any]]:
     """Registry is authoritative: a URL alone never activates a source."""
     configured = {str(item.get("name", "")).casefold(): item for item in news_sources}
+    aliases = {"cnbc": "cnbc markets", "fxstreet": "fxstreet public rss"}
     output = []
     for source in registry.get("sources", []):
         if not source.get("enabled") or source.get("access_method") != "public_rss":
             continue
-        configured_item = configured.get(str(source.get("name", "")).casefold())
+        source_name = str(source.get("name", "")).casefold()
+        configured_item = configured.get(source_name) or configured.get(aliases.get(source_name, ""))
         url = source.get("feed_url") or (configured_item or {}).get("url")
         if not url:
             continue
