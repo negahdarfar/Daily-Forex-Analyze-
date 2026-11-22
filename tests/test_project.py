@@ -8,6 +8,7 @@ import pandas as pd
 from src.technical.indicators import analyze
 from src.experts.registry import assess_profile
 from src.experts.performance import calculate_performance, realized_r_multiple, assess_trader_history
+from src.data.news import classify_relevance
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -72,6 +73,14 @@ class TechnicalAnalysisTests(unittest.TestCase):
         ], minimum_sample=1)
         self.assertEqual(metrics["sample_size"], 1)
         self.assertEqual(metrics["excluded_unverified_count"], 1)
+
+
+    def test_news_classifier_identifies_macro_and_asset_news(self):
+        self.assertEqual(classify_relevance("Federal Reserve signals rate cut"), "market_relevant")
+        self.assertEqual(classify_relevance("Gold prices rise as dollar weakens"), "market_relevant")
+
+    def test_news_classifier_filters_unrelated_business_headlines(self):
+        self.assertEqual(classify_relevance("Retailer opens new stores", "Hiring plans expand"), "general_business")
 
     def test_forecast_profile_without_evidence_is_unverified(self):
         result = assess_profile({"name": "Example"})
