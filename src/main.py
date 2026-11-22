@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
+from src.data.official_data import fetch_ecb_reference_rates, fetch_world_bank_inflation
 from src.data.source_registry import load_source_registry, summarize_source_registry, annotate_analysis_candidates, summarize_directional_evidence, merge_active_rss_sources
 from src.experts.analysis_ingestion import extract_analysis_candidates
 from src.reporting.markdown import render_report
@@ -82,9 +83,14 @@ def main() -> None:
     analysis_candidates = extract_analysis_candidates(news, known_symbols)
     analysis_candidates = annotate_analysis_candidates(analysis_candidates, registry_data)
     directional_evidence = summarize_directional_evidence(analysis_candidates)
+    # Verified public official APIs add slow macro context and ECB reference-rate cross-checks.
+    official_macro = [
+        fetch_ecb_reference_rates(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 15))),
+        fetch_world_bank_inflation(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 20))),
+    ]
     forex_symbols = [item["symbol"] for item in assets.get("forex", []) if item.get("enabled")]
     local_now = datetime.now(ZoneInfo(settings.get("timezone", "Asia/Tehran")))
-    report = render_report(results, settings, local_now, news=news, source_registry=source_registry, analysis_candidates=analysis_candidates, forex_symbols=forex_symbols, directional_evidence=directional_evidence)
+    report = render_report(results, settings, local_now, news=news, source_registry=source_registry, analysis_candidates=analysis_candidates, forex_symbols=forex_symbols, directional_evidence=directional_evidence, official_macro=official_macro)
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
     out = report_dir / f"{local_now:%Y-%m-%d}.md"
