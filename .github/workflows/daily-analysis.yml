@@ -19,7 +19,7 @@ permissions:
 
 concurrency:
   group: daily-market-analysis
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-report:
@@ -53,5 +53,6 @@ jobs:
             echo "No report changes to commit."
           else
             git commit -m "chore(report): daily market analysis"
+            git pull --rebase origin main
             git push
           fi
