@@ -1,0 +1,34 @@
+name: AvalAI Free Model Audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 4 * * 1"
+permissions:
+  contents: read
+concurrency:
+  group: avalai-free-model-audit
+  cancel-in-progress: true
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Discover zero-cost models and safely test eligible routes
+        env:
+          AVALAI_API_KEY: ${{ secrets.AVALAI_API_KEY }}
+          AVALAI_BASE_URL: https://api.avalai.ir/v1
+        run: python scripts/audit_avalai_free_models.py
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avalai-free-model-audit
+          path: reports/avalai-model-audit/
+          if-no-files-found: warn
+          retention-days: 30
