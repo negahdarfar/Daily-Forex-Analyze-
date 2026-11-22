@@ -88,7 +88,11 @@ def analyze(frame: pd.DataFrame, settings: dict) -> dict:
     components["ema_slope"] = min(15.0, max(0.0, ema_slope * 12.0)) if ema_slope > 0 else 0.0
     components["rsi_momentum"] = 15.0 if 52 <= rv <= 68 else 8.0 if 50 < rv < 52 or 68 < rv <= 75 else 0.0
     components["macd_momentum"] = 15.0 if macd_value is not None and macd_value > 0 and macd_value >= (macd_prev or macd_value) else 7.0 if macd_value is not None and macd_value > 0 else 0.0
-    components["trend_strength"] = min(10.0, max(0.0, (adx_value - 15.0) / 2.0)) if adx_value is not None else 0.0
+    components["trend_strength"] = (
+        min(10.0, max(0.0, (adx_value - 15.0) / 2.0))
+        if adx_value is not None and plus_value is not None and minus_value is not None and plus_value > minus_value
+        else 0.0
+    )
     lookback = min(20, max(5, len(data) // 6))
     prior_high = float(high.iloc[-lookback-1:-1].max())
     prior_low = float(low.iloc[-lookback-1:-1].min())
