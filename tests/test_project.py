@@ -127,7 +127,7 @@ class OfficialMacroDataTests(unittest.TestCase):
     @patch("src.data.official_data.requests.get")
     def test_ecb_adapter_parses_official_reference_rates(self, get):
         class Response:
-            text = "CURRENCY,TIME_PERIOD,OBS_VALUE\\nUSD,2026-11-20,1.15\\nGBP,2026-11-20,0.88\\n"
+            text = "CURRENCY,TIME_PERIOD,OBS_VALUE\nUSD,2026-11-20,1.15\nGBP,2026-11-20,0.88\n"
             def raise_for_status(self): pass
         get.return_value = Response()
         result = fetch_ecb_reference_rates()
@@ -166,7 +166,7 @@ class TechnicalAnalysisTests(unittest.TestCase):
         self.assertGreater(result["atr"], 0)
         self.assertGreaterEqual(result["score"], 0)
         self.assertLessEqual(result["score"], 100)
-        self.assertEqual(result["score_type"], "rule_based_strength_not_probability")
+        self.assertEqual(result["score_type"], "multi_factor_rule_based_strength_not_probability")
 
     def test_monotonic_series_has_finite_rsi(self):
         result = analyze(self.frame, self.settings)
