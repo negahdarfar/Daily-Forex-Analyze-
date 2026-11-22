@@ -1,5 +1,6 @@
 import json
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 import numpy as np
@@ -9,6 +10,7 @@ from src.technical.indicators import analyze
 from src.experts.registry import assess_profile
 from src.experts.performance import calculate_performance, realized_r_multiple, assess_trader_history
 from src.data.news import classify_relevance
+from src.data.market_data import fetch_asset_history
 from src.experts.forecast_tracking import evaluate_forecast
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +33,30 @@ class ProjectConfigurationTests(unittest.TestCase):
         self.assertGreaterEqual(len(config["sources"]), 1)
         self.assertTrue(all(item["url"].startswith("https://") for item in config["sources"]))
 
+
+class MarketDataSourceTests(unittest.TestCase):
+    def test_crypto_selects_freshest_valid_source(self):
+        yahoo = {
+            "status": "available", "provider": "Yahoo Finance",
+            "market_timestamp": "2026-11-20T00:00:00+00:00", "close": 90000
+        }
+        binance = {
+            "status": "available", "provider": "Binance public API",
+            "market_timestamp": "2026-11-22T00:00:00+00:00", "close": 91000
+        }
+        with patch("src.data.market_data.fetch_history", return_value=yahoo), patch("src.data.market_data.fetch_binance_history", return_value=binance):
+            result = fetch_asset_history({"symbol": "BTCUSD", "yahoo": "BTC-USD", "category": "crypto"})
+        self.assertEqual(result["provider"], "Binance public API")
+        self.assertEqual(result["close"], 91000)
+        self.assertEqual(result["source_selection"], "freshest_available_timestamp")
+        self.assertEqual(len(result["sources_checked"]), 2)
+
+    def test_non_crypto_does_not_call_binance(self):
+        yahoo = {"status": "available", "provider": "Yahoo Finance"}
+        with patch("src.data.market_data.fetch_history", return_value=yahoo), patch("src.data.market_data.fetch_binance_history") as binance:
+            result = fetch_asset_history({"symbol": "EURUSD", "yahoo": "EURUSD=X", "category": "forex"})
+        binance.assert_not_called()
+        self.assertEqual(result["provider"], "Yahoo Finance")
 
 class TechnicalAnalysisTests(unittest.TestCase):
     def setUp(self):
