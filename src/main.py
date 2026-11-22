@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from src.data.market_data import fetch_history
+from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
@@ -26,8 +26,8 @@ def main() -> None:
         enabled.extend(a for a in assets.get(category, []) if a.get("enabled"))
 
     for asset in enabled:
-        fetched = fetch_history(
-            asset["yahoo"],
+        fetched = fetch_asset_history(
+            asset,
             period=settings.get("history_period", "6mo"),
             interval=settings.get("history_interval", "1d")
         )
