@@ -9,7 +9,7 @@ import pandas as pd
 from src.technical.indicators import analyze
 from src.experts.registry import assess_profile
 from src.experts.performance import calculate_performance, realized_r_multiple, assess_trader_history
-from src.data.news import classify_relevance
+from src.data.news import classify_relevance, collect_news
 from src.data.market_data import fetch_asset_history
 from src.data.source_registry import load_source_registry, summarize_source_registry
 from src.experts.forecast_tracking import evaluate_forecast
@@ -33,8 +33,14 @@ class ProjectConfigurationTests(unittest.TestCase):
         registry = load_source_registry(ROOT / "config/analysis_sources.json")
         summary = summarize_source_registry(registry)
         self.assertEqual(summary["total"], 100)
-        self.assertEqual(summary["enabled"], 1)
+        self.assertEqual(summary["enabled"], 3)
         self.assertEqual(len({item["id"] for item in registry["sources"]}), 100)
+
+    def test_disabled_rss_source_is_not_requested(self):
+        with patch("src.data.news.requests.get") as get:
+            items = collect_news([{"name": "Disabled", "url": "https://example.com/feed.xml", "enabled": False}])
+        get.assert_not_called()
+        self.assertEqual(items, [])
 
     def test_permission_restricted_sources_are_not_enabled(self):
         registry = load_source_registry(ROOT / "config/analysis_sources.json")
