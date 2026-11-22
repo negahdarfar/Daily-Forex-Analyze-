@@ -26,6 +26,9 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         and r.get("analysis", {}).get("status") == "ok"
         and r["analysis"].get("direction") != "neutral"
         and r["analysis"].get("score", 0) >= float(settings.get("ranking", {}).get("minimum_setup_score", 55))
+        and r["analysis"].get("take_profit") is not None
+        and r["analysis"].get("risk_reward") is not None
+        and r["analysis"].get("risk_reward") >= 1.5
     ]
     candidates.sort(key=lambda r: r["analysis"].get("score", 0), reverse=True)
     for rank, item in enumerate(candidates[:int(settings["ranking"]["max_top_setups"])], 1):
