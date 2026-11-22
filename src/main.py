@@ -37,6 +37,8 @@ def main() -> None:
             "status": fetched.get("status", "unknown"),
             "market_timestamp": fetched.get("market_timestamp", "—"),
             "collected_at": fetched.get("collected_at", "—"),
+            "sources_checked": ", ".join(fetched.get("sources_checked", [])) or "—",
+            "source_selection": fetched.get("source_selection", "single_source"),
             "reason": fetched.get("reason", "—")
         }
         if fetched.get("status") == "available":
