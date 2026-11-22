@@ -7,6 +7,7 @@ import pandas as pd
 
 from src.technical.indicators import analyze
 from src.experts.registry import assess_profile
+from src.experts.performance import calculate_performance, realized_r_multiple, assess_trader_history
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -51,6 +52,26 @@ class TechnicalAnalysisTests(unittest.TestCase):
         result = analyze(self.frame, self.settings)
         self.assertTrue(np.isfinite(result["rsi14"]))
         self.assertEqual(result["rsi14"], 100.0)
+
+
+    def test_realized_r_multiple_supports_long_and_short(self):
+        self.assertEqual(realized_r_multiple("long", 100, 95, 110), 2.0)
+        self.assertEqual(realized_r_multiple("short", 100, 105, 90), 2.0)
+
+    def test_performance_metrics_calculate_expectancy_and_drawdown(self):
+        metrics = calculate_performance([1.0, -1.0, 2.0, 1.0], minimum_sample=4)
+        self.assertEqual(metrics["sample_size"], 4)
+        self.assertAlmostEqual(metrics["expectancy_r"], 0.75)
+        self.assertEqual(metrics["status"], "measured")
+        self.assertTrue(metrics["ranking_eligible"])
+
+    def test_unverified_trades_are_excluded(self):
+        metrics = assess_trader_history([
+            {"realized_r": 5, "verification_status": "claimed"},
+            {"realized_r": 1, "verification_status": "independently_verified"}
+        ], minimum_sample=1)
+        self.assertEqual(metrics["sample_size"], 1)
+        self.assertEqual(metrics["excluded_unverified_count"], 1)
 
     def test_forecast_profile_without_evidence_is_unverified(self):
         result = assess_profile({"name": "Example"})
