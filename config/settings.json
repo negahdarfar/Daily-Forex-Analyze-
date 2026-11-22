@@ -29,5 +29,13 @@
   "news": {
     "timeout_seconds": 12,
     "max_items_per_source": 12
+  },
+  "official_data": {
+    "timeout_seconds": 15,
+    "enabled_connectors": [
+      "European Central Bank",
+      "World Bank"
+    ],
+    "notes": "ECB daily reference rates and World Bank annual CPI context; neither is an executable quote or intraday release."
   }
 }
