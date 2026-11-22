@@ -11,7 +11,7 @@ from src.experts.registry import assess_profile
 from src.experts.performance import calculate_performance, realized_r_multiple, assess_trader_history
 from src.data.news import classify_relevance, collect_news
 from src.data.market_data import fetch_asset_history
-from src.data.source_registry import load_source_registry, summarize_source_registry
+from src.data.source_registry import load_source_registry, summarize_source_registry, merge_active_rss_sources
 from src.experts.forecast_tracking import evaluate_forecast
 from src.experts.analysis_ingestion import extract_analysis_candidates
 
@@ -87,6 +87,15 @@ class ProjectConfigurationTests(unittest.TestCase):
         config = json.loads((ROOT / "config/news_sources.json").read_text(encoding="utf-8"))
         self.assertGreaterEqual(len(config["sources"]), 1)
         self.assertTrue(all(item["url"].startswith("https://") for item in config["sources"]))
+
+    def test_registry_controls_rss_activation(self):
+        registry = load_source_registry(ROOT / "config/analysis_sources.json")
+        config = json.loads((ROOT / "config/news_sources.json").read_text(encoding="utf-8"))
+        active = merge_active_rss_sources(config["sources"], registry)
+        self.assertEqual(len(active), 3)
+        self.assertEqual({item["name"] for item in active}, {"FXStreet", "CNBC", "BBC Business"})
+        self.assertTrue(all(item["url"].startswith("https://") for item in active))
+        self.assertFalse(any(item["name"] == "Yahoo Finance" for item in active))
 
 
 class MarketDataSourceTests(unittest.TestCase):
