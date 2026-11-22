@@ -171,15 +171,21 @@ class OfficialMacroDataTests(unittest.TestCase):
     @patch("src.data.official_data.requests.get")
     def test_fred_public_csv_adapter_reads_keyless_series(self, get):
         class Response:
-            text = "observation_date,DFF\n2026-11-20,3.75\n2026-11-19,3.75\n"
+            def __init__(self, series_id):
+                self.text = (
+                    f"observation_date,{series_id}\\n"
+                    "2026-11-20,3.75\\n2026-11-19,3.70\\n"
+                )
             def raise_for_status(self): pass
-        get.return_value = Response()
+        get.side_effect = lambda *args, **kwargs: Response(kwargs["params"]["id"])
         result = fetch_fred_public_series()
         self.assertEqual(result["status"], "available")
         self.assertEqual(len(result["observations"]), 6)
         self.assertEqual(result["observations"][0]["latest"]["value"], 3.75)
         self.assertEqual(result["observations"][0]["frequency"], "daily")
         self.assertEqual(get.call_count, 6)
+        self.assertEqual({call.kwargs["params"]["id"] for call in get.call_args_list},
+                         {"DFF", "DGS2", "DGS10", "UNRATE", "CPIAUCSL", "PAYEMS"})
 
     @patch("src.data.official_data.requests.get")
     def test_cftc_adapter_calculates_noncommercial_net_position(self, get):
