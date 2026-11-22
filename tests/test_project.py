@@ -13,6 +13,7 @@ from src.data.news import classify_relevance, collect_news
 from src.data.market_data import fetch_asset_history
 from src.data.source_registry import load_source_registry, summarize_source_registry
 from src.experts.forecast_tracking import evaluate_forecast
+from src.experts.analysis_ingestion import extract_analysis_candidates
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -35,6 +36,34 @@ class ProjectConfigurationTests(unittest.TestCase):
         self.assertEqual(summary["total"], 100)
         self.assertEqual(summary["enabled"], 3)
         self.assertEqual(len({item["id"] for item in registry["sources"]}), 100)
+
+    def test_analysis_ingestion_extracts_only_explicit_fields(self):
+        items = [{
+            "title": "EUR/USD bullish Elliott wave analysis on 4H",
+            "summary": "Upside outlook; target 1.0950, stop-loss 1.0720.",
+            "source": "Example Research", "author": "Analyst A",
+            "url": "https://example.com/eurusd", "published_at": "2026-11-22T08:00:00+00:00",
+            "collected_at": "2026-11-22T08:05:00+00:00", "status": "dated"
+        }]
+        result = extract_analysis_candidates(items, ["EURUSD"])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["assets"], ["EURUSD"])
+        self.assertEqual(result[0]["direction"], "bullish")
+        self.assertEqual(result[0]["timeframes"], ["4h"])
+        self.assertEqual(result[0]["levels"]["target"], 1.095)
+        self.assertEqual(result[0]["verification_status"], "unverified_source_claim")
+
+    def test_analysis_ingestion_deduplicates_and_does_not_invent_direction(self):
+        item = {
+            "title": "Gold technical analysis: support and resistance",
+            "summary": "Key levels discussed without a directional call.",
+            "source": "Example", "url": "https://example.com/gold", "status": "dated"
+        }
+        result = extract_analysis_candidates([item, item], ["XAUUSD"])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["direction"], "not_stated")
+        self.assertEqual(result[0]["timeframes"], [])
+        self.assertEqual(result[0]["levels"], {})
 
     def test_disabled_rss_source_is_not_requested(self):
         with patch("src.data.news.requests.get") as get:
