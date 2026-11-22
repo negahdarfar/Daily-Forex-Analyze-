@@ -55,6 +55,8 @@ def collect_news(sources: list[dict], settings: dict | None = None) -> list[dict
     collected, seen = [], set()
 
     for source in sources:
+        if source.get("enabled", True) is False:
+            continue
         url = source.get("url")
         if not url:
             continue
