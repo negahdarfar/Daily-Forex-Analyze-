@@ -152,7 +152,7 @@ def fetch_bls_macro(timeout: int = 25) -> dict[str, Any]:
 
 
 def fetch_cftc_cot(timeout: int = 25) -> dict[str, Any]:
-    """Fetch latest Legacy Futures Only COT positioning for major FX, gold, silver and crude contracts."""
+    """Fetch up to 52 weekly Legacy Futures Only COT observations per major contract."""
     url = "https://publicreporting.cftc.gov/resource/6dca-aqww.json"
     contracts = {
         "099741": "Euro FX", "096742": "British Pound", "097741": "Japanese Yen",
@@ -169,17 +169,17 @@ def fetch_cftc_cot(timeout: int = 25) -> dict[str, Any]:
                 "$select": "cftc_contract_market_code,market_and_exchange_names,report_date_as_yyyy_mm_dd,open_interest_all,noncomm_positions_long_all,noncomm_positions_short_all,comm_positions_long_all,comm_positions_short_all",
                 "$where": f"cftc_contract_market_code in ({code_filter})",
                 "$order": "report_date_as_yyyy_mm_dd DESC",
-                "$limit": 100,
+                "$limit": 520,
             },
             headers={"User-Agent": "DailyMarketAnalyze/1.0", "Accept": "application/json"},
             timeout=timeout,
         )
         response.raise_for_status()
         payload = response.json()
-        latest_by_code = {}
+        history_by_code: dict[str, list[dict[str, Any]]] = {}
         for item in payload if isinstance(payload, list) else []:
             code = str(item.get("cftc_contract_market_code", ""))
-            if code not in contracts or code in latest_by_code:
+            if code not in contracts:
                 continue
             try:
                 oi = float(item["open_interest_all"])
@@ -192,26 +192,50 @@ def fetch_cftc_cot(timeout: int = 25) -> dict[str, Any]:
             except (TypeError, ValueError, KeyError):
                 continue
             net = noncomm_long - noncomm_short
-            latest_by_code[code] = {
-                "contract_code": code, "contract": contracts[code],
+            history_by_code.setdefault(code, []).append({
+                "report_date": str(item.get("report_date_as_yyyy_mm_dd", "")),
                 "market_name": item.get("market_and_exchange_names"),
-                "report_date": item.get("report_date_as_yyyy_mm_dd"),
                 "open_interest": oi, "noncommercial_long": noncomm_long,
                 "noncommercial_short": noncomm_short, "noncommercial_net": net,
-                "noncommercial_net_pct_open_interest": round(100.0 * net / oi, 3),
+                "noncommercial_net_pct_open_interest": 100.0 * net / oi,
                 "commercial_net": comm_long - comm_short,
+            })
+        observations = []
+        for code, history in history_by_code.items():
+            history.sort(key=lambda x: x["report_date"], reverse=True)
+            latest = history[0]
+            values = [row["noncommercial_net_pct_open_interest"] for row in history]
+            mean = sum(values) / len(values)
+            variance = sum((value - mean) ** 2 for value in values) / len(values)
+            std = variance ** 0.5
+            four_week_change = (
+                latest["noncommercial_net_pct_open_interest"] - history[4]["noncommercial_net_pct_open_interest"]
+                if len(history) >= 5 else None
+            )
+            observations.append({
+                "contract_code": code, "contract": contracts[code],
+                "market_name": latest["market_name"], "report_date": latest["report_date"],
+                "open_interest": latest["open_interest"],
+                "noncommercial_long": latest["noncommercial_long"],
+                "noncommercial_short": latest["noncommercial_short"],
+                "noncommercial_net": latest["noncommercial_net"],
+                "noncommercial_net_pct_open_interest": round(latest["noncommercial_net_pct_open_interest"], 3),
+                "commercial_net": latest["commercial_net"],
+                "history_weeks": len(history),
+                "net_position_52w_percentile": round(100.0 * sum(v <= values[0] for v in values) / len(values), 1),
+                "net_position_52w_zscore": round((values[0] - mean) / std, 3) if std > 0 else 0.0,
+                "net_position_change_4w_pct_oi": round(four_week_change, 3) if four_week_change is not None else None,
                 "frequency": "weekly", "source": "CFTC", "status": "available",
                 "interpretation": "positioning_context_not_a_directional_trade_signal",
-            }
-        observations = sorted(latest_by_code.values(), key=lambda x: x["contract"])
+            })
+        observations.sort(key=lambda x: x["contract"])
         return {
             "source": "CFTC", "status": "available" if observations else "empty",
             "collected_at": collected_at, "observations": observations,
-            "data_note": "Legacy Futures Only Commitments of Traders; weekly positions as of Tuesday, normally published Friday. Net positions are contextual positioning data, not proof of future price direction.",
+            "data_note": "Legacy Futures Only Commitments of Traders; weekly positions as of Tuesday, normally published Friday. Net position percentile and z-score compare up to 52 weekly observations for that contract. Positioning is contextual and not proof of future price direction.",
             "endpoint": url, "contracts_requested": len(contracts),
         }
     except Exception as exc:
         return {"source": "CFTC", "status": "source_error",
                 "collected_at": collected_at, "observations": [],
                 "reason": f"{type(exc).__name__}: {exc}"}
-
