@@ -42,3 +42,52 @@ def summarize_source_registry(registry: dict[str, Any]) -> dict[str, Any]:
         },
         "ordering_policy": registry.get("ordering_policy", []),
     }
+
+
+
+def annotate_analysis_candidates(candidates: list[dict[str, Any]], registry: dict[str, Any]) -> list[dict[str, Any]]:
+    """Attach a transparent prior authority weight to explicit source claims."""
+    sources = registry.get("sources", [])
+    output = []
+    for candidate in candidates:
+        label = str(candidate.get("source", "")).casefold().strip()
+        match = next((s for s in sources if s.get("name", "").casefold() == label), None)
+        if match is None:
+            match = next((s for s in sources if s.get("name", "").casefold() in label or label in s.get("name", "").casefold()), None)
+        enriched = dict(candidate)
+        enriched["source_authority_score"] = match.get("authority_score", 0) if match else 0
+        enriched["source_reliability_tier"] = match.get("reliability_tier", "unmatched") if match else "unmatched"
+        enriched["source_registry_match"] = match.get("name") if match else None
+        output.append(enriched)
+    return output
+
+
+def summarize_directional_evidence(candidates: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Summarize explicit bullish/bearish claims; cap each publisher to one vote per asset."""
+    grouped: dict[str, dict[str, dict[str, float]]] = {}
+    for item in candidates:
+        direction = item.get("direction")
+        if direction not in {"bullish", "bearish"}:
+            continue
+        score = float(item.get("source_authority_score", 0) or 0)
+        if score <= 0:
+            continue
+        publisher = str(item.get("source_registry_match") or item.get("source") or "unknown")
+        for asset in item.get("assets", []):
+            grouped.setdefault(asset, {}).setdefault(direction, {})
+            grouped[asset][direction][publisher] = max(grouped[asset][direction].get(publisher, 0.0), score)
+    result = {}
+    for asset, sides in grouped.items():
+        bull = sum(sides.get("bullish", {}).values())
+        bear = sum(sides.get("bearish", {}).values())
+        total = bull + bear
+        result[asset] = {
+            "bullish_weight": round(bull, 1),
+            "bearish_weight": round(bear, 1),
+            "net_bias": round((bull - bear) / total, 3) if total else 0.0,
+            "bullish_publishers": len(sides.get("bullish", {})),
+            "bearish_publishers": len(sides.get("bearish", {})),
+            "status": "directional_evidence_present" if total else "no_directional_evidence",
+            "method": "explicit_direction_only; publisher capped once per asset and direction; authority prior, not calibrated probability",
+        }
+    return result
