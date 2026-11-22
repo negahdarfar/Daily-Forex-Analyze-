@@ -150,6 +150,15 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
                     latest = obs.get("latest") or {}
                     previous = obs.get("previous") or {}
                     lines.append(f"| {obs.get('name')} | {latest.get('value','—')} | {latest.get('period_name')} {latest.get('year')} | {previous.get('value','—')} | {obs.get('change_from_previous','—')} | {obs.get('unit')} |")
+            elif dataset.get("source") == "FRED":
+                lines.append("| سری | مقدار اخیر | تاریخ | مقدار قبلی | تاریخ قبلی | تغییر | واحد | تناوب |")
+                lines.append("|---|---:|---|---:|---|---:|---|---|")
+                for obs in observations:
+                    latest = obs.get("latest") or {}
+                    previous = obs.get("previous") or {}
+                    lines.append(f"| {obs.get('name')} ({obs.get('series_id')}) | {latest.get('value','—')} | {latest.get('date','—')} | {previous.get('value','—') if previous else '—'} | {previous.get('date','—') if previous else '—'} | {obs.get('change_from_previous') if obs.get('change_from_previous') is not None else '—'} | {obs.get('unit')} | {obs.get('frequency')} |")
+                for error in dataset.get("errors", []):
+                    lines.append(f"- سری {error.get('series_id')} در دسترس نبود: {error.get('reason')}")
             elif dataset.get("source") == "CFTC":
                 lines.append("| قرارداد | تاریخ گزارش | خالص موقعیت غیرتجاری | درصد از OI | صدک ۵۲ هفته | Z-score | تغییر ۴ هفته‌ای (% OI) | تعداد هفته |")
                 lines.append("|---|---|---:|---:|---:|---:|---:|---:|")
@@ -158,7 +167,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         elif dataset.get("reason"):
             lines.append(f"خطای اتصال: {dataset.get('reason')}")
         lines.append(f"زمان جمع‌آوری UTC: {dataset.get('collected_at', 'unknown')}")
-    lines.append("این داده‌ها زمینه کلان و موقعیت‌گیری هستند، نه قیمت اجرایی یا سیگنال مستقل: نرخ ECB مرجع است؛ تورم World Bank سالانه است؛ داده‌های BLS ماهانه و قابل بازبینی‌اند؛ COT هفتگی و با تاریخ موقعیت سه‌شنبه منتشر می‌شود.")
+    lines.append("این داده‌ها زمینه کلان و موقعیت‌گیری هستند، نه قیمت اجرایی یا سیگنال مستقل: نرخ ECB مرجع است؛ تورم World Bank سالانه است؛ داده‌های BLS ماهانه و قابل بازبینی‌اند؛ FRED شامل نرخ سیاستی/بازده اوراق و داده‌های کلان است؛ COT هفتگی و با تاریخ موقعیت سه‌شنبه منتشر می‌شود.")
     lines += ["", "## اخبار و رویدادهای گردآوری‌شده (RSS عمومی)", ""]
     valid_news = [n for n in news if n.get("status") != "source_error"]
     relevant_news = [n for n in valid_news if n.get("relevance") == "market_relevant"]
