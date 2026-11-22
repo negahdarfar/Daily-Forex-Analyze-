@@ -70,7 +70,8 @@ def main() -> None:
             })
 
     registry_path = ROOT / "config" / "analysis_sources.json"
-    registry_data = load_source_registry(registry_path) if registry_path.exists() else {"sources": []}\n    source_registry = summarize_source_registry(registry_data) if registry_path.exists() else {}
+    registry_data = load_source_registry(registry_path) if registry_path.exists() else {"sources": []}
+    source_registry = summarize_source_registry(registry_data) if registry_path.exists() else {}
 
     news_config_path = ROOT / "config" / "news_sources.json"
     news_sources = load_json(news_config_path).get("sources", []) if news_config_path.exists() else []
