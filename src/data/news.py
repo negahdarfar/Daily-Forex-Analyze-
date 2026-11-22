@@ -81,7 +81,7 @@ def collect_news(sources: list[dict], settings: dict | None = None) -> list[dict
                 if published_at:
                     age_hours = round((now - datetime.fromisoformat(published_at)).total_seconds() / 3600, 1)
                 collected.append({
-                    "title": title.strip(), "url": link,
+                    "title": title.strip(), "url": link,\n                    "author": getattr(entry, "author", None) or "not_provided",
                     "source": source.get("name", "Unknown RSS"),
                     "reliability": source.get("reliability", "unrated"),
                     "published_at": published_at or "unknown",
