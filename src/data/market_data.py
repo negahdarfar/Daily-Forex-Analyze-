@@ -90,10 +90,14 @@ def fetch_binance_history(symbol: str, interval: str = "1d", limit: int = 180) -
         for column in ("Open", "High", "Low", "Close", "Volume"):
             frame[column] = pd.to_numeric(frame[column], errors="coerce")
         frame = frame.dropna(subset=["Close"])
+        close_time_ms = pd.to_numeric(frame["close_time"], errors="coerce")
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+        # Never use an unfinished candle: its displayed close is only a moving price.
+        frame = frame.loc[close_time_ms <= now_ms].copy()
+        if frame.empty:
+            raise ValueError("Binance returned no completed candles")
         frame.index = pd.to_datetime(pd.to_numeric(frame["close_time"]), unit="ms", utc=True)
         frame.index.name = "Datetime"
-        if frame.empty:
-            raise ValueError("Binance returned no valid closing prices")
         last = frame.iloc[-1]
         return {
             "symbol": symbol, "status": "available", "provider": "Binance public API",
