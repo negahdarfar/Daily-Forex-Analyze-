@@ -11,6 +11,7 @@ from src.experts.registry import assess_profile
 from src.experts.performance import calculate_performance, realized_r_multiple, assess_trader_history
 from src.data.news import classify_relevance
 from src.data.market_data import fetch_asset_history
+from src.data.source_registry import load_source_registry, summarize_source_registry
 from src.experts.forecast_tracking import evaluate_forecast
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +28,19 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_iran_quotes_are_disabled_without_source(self):
         assets = json.loads((ROOT / "config/assets.json").read_text(encoding="utf-8"))
         self.assertTrue(all(not item["enabled"] for item in assets["iran_local"]))
+
+    def test_analysis_registry_contains_100_unique_sources(self):
+        registry = load_source_registry(ROOT / "config/analysis_sources.json")
+        summary = summarize_source_registry(registry)
+        self.assertEqual(summary["total"], 100)
+        self.assertEqual(summary["enabled"], 1)
+        self.assertEqual(len({item["id"] for item in registry["sources"]}), 100)
+
+    def test_permission_restricted_sources_are_not_enabled(self):
+        registry = load_source_registry(ROOT / "config/analysis_sources.json")
+        restricted = [item for item in registry["sources"] if item["status"] == "permission_required"]
+        self.assertGreater(len(restricted), 0)
+        self.assertTrue(all(not item["enabled"] for item in restricted))
 
     def test_rss_sources_are_public_and_named(self):
         config = json.loads((ROOT / "config/news_sources.json").read_text(encoding="utf-8"))
