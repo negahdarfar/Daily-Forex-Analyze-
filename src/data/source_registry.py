@@ -21,7 +21,8 @@ def load_source_registry(path: Path) -> dict[str, Any]:
         if item.get("enabled"):
             has_rss = item.get("access_method") == "public_rss" and (item.get("feed_url") or item.get("status") == "active_existing_rss")
             has_api = item.get("access_method") == "official_api_public" and bool(item.get("api_endpoint"))
-            if not (has_rss or has_api):
+            has_download = item.get("access_method") == "official_public_download" and bool(item.get("api_endpoint"))
+            if not (has_rss or has_api or has_download):
                 raise ValueError(f"Enabled source has no validated RSS/API endpoint: {item.get('name')}")
     return registry
 
