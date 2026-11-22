@@ -1,49 +1,82 @@
 from __future__ import annotations
 
 from datetime import datetime
-from zoneinfo import ZoneInfo
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None) -> str:
+    news = news or []
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
-        f"# گزارش روزانه تحلیل بازار — {date_text}",
-        "",
-        f"> زمان تولید: {local_now.isoformat()} | منطقه زمانی: {settings.get('timezone', 'Asia/Tehran')}",
-        "",
-        "## خلاصه اجرایی",
-        "",
-        "این گزارش نسخه اولیه غربالگری تکنیکال است. داده‌های Yahoo Finance ممکن است تأخیردار یا ناقص باشند. این گزارش توصیه قطعی معامله نیست.",
-        "",
-        "## فرصت‌های تکنیکال برتر (غربالگری اولیه)",
-        "",
-        "| رتبه | دارایی | جهت | امتیاز | قیمت پایانی | RSI | ورود مکانیکی | حد ضرر | هدف | R:R |",
+        f"# گزارش روزانه تحلیل بازار — {date_text}", "",
+        f"> زمان تولید: {local_now.isoformat()} | منطقه زمانی: {settings.get('timezone', 'Asia/Tehran')}", "",
+        "## خلاصه اجرایی", "",
+        "این نسخه غربالگری تکنیکال و گردآوری RSS عمومی را انجام می‌دهد. Yahoo Finance ممکن است تأخیردار باشد؛ داده قدیمی از رتبه‌بندی ستاپ‌ها حذف می‌شود. این گزارش توصیه قطعی معامله نیست.", "",
+        "## پنج فرصت تکنیکال برتر (غربالگری، نه سیگنال اجرایی)", "",
+        "| رتبه | دارایی | جهت | امتیاز قاعده‌محور | قیمت پایانی | RSI | ورود مکانیکی | حد ضرر | هدف | R:R |",
         "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|"
     ]
-    candidates = [r for r in results if r.get("analysis", {}).get("status") == "ok" and r["analysis"].get("direction") != "neutral"]
+    candidates = [
+        r for r in results
+        if r.get("status") == "available"
+        and r.get("analysis", {}).get("status") == "ok"
+        and r["analysis"].get("direction") != "neutral"
+        and r["analysis"].get("score", 0) >= float(settings.get("ranking", {}).get("minimum_setup_score", 55))
+    ]
     candidates.sort(key=lambda r: r["analysis"].get("score", 0), reverse=True)
     for rank, item in enumerate(candidates[:int(settings["ranking"]["max_top_setups"])], 1):
         a = item["analysis"]
         fmt = lambda x: f"{x:.5f}" if isinstance(x, (int, float)) else "—"
-        lines.append(f"| {rank} | {item['asset']} | {a['direction']} | {a['score']:.1f} | {fmt(a.get('close'))} | {fmt(a.get('rsi14'))} | {fmt(a.get('entry'))} | {fmt(a.get('stop_loss'))} | {fmt(a.get('take_profit'))} | {fmt(a.get('risk_reward'))} |")
+        lines.append(
+            f"| {rank} | {item['asset']} | {a['direction']} | {a['score']:.1f} | "
+            f"{fmt(a.get('close'))} | {fmt(a.get('rsi14'))} | {fmt(a.get('entry'))} | "
+            f"{fmt(a.get('stop_loss'))} | {fmt(a.get('take_profit'))} | {fmt(a.get('risk_reward'))} |"
+        )
     if not candidates:
-        lines.append("| — | ستاپ قابل ارزیابی یافت نشد | — | — | — | — | — | — | — | — |")
-    lines += ["", "## وضعیت داده دارایی‌ها", "", "| دارایی | منبع | وضعیت | آخرین timestamp بازار | توضیح |", "|---|---|---|---|---|"]
+        lines.append("| — | ستاپ واجد شرایط با داده تازه یافت نشد | — | — | — | — | — | — | — | — |")
+
+    lines += ["", "## وضعیت داده دارایی‌ها", "",
+              "| دارایی | منبع | وضعیت | آخرین timestamp بازار | زمان جمع‌آوری UTC | عمر داده (ساعت) | توضیح |",
+              "|---|---|---|---|---|---:|---|"]
     for item in results:
-        lines.append(f"| {item['asset']} | {item.get('provider','—')} | {item.get('status','—')} | {item.get('market_timestamp','—')} | {item.get('reason','—')} |")
+        lines.append(
+            f"| {item['asset']} | {item.get('provider','—')} | {item.get('status','—')} | "
+            f"{item.get('market_timestamp','—')} | {item.get('collected_at','—')} | "
+            f"{item.get('age_hours','—')} | {item.get('reason','—')} |"
+        )
+
+    lines += ["", "## اخبار و رویدادهای گردآوری‌شده (RSS عمومی)", ""]
+    valid_news = [n for n in news if n.get("status") != "source_error"]
+    errors = [n for n in news if n.get("status") == "source_error"]
+    if valid_news:
+        for item in valid_news[:40]:
+            lines.append(
+                f"- **{item['title']}** — {item['source']} | انتشار: {item['published_at']} | "
+                f"اعتبار منبع: {item['reliability']} | جمع‌آوری: {item['collected_at']} | "
+                f"[منبع]({item['url']})"
+            )
+            if item.get("summary"):
+                lines.append(f"  - {item['summary']}")
+    else:
+        lines.append("هیچ خبر قابل‌دسترسی در این اجرا دریافت نشد؛ این به معنی نبود خبر نیست.")
+    if errors:
+        lines += ["", "### خطاهای منابع RSS", ""]
+        for item in errors:
+            lines.append(f"- {item['source']}: {item['summary']}")
+
     lines += [
         "", "## تحلیلگران و تریدرها", "",
-        "در این نسخه هیچ فردی بدون شواهد مستقل به‌عنوان تریدر برتر یا دارای win rate تأییدشده معرفی نمی‌شود. رجیستری تحلیلگران و دفتر ثبت پیش‌بینی‌ها آماده اتصال و ارزیابی آینده‌نگر است.",
+        "هیچ فردی بدون شواهد مستقل، نمونه کافی و ممیزی سوابق به‌عنوان تحلیلگر یا تریدر برتر معرفی نمی‌شود. تعداد دنبال‌کننده یا win rate ادعایی به‌تنهایی معیار نیست.",
         "", "## دیدگاه‌های بنیادی و سنتیمنت", "",
-        "در این نسخه اتصال خودکار منابع خبری و شبکه‌های اجتماعی هنوز فعال نشده است؛ بنابراین از ساختن خبر، نظر تحلیلگر یا اجماع بازار خودداری می‌شود.",
+        "RSS در این مرحله فقط خبرها را گردآوری می‌کند؛ هنوز تحلیل معنایی، استخراج دیدگاه صعودی/نزولی یا تشخیص اجماع مخالف/موافق فعال نیست. تیتر خبر به‌تنهایی توصیه یا جهت معامله محسوب نمی‌شود.",
         "", "## بازار ایران", "",
-        "نرخ دلار/ریال، طلای ۱۸ عیار و تتر ایران تا زمان اتصال منبع محلی معتبر، timestampدار و قابل استناد عمداً گزارش نشده‌اند.",
-        "", "## محدودیت‌ها و روش‌شناسی", "",
-        "- تایم‌فریم محاسبات: روزانه.",
-        "- امتیاز تکنیکال صرفاً غربالگری مبتنی بر EMA، RSI و ATR است؛ احتمال موفقیت محسوب نمی‌شود.",
-        "- Entry/SL/TP در جدول، سطوح مکانیکی آموزشی بر اساس قیمت پایانی و ATR هستند؛ سفارش اجرایی نیستند.",
-        "- پیش از هر تصمیم باید اسپرد، لغزش قیمت، ساعات بازار، رویدادهای بنیادی و داده زنده مستقل بررسی شوند.",
-        "- داده‌های مفقود یا قدیمی نباید با مقدار تخمینی جایگزین شوند.",
+        "نرخ دلار/ریال، طلای ۱۸ عیار و تتر ایران تا زمان اتصال منبع محلی معتبر و timestampدار عمداً گزارش نشده‌اند.",
+        "", "## روش‌شناسی و محدودیت‌ها", "",
+        "- تایم‌فریم تکنیکال: روزانه؛ EMA، RSI قابل تنظیم و ATR.",
+        "- امتیاز قاعده‌محور، احتمال موفقیت یا نرخ برد نیست.",
+        "- Entry/SL/TP سطوح مکانیکی آموزشی بر اساس قیمت پایانی و ATR هستند؛ سفارش اجرایی نیستند.",
+        "- داده قدیمی‌تر از آستانه پیکربندی‌شده از رتبه‌بندی حذف می‌شود، اما در جدول وضعیت داده باقی می‌ماند.",
+        "- RSS عمومی گردآوری می‌شود؛ شبکه‌های اجتماعی و منابع خصوصی بدون API یا مجوز scrape نمی‌شوند.",
+        "- پیش از تصمیم معاملاتی باید اسپرد، لغزش، ساعات بازار، اخبار و داده زنده مستقل بررسی شوند.",
         "", "---", "Generated by Daily Market Analyze."
     ]
     return "\n".join(lines) + "\n"
