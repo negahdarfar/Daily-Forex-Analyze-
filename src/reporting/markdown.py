@@ -10,7 +10,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     forex_symbols = set(forex_symbols or [])
     directional_evidence = directional_evidence or {}
     official_macro = official_macro or []
-    market_intelligence = market_intelligence or []
+    market_intelligence = market_intelligence or {}
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
