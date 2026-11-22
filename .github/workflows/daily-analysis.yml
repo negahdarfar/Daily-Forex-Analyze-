@@ -1,5 +1,6 @@
 name: Daily Market Analyze
 
+# Manual verification trigger: refresh this workflow to launch a fresh report run.
 on:
   workflow_dispatch:
   push:
