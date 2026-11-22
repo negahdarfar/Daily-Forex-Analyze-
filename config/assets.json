@@ -1,0 +1,234 @@
+{
+  "forex": [
+    {
+      "symbol": "EURUSD",
+      "yahoo": "EURUSD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "GBPUSD",
+      "yahoo": "GBPUSD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "AUDUSD",
+      "yahoo": "AUDUSD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "NZDUSD",
+      "yahoo": "NZDUSD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "USDJPY",
+      "yahoo": "JPY=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "USDCHF",
+      "yahoo": "CHF=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "USDCAD",
+      "yahoo": "CAD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "EURGBP",
+      "yahoo": "EURGBP=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "EURJPY",
+      "yahoo": "EURJPY=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "EURCHF",
+      "yahoo": "EURCHF=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "EURCAD",
+      "yahoo": "EURCAD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "EURAUD",
+      "yahoo": "EURAUD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "EURNZD",
+      "yahoo": "EURNZD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "GBPJPY",
+      "yahoo": "GBPJPY=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "GBPCHF",
+      "yahoo": "GBPCHF=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "GBPCAD",
+      "yahoo": "GBPCAD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "GBPAUD",
+      "yahoo": "GBPAUD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "GBPNZD",
+      "yahoo": "GBPNZD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "AUDJPY",
+      "yahoo": "AUDJPY=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "AUDNZD",
+      "yahoo": "AUDNZD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "AUDCAD",
+      "yahoo": "AUDCAD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "AUDCHF",
+      "yahoo": "AUDCHF=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "NZDJPY",
+      "yahoo": "NZDJPY=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "NZDCAD",
+      "yahoo": "NZDCAD=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "NZDCHF",
+      "yahoo": "NZDCHF=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "CADJPY",
+      "yahoo": "CADJPY=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "CADCHF",
+      "yahoo": "CADCHF=X",
+      "category": "forex",
+      "enabled": true
+    },
+    {
+      "symbol": "CHFJPY",
+      "yahoo": "CHFJPY=X",
+      "category": "forex",
+      "enabled": true
+    }
+  ],
+  "commodities": [
+    {
+      "symbol": "XAUUSD",
+      "yahoo": "GC=F",
+      "category": "commodity",
+      "name": "Gold",
+      "enabled": true
+    },
+    {
+      "symbol": "XAGUSD",
+      "yahoo": "SI=F",
+      "category": "commodity",
+      "name": "Silver",
+      "enabled": true
+    },
+    {
+      "symbol": "USOIL",
+      "yahoo": "CL=F",
+      "category": "commodity",
+      "name": "WTI Crude Oil",
+      "enabled": true
+    }
+  ],
+  "crypto": [
+    {
+      "symbol": "BTCUSD",
+      "yahoo": "BTC-USD",
+      "category": "crypto",
+      "name": "Bitcoin",
+      "enabled": true
+    },
+    {
+      "symbol": "ETHUSD",
+      "yahoo": "ETH-USD",
+      "category": "crypto",
+      "name": "Ethereum",
+      "enabled": true
+    }
+  ],
+  "iran_local": [
+    {
+      "symbol": "USD_IRR",
+      "category": "iran_local",
+      "name": "USD / IRR",
+      "enabled": false,
+      "reason": "منبع محلی معتبر و قابل‌ردیابی هنوز پیکربندی نشده."
+    },
+    {
+      "symbol": "GOLD_18K_IRR",
+      "category": "iran_local",
+      "name": "طلای ۱۸ عیار ایران",
+      "enabled": false,
+      "reason": "منبع محلی معتبر و قابل‌ردیابی هنوز پیکربندی نشده."
+    },
+    {
+      "symbol": "USDT_IRR",
+      "category": "iran_local",
+      "name": "تتر به تومان",
+      "enabled": false,
+      "reason": "منبع محلی معتبر و قابل‌ردیابی هنوز پیکربندی نشده."
+    }
+  ]
+}
