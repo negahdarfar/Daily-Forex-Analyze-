@@ -1,6 +1,11 @@
 name: AvalAI Free Model Audit
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/audit_avalai_free_models.py"
+      - ".github/workflows/avalai-free-model-audit.yml"
   schedule:
     - cron: "15 4 * * 1"
 permissions:
