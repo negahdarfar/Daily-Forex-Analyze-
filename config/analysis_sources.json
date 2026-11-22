@@ -74,13 +74,15 @@
       "source_type": "primary_official",
       "authority_score": 100,
       "reliability_tier": "A_primary",
-      "access_method": "official_public_endpoint_validate_before_enable",
+      "access_method": "official_api_public",
       "feed_url": null,
-      "enabled": false,
-      "status": "registered_not_connected",
+      "enabled": true,
+      "status": "verified_public_api_v1",
       "allowed_content": "metadata_short_excerpt_and_original_link",
-      "rights_note": "Validate terms, API/feed availability and reuse rights before automated ingestion.",
-      "bias_note": "Use within source's specialist domain; not a trade signal by itself."
+      "rights_note": "BLS Public Data API v1 is public without registration; cite BLS and respect published query limits.",
+      "bias_note": "Use within source's specialist domain; not a trade signal by itself.",
+      "api_endpoint": "https://api.bls.gov/publicAPI/v1/timeseries/data/",
+      "integration": "src/data/official_data.py"
     },
     {
       "id": "source_004",
@@ -312,13 +314,15 @@
       "source_type": "primary_official",
       "authority_score": 100,
       "reliability_tier": "A_primary",
-      "access_method": "official_public_endpoint_validate_before_enable",
+      "access_method": "official_api_public",
       "feed_url": null,
-      "enabled": false,
-      "status": "registered_not_connected",
+      "enabled": true,
+      "status": "verified_public_api_no_token",
       "allowed_content": "metadata_short_excerpt_and_original_link",
-      "rights_note": "Validate terms, API/feed availability and reuse rights before automated ingestion.",
-      "bias_note": "Use within source's specialist domain; not a trade signal by itself."
+      "rights_note": "CFTC Public Reporting API; no token currently required, avoid overuse and acknowledge CFTC.",
+      "bias_note": "Use within source's specialist domain; not a trade signal by itself.",
+      "api_endpoint": "https://publicreporting.cftc.gov/resource/6dca-aqww.json",
+      "integration": "src/data/official_data.py"
     },
     {
       "id": "source_017",
