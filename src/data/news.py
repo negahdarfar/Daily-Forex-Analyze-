@@ -9,6 +9,25 @@ import feedparser
 import requests
 
 
+
+MARKET_TERMS = {
+    "federal reserve", "fed ", "ecb", "bank of england", "boj",
+    "central bank", "interest rate", "rate cut", "rate hike", "inflation",
+    "cpi", "pce", "nonfarm", "payroll", "unemployment", "treasury yield",
+    "bond yield", "us dollar", "dollar index", "forex", "currency",
+    "exchange rate", "gold", "silver", "crude oil", "oil price", "opec",
+    "bitcoin", "ethereum", "crypto", "cryptocurrency", "stock market",
+    "equity market", "s&p 500", "nasdaq", "dow jones", "commodit",
+    "gdp", "pmi", "recession", "trade war", "tariff", "investor",
+    "market volatility", "market sell-off", "market rally", "financial market"
+}
+
+
+def classify_relevance(title: str, summary: str = "") -> str:
+    text = f"{title} {summary}".lower()
+    return "market_relevant" if any(term in text for term in MARKET_TERMS) else "general_business"
+
+
 def _published(entry: Any) -> str | None:
     value = getattr(entry, "published", None) or getattr(entry, "updated", None)
     if value:
@@ -66,6 +85,7 @@ def collect_news(sources: list[dict], settings: dict | None = None) -> list[dict
                     "published_at": published_at or "unknown",
                     "collected_at": now.isoformat(), "age_hours": age_hours,
                     "status": "dated" if published_at else "publication_time_unavailable",
+                    "relevance": classify_relevance(title, getattr(entry, "summary", "") or ""),
                     "summary": (getattr(entry, "summary", "") or "").replace("\\n", " ")[:500]
                 })
         except Exception as exc:
