@@ -77,8 +77,9 @@ def main() -> None:
     news = collect_news(news_sources, settings.get("news", {}))
     known_symbols = [item["symbol"] for category in ("forex", "commodities", "crypto") for item in assets.get(category, []) if item.get("enabled")]
     analysis_candidates = extract_analysis_candidates(news, known_symbols)
+    forex_symbols = [item["symbol"] for item in assets.get("forex", []) if item.get("enabled")]
     local_now = datetime.now(ZoneInfo(settings.get("timezone", "Asia/Tehran")))
-    report = render_report(results, settings, local_now, news=news, source_registry=source_registry, analysis_candidates=analysis_candidates)
+    report = render_report(results, settings, local_now, news=news, source_registry=source_registry, analysis_candidates=analysis_candidates, forex_symbols=forex_symbols)
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
     out = report_dir / f"{local_now:%Y-%m-%d}.md"
