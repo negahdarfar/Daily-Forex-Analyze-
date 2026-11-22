@@ -7,7 +7,8 @@ class MarketIntelligenceTests(unittest.TestCase):
     def test_empty_inputs_are_safe_and_explicit(self):
         result = build_market_intelligence([], [], [], [])
         self.assertEqual(result["coverage"]["fresh_fx_pairs_with_direction"], 0)
-        self.assertEqual(result["currency_strength"], [])
+        self.assertEqual(len(result["currency_strength"]), 8)
+        self.assertTrue(all(row["status"] == "insufficient_evidence" for row in result["currency_strength"]))
         self.assertEqual(result["pair_confluence"], [])
 
     def test_pair_strength_uses_technical_direction_and_fresh_data(self):
