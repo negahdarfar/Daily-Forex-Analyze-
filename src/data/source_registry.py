@@ -18,10 +18,11 @@ def load_source_registry(path: Path) -> dict[str, Any]:
         score = item.get("authority_score")
         if not isinstance(score, (int, float)) or not 0 <= score <= 100:
             raise ValueError(f"Invalid authority_score for {item.get('name')}")
-        if item.get("enabled") and not item.get("feed_url") and item.get("access_method") != "active_existing_rss":
-            # Existing RSS sources without a feed URL must be explicitly identified as validated legacy connectors.
-            if item.get("status") != "active_existing_rss":
-                raise ValueError(f"Enabled source has no validated feed URL: {item.get('name')}")
+        if item.get("enabled"):
+            has_rss = item.get("access_method") == "public_rss" and (item.get("feed_url") or item.get("status") == "active_existing_rss")
+            has_api = item.get("access_method") == "official_api_public" and bool(item.get("api_endpoint"))
+            if not (has_rss or has_api):
+                raise ValueError(f"Enabled source has no validated RSS/API endpoint: {item.get('name')}")
     return registry
 
 
