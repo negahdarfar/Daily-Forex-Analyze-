@@ -173,6 +173,18 @@ class TechnicalAnalysisTests(unittest.TestCase):
         self.assertTrue(np.isfinite(result["rsi14"]))
         self.assertEqual(result["rsi14"], 100.0)
 
+    def test_multifactor_engine_exposes_structure_and_dynamic_risk_metrics(self):
+        result = analyze(self.frame, self.settings)
+        self.assertIn("macd_histogram", result)
+        self.assertIn("adx", result)
+        self.assertIn("swing_high", result)
+        self.assertIn("swing_low", result)
+        self.assertIn("atr_pct", result)
+        self.assertIn("stop_basis", result)
+        self.assertIn("target_basis", result)
+        self.assertEqual(result["score_type"], "multi_factor_rule_based_strength_not_probability")
+        self.assertGreater(result["risk_reward"], 0)
+
 
     def test_realized_r_multiple_supports_long_and_short(self):
         self.assertEqual(realized_r_multiple("long", 100, 95, 110), 2.0)
