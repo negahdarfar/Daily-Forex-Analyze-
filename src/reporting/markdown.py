@@ -14,9 +14,9 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
         f"> زمان تولید: {local_now.isoformat()} | منطقه زمانی: {settings.get('timezone', 'Asia/Tehran')}", "",
         "## خلاصه اجرایی", "",
-        "این نسخه غربالگری تکنیکال و گردآوری RSS عمومی را انجام می‌دهد. Yahoo Finance ممکن است تأخیردار باشد؛ داده قدیمی از رتبه‌بندی ستاپ‌ها حذف می‌شود. این گزارش توصیه قطعی معامله نیست.", "",
+        "این نسخه غربالگری چندعاملی تکنیکال (هم‌ترازی و شیب EMA، RSI، MACD، ADX/DI، شکست ساختار و حجم در صورت وجود) و گردآوری RSS عمومی را انجام می‌دهد. امتیازها احتمال موفقیت نیستند. Yahoo Finance ممکن است تأخیردار باشد؛ داده قدیمی از رتبه‌بندی ستاپ‌ها حذف می‌شود. Entry صرفاً قیمت مرجع غربالگری است، نه سفارش اجرایی.", "",
         "## پنج فرصت تکنیکال برتر (غربالگری، نه سیگنال اجرایی)", "",
-        "| رتبه | دارایی | جهت | امتیاز قاعده‌محور | قیمت پایانی | RSI | ورود مکانیکی | حد ضرر | هدف | R:R |",
+        "| رتبه | دارایی | جهت | امتیاز چندعاملی | قیمت پایانی | RSI | ADX | ATR٪ | ورود مرجع | حد ضرر | هدف | R:R |",
         "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|"
     ]
     candidates = [
@@ -32,8 +32,9 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         fmt = lambda x: f"{x:.5f}" if isinstance(x, (int, float)) else "—"
         lines.append(
             f"| {rank} | {item['asset']} | {a['direction']} | {a['score']:.1f} | "
-            f"{fmt(a.get('close'))} | {fmt(a.get('rsi14'))} | {fmt(a.get('entry'))} | "
-            f"{fmt(a.get('stop_loss'))} | {fmt(a.get('take_profit'))} | {fmt(a.get('risk_reward'))} |"
+            f"{fmt(a.get('close'))} | {fmt(a.get('rsi14'))} | {fmt(a.get('adx'))} | "
+            f"{fmt(a.get('atr_pct'))} | {fmt(a.get('entry'))} | {fmt(a.get('stop_loss'))} | "
+            f"{fmt(a.get('take_profit'))} | {fmt(a.get('risk_reward'))} |"
         )
     if not candidates:
         lines.append("| — | ستاپ واجد شرایط با داده تازه یافت نشد | — | — | — | — | — | — | — | — |")
@@ -86,6 +87,14 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         lines.append("ثبت یک منبع به معنی تأیید اعتبار آن یا مجوز جمع‌آوری خودکار نیست. امتیاز authority در رجیستری، وزن اولیه نوع/مرجعیت منبع است و با دقت تاریخی پیش‌بینی اشتباه نشود.")
         lines.append("رده‌های مرجعیت: " + ", ".join(f"{k}: {v}" for k, v in sorted(source_registry.get("authority_tiers", {}).items())) + ".")
         lines.append("ترتیب اولویت رجیستری: " + " ← ".join(source_registry.get("ordering_policy", [])) + ".")
+        channels = source_registry.get("connection_channels", {})
+        if channels:
+            lines.append("روش‌های دسترسی ثبت‌شده: " + ", ".join(f"{k}: {v}" for k, v in sorted(channels.items())) + ".")
+        roadmap = source_registry.get("next_integration_candidates", [])
+        if roadmap:
+            lines.append("اولویت‌های بعدی برای ارزیابی اتصال رسمی (هنوز متصل/تأییدشده محسوب نمی‌شوند):")
+            for source in roadmap[:8]:
+                lines.append(f"- رتبه {source.get('rank')}: {source.get('name')} — {source.get('category')} — {source.get('access_method')}")
         for category, count in sorted(source_registry.get("categories", {}).items()):
             lines.append(f"- {category}: {count} منبع")
     else:
