@@ -151,9 +151,10 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
                     previous = obs.get("previous") or {}
                     lines.append(f"| {obs.get('name')} | {latest.get('value','—')} | {latest.get('period_name')} {latest.get('year')} | {previous.get('value','—')} | {obs.get('change_from_previous','—')} | {obs.get('unit')} |")
             elif dataset.get("source") == "CFTC":
-                lines.append("| قرارداد | تاریخ گزارش | خالص موقعیت غیرتجاری | درصد از Open Interest | Open Interest |")
-                lines.append("|---|---|---:|---:|---:|")
+                lines.append("| قرارداد | تاریخ گزارش | خالص موقعیت غیرتجاری | درصد از OI | صدک ۵۲ هفته | Z-score | تغییر ۴ هفته‌ای (% OI) | تعداد هفته |")
+                lines.append("|---|---|---:|---:|---:|---:|---:|---:|")
                 for obs in observations:
+                    lines.append(f"| {obs.get('contract')} | {obs.get('report_date')} | {obs.get('noncommercial_net')} | {obs.get('noncommercial_net_pct_open_interest')}% | {obs.get('net_position_52w_percentile','—')} | {obs.get('net_position_52w_zscore','—')} | {obs.get('net_position_change_4w_pct_oi','—')} | {obs.get('history_weeks')} |")
                     lines.append(f"| {obs.get('contract')} | {obs.get('report_date')} | {obs.get('noncommercial_net')} | {obs.get('noncommercial_net_pct_open_interest')}% | {obs.get('open_interest')} |")
         elif dataset.get("reason"):
             lines.append(f"خطای اتصال: {dataset.get('reason')}")
