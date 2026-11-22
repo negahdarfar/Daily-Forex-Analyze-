@@ -3,9 +3,10 @@ from __future__ import annotations
 from datetime import datetime
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
+    analysis_candidates = analysis_candidates or []
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
@@ -58,6 +59,21 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             lines.append(f"- {category}: {count} منبع")
     else:
         lines.append("رجیستری منابع در این اجرا بارگذاری نشد.")
+    lines += ["", "## تحلیل‌های استخراج‌شده از منابع", ""]
+    lines.append(f"تعداد مواردی که از تیتر/خلاصه RSS نشانه تحلیل داشته‌اند: **{len(analysis_candidates)}**. این‌ها ادعاهای منتشرشده‌اند، نه سیگنال تأییدشده.")
+    if analysis_candidates:
+        for item in analysis_candidates[:30]:
+            assets_text = ", ".join(item.get("assets", [])) or "دارایی مشخص نشده"
+            methods_text = ", ".join(item.get("methodologies", [])) or "روش مشخص نشده"
+            frames_text = ", ".join(item.get("timeframes", [])) or "تایم‌فریم ذکر نشده"
+            levels_text = ", ".join(f"{key}={value:g}" for key, value in item.get("levels", {}).items()) or "سطوح قیمتی ذکر نشده"
+            direction_text = item.get("direction", "not_stated")
+            lines.append(f"- **{item.get('title', 'بدون عنوان')}** — {item.get('source', '—')} | نویسنده: {item.get('author', 'not_provided')}")
+            lines.append(f"  - دارایی: {assets_text} | جهت صریح: {direction_text} | تایم‌فریم: {frames_text}")
+            lines.append(f"  - روش‌های ذکرشده: {methods_text} | سطوح استخراج‌شده: {levels_text}")
+            lines.append(f"  - وضعیت: {item.get('verification_status', 'unverified')} | انتشار: {item.get('published_at', 'unknown')} | [متن اصلی]({item.get('url', '')})")
+    else:
+        lines.append("در این اجرا از خلاصه‌های RSS موردی با شواهد کافی برای استخراج تحلیل پیدا نشد.")
     lines += ["", "## اخبار و رویدادهای گردآوری‌شده (RSS عمومی)", ""]
     valid_news = [n for n in news if n.get("status") != "source_error"]
     relevant_news = [n for n in valid_news if n.get("relevance") == "market_relevant"]
@@ -87,7 +103,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         "", "## تحلیلگران و تریدرها", "",
         "هیچ فردی بدون شواهد مستقل، نمونه کافی و ممیزی سوابق به‌عنوان تحلیلگر یا تریدر برتر معرفی نمی‌شود. تعداد دنبال‌کننده یا win rate ادعایی به‌تنهایی معیار نیست.",
         "", "## دیدگاه‌های بنیادی و سنتیمنت", "",
-        "RSS در این مرحله فقط خبرها را گردآوری می‌کند؛ هنوز تحلیل معنایی، استخراج دیدگاه صعودی/نزولی یا تشخیص اجماع مخالف/موافق فعال نیست. تیتر خبر به‌تنهایی توصیه یا جهت معامله محسوب نمی‌شود.",
+        "استخراج اولیه تحلیل فقط از تیتر و خلاصه RSS و با قواعد صریح انجام می‌شود؛ هنوز خواندن کامل صفحات، داوری معنایی موافق/مخالف یا سنجش عملکرد تاریخی تحلیلگر فعال نیست.",
         "", "## بازار ایران", "",
         "نرخ دلار/ریال، طلای ۱۸ عیار و تتر ایران تا زمان اتصال منبع محلی معتبر و timestampدار عمداً گزارش نشده‌اند.",
         "", "## روش‌شناسی و محدودیت‌ها", "",
