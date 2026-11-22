@@ -12,6 +12,7 @@ from src.experts.performance import calculate_performance, realized_r_multiple, 
 from src.data.news import classify_relevance, collect_news
 from src.data.market_data import fetch_asset_history
 from src.data.source_registry import load_source_registry, summarize_source_registry, merge_active_rss_sources
+from src.data.official_data import fetch_ecb_reference_rates, fetch_world_bank_inflation
 from src.experts.forecast_tracking import evaluate_forecast
 from src.experts.analysis_ingestion import extract_analysis_candidates
 
@@ -34,7 +35,7 @@ class ProjectConfigurationTests(unittest.TestCase):
         registry = load_source_registry(ROOT / "config/analysis_sources.json")
         summary = summarize_source_registry(registry)
         self.assertEqual(summary["total"], 100)
-        self.assertEqual(summary["enabled"], 3)
+        self.assertEqual(summary["enabled"], 5)
         self.assertEqual(len({item["id"] for item in registry["sources"]}), 100)
 
     def test_analysis_ingestion_extracts_only_explicit_fields(self):
@@ -74,7 +75,7 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_unconnected_sources_are_not_enabled_and_authority_order_is_preserved(self):
         registry = load_source_registry(ROOT / "config/analysis_sources.json")
         unconnected = [item for item in registry["sources"] if item["status"] == "registered_not_connected"]
-        self.assertEqual(len(unconnected), 97)
+        self.assertEqual(len(unconnected), 95)
         self.assertTrue(all(not item["enabled"] for item in unconnected))
         self.assertEqual(registry["sources"][0]["name"], "Federal Reserve")
         self.assertEqual(registry["sources"][34]["name"], "US SEC EDGAR")
@@ -121,6 +122,33 @@ class MarketDataSourceTests(unittest.TestCase):
             result = fetch_asset_history({"symbol": "EURUSD", "yahoo": "EURUSD=X", "category": "forex"})
         binance.assert_not_called()
         self.assertEqual(result["provider"], "Yahoo Finance")
+
+class OfficialMacroDataTests(unittest.TestCase):
+    @patch("src.data.official_data.requests.get")
+    def test_ecb_adapter_parses_official_reference_rates(self, get):
+        class Response:
+            text = "CURRENCY,TIME_PERIOD,OBS_VALUE\\nUSD,2026-11-20,1.15\\nGBP,2026-11-20,0.88\\n"
+            def raise_for_status(self): pass
+        get.return_value = Response()
+        result = fetch_ecb_reference_rates()
+        self.assertEqual(result["status"], "available")
+        self.assertEqual(len(result["observations"]), 2)
+        self.assertEqual(result["observations"][0]["quote_type"], "official_reference_rate_not_executable_spot")
+
+    @patch("src.data.official_data.requests.get")
+    def test_world_bank_adapter_keeps_annual_frequency(self, get):
+        class Response:
+            def raise_for_status(self): pass
+            def json(self):
+                return [{"pages": 1}, [
+                    {"countryiso3code": "USA", "country": {"value": "United States"}, "date": "2024", "value": 3.2},
+                    {"countryiso3code": "GBR", "country": {"value": "United Kingdom"}, "date": "2024", "value": 2.5},
+                ]]
+        get.return_value = Response()
+        result = fetch_world_bank_inflation()
+        self.assertEqual(result["status"], "available")
+        self.assertTrue(all(x["frequency"] == "annual" for x in result["observations"]))
+
 
 class TechnicalAnalysisTests(unittest.TestCase):
     def setUp(self):
