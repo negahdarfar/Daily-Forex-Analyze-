@@ -154,7 +154,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
                 lines.append("| قرارداد | تاریخ گزارش | خالص موقعیت غیرتجاری | درصد از OI | صدک ۵۲ هفته | Z-score | تغییر ۴ هفته‌ای (% OI) | تعداد هفته |")
                 lines.append("|---|---|---:|---:|---:|---:|---:|---:|")
                 for obs in observations:
-                    lines.append(f"| {obs.get('contract')} | {obs.get('report_date')} | {obs.get('noncommercial_net')} | {obs.get('noncommercial_net_pct_open_interest')}% | {obs.get('net_position_52w_percentile','—')} | {obs.get('net_position_52w_zscore','—')} | {obs.get('net_position_change_4w_pct_oi','—')} | {obs.get('history_weeks')} |")
+                    lines.append(f"| {obs.get('contract')} | {obs.get('report_date')} | {obs.get('noncommercial_net')} | {obs.get('noncommercial_net_pct_open_interest')}% | {obs.get('net_position_52w_percentile') if obs.get('net_position_52w_percentile') is not None else '—'} | {obs.get('net_position_52w_zscore') if obs.get('net_position_52w_zscore') is not None else '—'} | {obs.get('net_position_change_4w_pct_oi') if obs.get('net_position_change_4w_pct_oi') is not None else '—'} | {obs.get('history_weeks')} |")
         elif dataset.get("reason"):
             lines.append(f"خطای اتصال: {dataset.get('reason')}")
         lines.append(f"زمان جمع‌آوری UTC: {dataset.get('collected_at', 'unknown')}")
