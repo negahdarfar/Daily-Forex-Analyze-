@@ -10,7 +10,7 @@
     "metals",
     "forex_analysis"
   ],
-  "active_ingestion_count": 3,
+  "active_ingestion_count": 5,
   "categories": {
     "official_primary": 35,
     "data_calendar_tools": 15,
@@ -128,13 +128,15 @@
       "source_type": "primary_official",
       "authority_score": 100,
       "reliability_tier": "A_primary",
-      "access_method": "official_public_endpoint_validate_before_enable",
+      "access_method": "official_api_public",
       "feed_url": null,
-      "enabled": false,
-      "status": "registered_not_connected",
+      "enabled": true,
+      "status": "verified_public_api",
       "allowed_content": "metadata_short_excerpt_and_original_link",
-      "rights_note": "Validate terms, API/feed availability and reuse rights before automated ingestion.",
-      "bias_note": "Use within source's specialist domain; not a trade signal by itself."
+      "rights_note": "Official ECB SDMX API; retain attribution and reference-rate semantics.",
+      "bias_note": "Use within source's specialist domain; not a trade signal by itself.",
+      "api_endpoint": "https://data-api.ecb.europa.eu/service/data/EXR",
+      "integration": "src/data/official_data.py"
     },
     {
       "id": "source_007",
@@ -218,13 +220,15 @@
       "source_type": "multilateral_official",
       "authority_score": 97,
       "reliability_tier": "A_primary",
-      "access_method": "official_public_endpoint_validate_before_enable",
+      "access_method": "official_api_public",
       "feed_url": null,
-      "enabled": false,
-      "status": "registered_not_connected",
+      "enabled": true,
+      "status": "verified_public_api",
       "allowed_content": "metadata_short_excerpt_and_original_link",
-      "rights_note": "Validate terms, API/feed availability and reuse rights before automated ingestion.",
-      "bias_note": "Use within source's specialist domain; not a trade signal by itself."
+      "rights_note": "Official Indicators API v2; annual CPI values must remain labelled annual and checked against indicator metadata.",
+      "bias_note": "Use within source's specialist domain; not a trade signal by itself.",
+      "api_endpoint": "https://api.worldbank.org/v2",
+      "integration": "src/data/official_data.py"
     },
     {
       "id": "source_012",
