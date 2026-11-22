@@ -12,6 +12,7 @@ from src.data.source_registry import load_source_registry, summarize_source_regi
 from src.experts.analysis_ingestion import extract_analysis_candidates
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
+from src.analysis.market_intelligence import build_market_intelligence
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -93,7 +94,16 @@ def main() -> None:
     ]
     forex_symbols = [item["symbol"] for item in assets.get("forex", []) if item.get("enabled")]
     local_now = datetime.now(ZoneInfo(settings.get("timezone", "Asia/Tehran")))
-    report = render_report(results, settings, local_now, news=news, source_registry=source_registry, analysis_candidates=analysis_candidates, forex_symbols=forex_symbols, directional_evidence=directional_evidence, official_macro=official_macro)
+    market_intelligence = build_market_intelligence(
+        results=results, news=news, official_macro=official_macro,
+        analysis_candidates=analysis_candidates, source_registry=source_registry,
+    )
+    report = render_report(
+        results, settings, local_now, news=news, source_registry=source_registry,
+        analysis_candidates=analysis_candidates, forex_symbols=forex_symbols,
+        directional_evidence=directional_evidence, official_macro=official_macro,
+        market_intelligence=market_intelligence,
+    )
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
     out = report_dir / f"{local_now:%Y-%m-%d}.md"
