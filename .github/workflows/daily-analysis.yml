@@ -2,6 +2,14 @@ name: Daily Market Analyze
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "config/**"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/daily-analysis.yml"
   schedule:
     # 07:00 Asia/Tehran = 03:30 UTC (Iran has no seasonal clock change)
     - cron: "30 3 * * *"
