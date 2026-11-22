@@ -65,7 +65,7 @@ def merge_active_rss_sources(news_sources: list[dict[str, Any]], registry: dict[
     aliases = {"cnbc": "cnbc markets", "fxstreet": "fxstreet public rss"}
     output = []
     for source in registry.get("sources", []):
-        if not source.get("enabled") or source.get("access_method") != "public_rss":
+        if not source.get("enabled") or (source.get("access_method") != "public_rss" and not source.get("feed_url")):
             continue
         source_name = str(source.get("name", "")).casefold()
         configured_item = configured.get(source_name) or configured.get(aliases.get(source_name, ""))
