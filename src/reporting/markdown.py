@@ -3,11 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
     analysis_candidates = analysis_candidates or []
     forex_symbols = set(forex_symbols or [])
+    directional_evidence = directional_evidence or {}
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
@@ -101,9 +102,17 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             lines.append(f"- **{item.get('title', 'بدون عنوان')}** — {item.get('source', '—')} | نویسنده: {item.get('author', 'not_provided')}")
             lines.append(f"  - دارایی: {assets_text} | جهت صریح: {direction_text} | تایم‌فریم: {frames_text}")
             lines.append(f"  - روش‌های ذکرشده: {methods_text} | سطوح استخراج‌شده: {levels_text}")
-            lines.append(f"  - وضعیت: {item.get('verification_status', 'unverified')} | انتشار: {item.get('published_at', 'unknown')} | [متن اصلی]({item.get('url', '')})")
+            lines.append(f"  - مرجعیت منبع: {item.get('source_authority_score', 0)}/100 ({item.get('source_reliability_tier', 'unmatched')}) | وضعیت: {item.get('verification_status', 'unverified')} | انتشار: {item.get('published_at', 'unknown')} | [متن اصلی]({item.get('url', '')})")
     else:
         lines.append("در این اجرا از خلاصه‌های RSS موردی با شواهد کافی برای استخراج تحلیل پیدا نشد.")
+    lines += ["", "## جهت‌گیری بنیادی/تحلیلی وزن‌دهی‌شده بر اساس مرجعیت منبع", ""]
+    lines.append("فقط جهت‌هایی وارد این بخش می‌شوند که در تیتر/خلاصه به‌صراحت بیان شده باشند. وزن هر ناشر از مرجعیت اولیه منبع می‌آید؛ ناشر تکراری برای هر دارایی و هر جهت فقط یک‌بار شمرده می‌شود. این وزن‌ها احتمال یا اجماع قطعی نیستند.")
+    if directional_evidence:
+        lines += ["", "| دارایی | وزن صعودی | وزن نزولی | انحراف خالص نرمال‌شده | ناشران صعودی | ناشران نزولی |", "|---|---:|---:|---:|---:|---:|"]
+        for asset, evidence in sorted(directional_evidence.items(), key=lambda pair: abs(pair[1].get("net_bias", 0)), reverse=True):
+            lines.append(f"| {asset} | {evidence['bullish_weight']:.1f} | {evidence['bearish_weight']:.1f} | {evidence['net_bias']:+.3f} | {evidence['bullish_publishers']} | {evidence['bearish_publishers']} |")
+    else:
+        lines.append("در این اجرا شواهد جهت‌دار صریح و قابل‌وزن‌دهی از منابع فعال پیدا نشد؛ جهت بنیادی نامشخص است و نباید از سکوت منابع، جهت بازار استنباط شود.")
     lines += ["", "## اخبار و رویدادهای گردآوری‌شده (RSS عمومی)", ""]
     valid_news = [n for n in news if n.get("status") != "source_error"]
     relevant_news = [n for n in valid_news if n.get("relevance") == "market_relevant"]
