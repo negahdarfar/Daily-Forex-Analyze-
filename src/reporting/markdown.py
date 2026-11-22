@@ -3,10 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
     analysis_candidates = analysis_candidates or []
+    forex_symbols = set(forex_symbols or [])
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
@@ -36,6 +37,33 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     if not candidates:
         lines.append("| — | ستاپ واجد شرایط با داده تازه یافت نشد | — | — | — | — | — | — | — | — |")
 
+    # Daily FX shortlist is explicitly technical-only until fundamental evidence is ingested and scored.
+    fx_candidates = [
+        r for r in results
+        if r.get("asset") in forex_symbols
+        and r.get("status") == "available"
+        and r.get("analysis", {}).get("status") == "ok"
+        and r["analysis"].get("direction") != "neutral"
+    ]
+    def fx_rank(item):
+        age = float(item.get("age_hours", 0.0))
+        freshness = max(0.0, 1.0 - age / max(float(settings.get("max_quote_age_hours", 36)), 1.0))
+        return (float(item["analysis"].get("score", 0.0)) * (0.70 + 0.30 * freshness), -age)
+    fx_candidates.sort(key=fx_rank, reverse=True)
+    lines += ["", "## ده جفت‌ارز برتر برای بررسی ورود (رتبه‌بندی تکنیکال موقت)", ""]
+    lines.append("این رتبه‌بندی فقط از قدرت روند EMA، وضعیت RSI و تازگی داده روزانه ساخته شده است. تا زمانی که داده بنیادی/تقویم معتبر به موتور متصل و ارزیابی نشود، این جدول «رتبه ورود بنیادی+تکنیکال» یا توصیه معامله محسوب نمی‌شود.")
+    lines += ["", "| رتبه | جفت‌ارز | جهت تکنیکال | امتیاز غربالگری | قیمت | RSI | Entry مرجع | SL | TP | R:R | عمر داده (ساعت) |", "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    for rank, item in enumerate(fx_candidates[:10], 1):
+        a = item["analysis"]
+        fmt = lambda x: f"{x:.5f}" if isinstance(x, (int, float)) else "—"
+        lines.append(
+            f"| {rank} | {item['asset']} | {a['direction']} | {fx_rank(item)[0]:.1f} | "
+            f"{fmt(a.get('close'))} | {fmt(a.get('rsi14'))} | {fmt(a.get('entry'))} | "
+            f"{fmt(a.get('stop_loss'))} | {fmt(a.get('take_profit'))} | {fmt(a.get('risk_reward'))} | {item.get('age_hours','—')} |"
+        )
+    if not fx_candidates:
+        lines.append("| — | جفت‌ارز واجد شرایط با داده تازه و جهت‌دار موجود نیست | — | — | — | — | — | — | — | — | — |")
+
     lines += ["", "## وضعیت داده دارایی‌ها", "",
               "| دارایی | منبع | وضعیت | آخرین timestamp بازار | زمان جمع‌آوری UTC | عمر داده (ساعت) | توضیح |",
               "|---|---|---|---|---|---:|---|"]
@@ -54,7 +82,9 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             f"{source_registry.get('permission_required', 0)} منبع نیازمند مجوز/API رسمی و "
             f"{source_registry.get('manual_only', 0)} منبع صرفاً برای بررسی دستی ثبت شده‌اند."
         )
-        lines.append("ثبت یک منبع به معنی تأیید اعتبار آن یا مجوز جمع‌آوری خودکار نیست. امتیاز اعتبار همه منابع تا زمان ارزیابی مستقل `unassessed` است.")
+        lines.append("ثبت یک منبع به معنی تأیید اعتبار آن یا مجوز جمع‌آوری خودکار نیست. امتیاز authority در رجیستری، وزن اولیه نوع/مرجعیت منبع است و با دقت تاریخی پیش‌بینی اشتباه نشود.")
+        lines.append("رده‌های مرجعیت: " + ", ".join(f"{k}: {v}" for k, v in sorted(source_registry.get("authority_tiers", {}).items())) + ".")
+        lines.append("ترتیب اولویت رجیستری: " + " ← ".join(source_registry.get("ordering_policy", [])) + ".")
         for category, count in sorted(source_registry.get("categories", {}).items()):
             lines.append(f"- {category}: {count} منبع")
     else:
@@ -112,7 +142,9 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         "- Entry/SL/TP سطوح مکانیکی آموزشی بر اساس قیمت پایانی و ATR هستند؛ سفارش اجرایی نیستند.",
         "- داده قدیمی‌تر از آستانه پیکربندی‌شده از رتبه‌بندی حذف می‌شود، اما در جدول وضعیت داده باقی می‌ماند.",
         "- RSS عمومی گردآوری می‌شود؛ خبرها با فیلتر کلیدواژه‌ای اولیه به مرتبط با بازار/عمومی تقسیم می‌شوند. این فیلتر تحلیل معنایی یا تأیید صحت ادعا نیست.",
-        "- رجیستری ۱۰۰ منبع، فهرست کشف و ارزیابی است؛ به معنی اتصال ۱۰۰ منبع نیست. فقط منابع دارای روش دسترسی مستند فعال می‌شوند.",
+        "- رجیستری ۱۰۰ منبع مطابق اولویت کاربر مرتب شده است؛ در این نسخه فقط ۳ ورودی RSS موجود فعال‌اند و ۹۷ منبع دیگر به معنی اتصال خودکار نیستند.",
+        "- وزن مرجعیت منبع، کیفیت تاریخی پیش‌بینی یا جهت قطعی ارز نیست؛ خبرهای تکراری از یک خبرگزاری/سیم خبری باید یک رویداد مستقل شمرده شوند.",
+        "- جدول ده جفت‌ارز تا اتصال داده بنیادی و تقویم رویدادها، صرفاً رتبه‌بندی تکنیکال موقت است؛ داده stale یا جهت خنثی از آن حذف می‌شود.",
         "- FXStreet RSS در این نسخه با محدودیت استفاده غیرتجاری ثبت شده؛ متن کامل مقاله بازنشر یا ذخیره نمی‌شود.",
         "- شبکه‌های اجتماعی و منابع خصوصی بدون API یا مجوز scrape نمی‌شوند.",
         "- پیش از تصمیم معاملاتی باید اسپرد، لغزش، ساعات بازار، اخبار و داده زنده مستقل بررسی شوند.",
