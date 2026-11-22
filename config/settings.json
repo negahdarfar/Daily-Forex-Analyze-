@@ -12,7 +12,6 @@
     "rsi_period": 14,
     "atr_period": 14,
     "stop_atr_multiple": 1.5,
-    "target_atr_multiple": 3,
     "minimum_history_rows": 60
   },
   "ranking": {
@@ -31,7 +30,7 @@
     "max_items_per_source": 12
   },
   "official_data": {
-    "timeout_seconds": 15,
+    "timeout_seconds": 30,
     "enabled_connectors": [
       "European Central Bank",
       "World Bank"
