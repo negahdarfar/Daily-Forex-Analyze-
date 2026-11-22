@@ -3,17 +3,17 @@
     {
       "name": "BBC Business",
       "url": "https://feeds.bbci.co.uk/news/business/rss.xml",
-      "reliability": "established_editorial_source"
+      "reliability": "unscored"
     },
     {
       "name": "CNBC Markets",
       "url": "https://www.cnbc.com/id/10000664/device/rss/rss.html",
-      "reliability": "established_financial_media"
+      "reliability": "unscored"
     },
     {
       "name": "Yahoo Finance",
       "url": "https://finance.yahoo.com/news/rssindex",
-      "reliability": "financial_news_aggregator"
+      "reliability": "unscored"
     }
   ]
 }
