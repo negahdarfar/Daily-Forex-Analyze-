@@ -14,6 +14,13 @@
       "name": "Yahoo Finance",
       "url": "https://finance.yahoo.com/news/rssindex",
       "reliability": "unscored"
+    },
+    {
+      "name": "FXStreet Public RSS",
+      "url": "https://xml.fxstreet.com/news/forex-news/index.xml",
+      "reliability": "unscored",
+      "access_status": "public_rss_noncommercial",
+      "usage_note": "Official RSS; non-commercial use only. Store metadata/short feed summary and original link; do not republish full articles."
     }
   ]
 }
