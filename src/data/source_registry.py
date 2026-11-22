@@ -41,7 +41,40 @@ def summarize_source_registry(registry: dict[str, Any]) -> dict[str, Any]:
             for tier in sorted({item.get("reliability_tier", "unassessed") for item in sources})
         },
         "ordering_policy": registry.get("ordering_policy", []),
+        "connection_channels": {
+            channel: sum(item.get("access_method") == channel for item in sources)
+            for channel in sorted({item.get("access_method", "unspecified") for item in sources})
+        },
+        "next_integration_candidates": [
+            {"rank": item.get("rank"), "name": item.get("name"), "category": item.get("category"),
+             "domain": item.get("domain"), "access_method": item.get("access_method"),
+             "status": item.get("status")}
+            for item in sorted(sources, key=lambda source: source.get("rank", 999))
+            if not item.get("enabled") and item.get("access_method") in {
+                "official_public_endpoint_validate_before_enable",
+                "official_api_or_manual_only", "public_rss"
+            }
+        ][:12],
     }
+
+
+def merge_active_rss_sources(news_sources: list[dict[str, Any]], registry: dict[str, Any]) -> list[dict[str, Any]]:
+    """Registry is authoritative: a URL alone never activates a source."""
+    configured = {str(item.get("name", "")).casefold(): item for item in news_sources}
+    output = []
+    for source in registry.get("sources", []):
+        if not source.get("enabled") or source.get("access_method") != "public_rss":
+            continue
+        configured_item = configured.get(str(source.get("name", "")).casefold())
+        url = source.get("feed_url") or (configured_item or {}).get("url")
+        if not url:
+            continue
+        output.append({
+            "name": source.get("name"), "url": url, "reliability": "unscored",
+            "registry_rank": source.get("rank"), "registry_id": source.get("id"),
+            "usage_note": source.get("rights_note", ""),
+        })
+    return output
 
 
 
