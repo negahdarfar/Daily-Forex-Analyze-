@@ -168,6 +168,9 @@ class OpportunityRankingTests(unittest.TestCase):
         self.assertEqual(second["diversification_penalty_points"], 10)
         self.assertEqual(second["score_adjusted"], 75)
         self.assertEqual(result["correlation_checked_count"], 1)
+        self.assertEqual(result["correlation_unavailable_count"], 0)
+        first = next(x for x in result["opportunities"] if x["symbol"] == "EURUSD")
+        self.assertEqual(first["diversification_penalty_points"], 0.0)
 
     def test_ranking_cap_is_hard_limited_to_ten(self):
         rows = [{"symbol": f"PAIR{i}", "status": "active", "score_adjusted": 80-i} for i in range(15)]
