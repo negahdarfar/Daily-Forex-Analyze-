@@ -9,7 +9,7 @@ import requests
 import yfinance as yf
 
 
-BINANCE_SYMBOLS = {"BTCUSD": "BTCUSDT", "ETHUSD": "ETHUSDT"}
+BINANCE_SYMBOLS = {"BTCUSDT": "BTCUSDT", "ETHUSDT": "ETHUSDT"}
 BINANCE_INTERVALS = {"1d": "1d", "1h": "1h", "4h": "4h", "15m": "15m"}
 
 
@@ -155,7 +155,7 @@ def fetch_asset_history(
     yahoo = fetch_history(asset["yahoo"], period=period, interval=interval)
     # Drop an unfinished daily candle for every asset class, not only crypto.
     yahoo = _exclude_unfinished_daily_bar(yahoo, interval)
-    if asset.get("category") != "crypto":
+    if asset.get("category") != "crypto" or asset.get("quote_currency") != "USDT":
         return yahoo
 
     binance = fetch_binance_history(asset["symbol"], interval=interval)
