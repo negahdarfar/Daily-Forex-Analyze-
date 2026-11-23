@@ -38,6 +38,18 @@ def daily_context_is_usable(
     )
 
 
+def classify_daily_context_age(age_hours: float | None, standard_limit_hours: float, maximum_context_hours: float) -> str:
+    """Classify daily candles as fresh, delayed-but-usable context, or stale."""
+    if age_hours is None or float(age_hours) < 0:
+        return "stale"
+    age = float(age_hours)
+    if age <= standard_limit_hours:
+        return "fresh"
+    if age <= maximum_context_hours:
+        return "delayed_context"
+    return "stale"
+
+
 def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -112,9 +124,13 @@ def main() -> None:
                 age_hours = (datetime.now(timezone.utc) - market_time).total_seconds() / 3600
                 item["age_hours"] = round(max(0.0, age_hours), 1)
                 max_age = float(settings.get("max_quote_age_hours", 36))
-                if age_hours > max_age:
+                max_context_age = float(settings.get("max_daily_context_age_hours", 96))
+                item["freshness_label"] = classify_daily_context_age(age_hours, max_age, max_context_age)
+                if item["freshness_label"] == "stale":
                     item["status"] = "stale"
-                    item["reason"] = f"آخرین کندل {item['age_hours']} ساعت قبل است؛ از رتبه‌بندی فرصت‌ها حذف شد."
+                    item["reason"] = f"سن کندل روزانه {item['age_hours']} ساعت است و از حد زمینه مجاز {max_context_age:.0f} ساعت عبور کرده؛ از رتبه‌بندی حذف شد."
+                elif item["freshness_label"] == "delayed_context":
+                    item["reason"] = f"کندل روزانه {item['age_hours']} ساعت عمر دارد؛ فقط زمینه روند است. تازگی قیمت با کندل بسته‌شده ۱ساعته جداگانه کنترل می‌شود."
         else:
             item["analysis"] = {"status": "unavailable"}
         # Intraday data is fetched independently; daily candles are never upsampled.
