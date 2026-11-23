@@ -218,7 +218,7 @@ def build_opportunity(
     })
     components = {
         "technical": float(np.mean([analyses[tf]["score"] for tf in TIMEFRAMES])),
-        "net_rr": min(100.0, max(0.0, float(result["net_rr"]) / 3.0 * 100.0)),
+        "net_rr": min(100.0, max(0.0, float(result["net_rr"]) / 3.0 * 100.0)) if isinstance(result.get("net_rr"), (int, float)) else None,
         "fundamental": evidence.get("fundamental_score"),
         "news": evidence.get("news_score"),
         "data_quality": evidence.get("data_quality_score"),
