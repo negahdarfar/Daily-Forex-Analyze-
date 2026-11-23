@@ -88,14 +88,14 @@ def _setup_signal(hourly: pd.DataFrame, direction: str, atr: float) -> str | Non
     pad = 0.20 * atr
 
     if direction == "bullish":
-        if float(low.iloc[-4:-1].min()) <= float(ema20.iloc[-4:-1].max()) and float(last["Close"]) > float(ema20.iloc[-1]) and float(last["Close"]) > float(last["Open"]):
+        if bool((low.iloc[-4:-1] <= ema20.iloc[-4:-1] + pad).any()) and float(last["Close"]) > float(ema20.iloc[-1]) and float(last["Close"]) > float(last["Open"]):
             return "trend_pullback"
         if float(low.iloc[-4:].min()) <= prior_high + pad and float(last["Close"]) > prior_high:
             return "breakout_retest"
         if float(last["Low"]) <= prior_low + pad and float(last["Close"]) > float(last["Low"]) + 0.6 * (float(last["High"]) - float(last["Low"])):
             return "range_rejection"
     else:
-        if float(high.iloc[-4:-1].max()) >= float(ema20.iloc[-4:-1].min()) and float(last["Close"]) < float(ema20.iloc[-1]) and float(last["Close"]) < float(last["Open"]):
+        if bool((high.iloc[-4:-1] >= ema20.iloc[-4:-1] - pad).any()) and float(last["Close"]) < float(ema20.iloc[-1]) and float(last["Close"]) < float(last["Open"]):
             return "trend_pullback"
         if float(high.iloc[-4:].max()) >= prior_low - pad and float(last["Close"]) < prior_low:
             return "breakout_retest"
