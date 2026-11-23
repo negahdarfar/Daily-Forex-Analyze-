@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from concurrent.futures import ThreadPoolExecutor
 
 from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
@@ -48,12 +49,31 @@ def main() -> None:
     for category in ("forex", "commodities", "crypto"):
         enabled.extend(a for a in assets.get(category, []) if a.get("enabled"))
 
+    # Fetch the daily and hourly datasets concurrently with a conservative worker cap.
+    max_workers = max(1, min(8, int(settings.get("max_concurrent_market_fetches", 4))))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        fetch_futures = {
+            asset["symbol"]: (
+                executor.submit(
+                    fetch_asset_history, asset,
+                    period=settings.get("history_period", "6mo"),
+                    interval=settings.get("history_interval", "1d"),
+                ),
+                executor.submit(
+                    fetch_asset_history, asset,
+                    period=settings.get("intraday_history_period", "60d"),
+                    interval="1h",
+                ),
+            )
+            for asset in enabled
+        }
+        fetched_data = {
+            symbol: (daily_future.result(), hourly_future.result())
+            for symbol, (daily_future, hourly_future) in fetch_futures.items()
+        }
+
     for asset in enabled:
-        fetched = fetch_asset_history(
-            asset,
-            period=settings.get("history_period", "6mo"),
-            interval=settings.get("history_interval", "1d")
-        )
+        fetched, hourly_fetched = fetched_data[asset["symbol"]]
         item = {
             "asset": asset["symbol"],
             "provider": fetched.get("provider", "—"),
@@ -78,11 +98,6 @@ def main() -> None:
         else:
             item["analysis"] = {"status": "unavailable"}
         # Intraday data is fetched independently; daily candles are never upsampled.
-        hourly_fetched = fetch_asset_history(
-            asset,
-            period=settings.get("intraday_history_period", "60d"),
-            interval="1h",
-        )
         hourly_frame = hourly_fetched.get("history") if hourly_fetched.get("status") == "available" else None
         daily_frame = fetched.get("history") if fetched.get("status") == "available" else None
         four_hour_frame = resample_completed_4h(hourly_frame) if hourly_frame is not None else None
