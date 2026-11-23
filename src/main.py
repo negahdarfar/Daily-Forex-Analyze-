@@ -25,6 +25,20 @@ def load_json(path: Path):
 def main() -> None:
     assets = load_json(ROOT / "config" / "assets.json")
     settings = load_json(ROOT / "config" / "settings.json")
+    ranking_policy = load_json(ROOT / "config" / "ranking.json")
+    risk_policy = load_json(ROOT / "config" / "risk.json")
+    settings["ranking"].update({
+        "max_top_setups": min(10, int(ranking_policy.get("max_opportunities", 10))),
+        "minimum_net_rr": float(ranking_policy.get("minimum_net_rr", 2.0)),
+        "weights": ranking_policy.get("weights", settings["ranking"].get("weights", {})),
+    })
+    settings["risk"].update({
+        "minimum_net_rr": float(risk_policy.get("minimum_net_rr", settings["risk"].get("minimum_net_rr", 2.0))),
+        "stop_atr_buffer": float(risk_policy.get("stop_atr_buffer", settings["risk"].get("stop_atr_buffer", 0.2))),
+        "live_orders_enabled": bool(risk_policy.get("live_orders_enabled", False)),
+        "mode": risk_policy.get("mode", settings["risk"].get("mode", "research_paper_trading_only")),
+        "instrument_costs": risk_policy.get("instrument_costs", {}),
+    })
     market_catalog = load_json(ROOT / "config" / "markets.json")
     market_by_symbol = {item["symbol"]: item for item in market_catalog.get("markets", [])}
     analysis_cutoff_utc = datetime.now(timezone.utc).isoformat()
