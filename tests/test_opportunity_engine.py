@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 
-from src.analysis.opportunity_engine import resample_completed_4h, completed_hourly_candles, rank_opportunities, build_opportunity
+from src.analysis.opportunity_engine import resample_completed_4h, completed_hourly_candles, rank_opportunities, build_opportunity, calculate_net_rr
 
 
 class MultiTimeframeDataTests(unittest.TestCase):
@@ -78,6 +78,23 @@ class MultiTimeframeDataTests(unittest.TestCase):
         result = resample_completed_4h(frame, datetime.fromisoformat("2026-11-23T12:30:00+00:00"))
         self.assertEqual(len(result), 3)
         self.assertTrue((result.index <= pd.Timestamp("2026-11-23T12:30:00Z")).all())
+
+
+class NetRiskRewardTests(unittest.TestCase):
+    def test_long_net_rr_after_round_trip_cost(self):
+        result = calculate_net_rr("bullish", entry=100, stop=95, target=115, round_trip_cost_price=1)
+        self.assertEqual(result["gross_rr"], 3.0)
+        self.assertAlmostEqual(result["net_rr"], 14 / 6)
+
+    def test_short_net_rr_after_round_trip_cost(self):
+        result = calculate_net_rr("bearish", entry=100, stop=105, target=85, round_trip_cost_price=1)
+        self.assertEqual(result["gross_rr"], 3.0)
+        self.assertAlmostEqual(result["net_rr"], 14 / 6)
+
+    def test_missing_or_excessive_cost_never_returns_net_rr(self):
+        self.assertIsNone(calculate_net_rr("bullish", 100, 95, 115, None)["net_rr"])
+        self.assertIsNone(calculate_net_rr("bullish", 100, 95, 100.5, 1)["net_rr"])
+        self.assertIsNone(calculate_net_rr("bearish", 100, 95, 85, 1)["gross_rr"])
 
 
 class OpportunityRankingTests(unittest.TestCase):
