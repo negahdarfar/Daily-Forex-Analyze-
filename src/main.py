@@ -25,6 +25,9 @@ def load_json(path: Path):
 def main() -> None:
     assets = load_json(ROOT / "config" / "assets.json")
     settings = load_json(ROOT / "config" / "settings.json")
+    market_catalog = load_json(ROOT / "config" / "markets.json")
+    market_by_symbol = {item["symbol"]: item for item in market_catalog.get("markets", [])}
+    analysis_cutoff_utc = datetime.now(timezone.utc).isoformat()
     results = []
     opportunity_candidates = []
     enabled = []
@@ -75,12 +78,11 @@ def main() -> None:
         candidate = build_opportunity(
             asset["symbol"], frames, settings, costs=instrument_costs,
             quote_timestamp=quote_stamp,
-            analysis_cutoff_utc=datetime.now(timezone.utc).isoformat(),
+            analysis_cutoff_utc=analysis_cutoff_utc,
             instrument={
+                **market_by_symbol.get(asset["symbol"], {}),
                 "provider": hourly_fetched.get("provider"),
                 "provider_symbol": asset.get("yahoo"),
-                "instrument_type": asset.get("instrument_type", "unverified_provider_instrument"),
-                "execution_capability": asset.get("execution_capability", "not_established"),
             },
         )
         candidate["data_sources"] = {
@@ -160,7 +162,8 @@ def main() -> None:
     json_out = report_dir / f"{local_now:%Y-%m-%d}-opportunities.json"
     json_out.write_text(json.dumps({
         "schema_version": "1.0.0",
-        "analysis_cutoff_utc": datetime.now(timezone.utc).isoformat(),
+        "analysis_cutoff_utc": analysis_cutoff_utc,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "ranking": opportunity_ranking,
         "candidates": opportunity_candidates,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
