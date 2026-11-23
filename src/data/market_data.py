@@ -96,12 +96,15 @@ def fetch_binance_history(symbol: str, interval: str = "1d", limit: int = 180) -
         frame = frame.loc[close_time_ms <= now_ms].copy()
         if frame.empty:
             raise ValueError("Binance returned no completed candles")
-        frame.index = pd.to_datetime(pd.to_numeric(frame["close_time"]), unit="ms", utc=True)
+        # Index candles by opening time for consistent OHLC resampling; retain close time
+        # separately as the market-data freshness timestamp.
+        frame.index = pd.to_datetime(pd.to_numeric(frame["open_time"]), unit="ms", utc=True)
         frame.index.name = "Datetime"
         last = frame.iloc[-1]
+        last_close_time = pd.to_datetime(int(frame["close_time"].iloc[-1]), unit="ms", utc=True)
         return {
             "symbol": symbol, "status": "available", "provider": "Binance public API",
-            "collected_at": collected_at, "market_timestamp": _normalize_timestamp(frame.index[-1]),
+            "collected_at": collected_at, "market_timestamp": _normalize_timestamp(last_close_time),
             "close": float(last["Close"]), "high": float(last["High"]),
             "low": float(last["Low"]), "volume": float(last["Volume"]),
             "history": frame[["Open", "High", "Low", "Close", "Volume"]],
@@ -150,10 +153,11 @@ def fetch_asset_history(
 ) -> dict[str, Any]:
     """Fetch from configured sources and choose the freshest valid crypto history."""
     yahoo = fetch_history(asset["yahoo"], period=period, interval=interval)
+    # Drop an unfinished daily candle for every asset class, not only crypto.
+    yahoo = _exclude_unfinished_daily_bar(yahoo, interval)
     if asset.get("category") != "crypto":
         return yahoo
 
-    yahoo = _exclude_unfinished_daily_bar(yahoo, interval)
     binance = fetch_binance_history(asset["symbol"], interval=interval)
     checked = ["Yahoo Finance", "Binance public API"]
     candidates = [item for item in (yahoo, binance) if item.get("status") == "available"]
