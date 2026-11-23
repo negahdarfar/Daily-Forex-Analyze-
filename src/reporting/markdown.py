@@ -249,7 +249,8 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         "", "## حداکثر ۱۰ فرصت واجد شرایط — تأیید ۱D / ۴H / ۱H", "",
         "فقط وضعیت active در جدول رتبه‌بندی می‌شود. فرصت‌های conditional و watchlist جدا می‌مانند؛ کمتر از ۱۰ مورد نتیجه معتبر است.",
         f"تعداد فرصت فعال: {opportunity_ranking.get('count', 0)} | مشروط: {opportunity_ranking.get('conditional_count', 0)} | پایش: {opportunity_ranking.get('watchlist_count', 0)} | غیرقابل رتبه‌بندی: {opportunity_ranking.get('unrankable_count', 0)}",
-        "", "| رتبه | نماد | جهت | ستاپ | ورود | حد ضرر | هدف | R/R خالص | امتیاز |", "|---:|---|---|---|---:|---:|---:|---:|---:|"
+        f"بررسی همبستگی: {opportunity_ranking.get('correlation_checked_count', 0)} مورد | داده همبستگی ناکافی: {opportunity_ranking.get('correlation_unavailable_count', 0)} | مجموع جریمه تنوع: {opportunity_ranking.get('total_diversification_penalty_points', 0)} امتیاز",
+        "", "| رتبه | نماد | جهت | ستاپ | ورود | حد ضرر | هدف | R/R خالص | امتیاز خام | امتیاز تعدیل‌شده | بیشینه همبستگی |", "|---:|---|---|---|---:|---:|---:|---:|---:|---:|---:|"
     ]
     ranked = opportunity_ranking.get("opportunities", [])
     if ranked:
@@ -260,10 +261,11 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             lines.append(
                 f"| {item.get('rank')} | {item.get('symbol')} | {item.get('direction')} | "
                 f"{item.get('setup_type')} | {fmt(entry)} | {fmt(item.get('stop_loss'))} | "
-                f"{fmt(target)} | {fmt(item.get('net_rr'))} | {fmt(item.get('score_adjusted'))} |"
+                f"{fmt(target)} | {fmt(item.get('net_rr'))} | {fmt(item.get('score_raw'))} | "
+                f"{fmt(item.get('score_adjusted'))} | {fmt(item.get('max_abs_correlation_to_higher_ranked'))} |"
             )
     else:
-        lines.append("| — | در این اجرا فرصت فعالِ دارای داده، هزینه و شواهد کافی تأیید نشد | — | — | — | — | — | — | — |")
+        lines.append("| — | در این اجرا فرصت فعالِ دارای داده، هزینه و شواهد کافی تأیید نشد | — | — | — | — | — | — | — | — | — |")
     conditional = [item for item in opportunity_candidates if item.get("status") == "conditional"]
     watchlist = [item for item in opportunity_candidates if item.get("status") == "watchlist"]
     if conditional:
@@ -274,6 +276,12 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         lines += ["", "### فهرست پایش", ""]
         for item in watchlist[:20]:
             lines.append(f"- **{item.get('symbol')}**: {', '.join(item.get('risk_flags', [])) or 'شرط ورود هنوز تأیید نشده'}.")
+    unrankable = [item for item in opportunity_candidates if item.get("status") == "unrankable"]
+    if unrankable:
+        lines += ["", "### نمادهای غیرقابل رتبه‌بندی به‌دلیل نقص داده", ""]
+        for item in unrankable[:25]:
+            reasons = item.get("risk_flags", []) + item.get("missing_evidence", [])
+            lines.append(f"- **{item.get('symbol')}**: {', '.join(reasons) or 'داده کافی در دسترس نیست'}.")
     lines += [
         "", "### محدودیت اجرایی", "",
         "تا وقتی هزینه رفت‌وبرگشت اختصاصی هر ابزار، نقدشوندگی، شواهد بنیادی و خبری و کیفیت منبع به‌صورت عددی و قابل‌ردیابی پیکربندی/تأیید نشوند، فرصت به وضعیت active ارتقا نمی‌یابد. داده روزانه یا قیمت Yahoo به‌تنهایی قیمت اجرایی بروکر محسوب نمی‌شود. حالت سفارش واقعی غیرفعال است.",
