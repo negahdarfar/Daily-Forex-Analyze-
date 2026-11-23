@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 
-from src.analysis.opportunity_engine import resample_completed_4h, rank_opportunities, build_opportunity
+from src.analysis.opportunity_engine import resample_completed_4h, completed_hourly_candles, rank_opportunities, build_opportunity
 
 
 class MultiTimeframeDataTests(unittest.TestCase):
@@ -22,6 +22,17 @@ class MultiTimeframeDataTests(unittest.TestCase):
             pd.Timestamp("2026-11-23T08:00:00Z"),
         ])
         self.assertEqual(result.iloc[0]["Volume"], 40)
+
+    def test_completed_hourly_filter_drops_current_open_candle(self):
+        index = pd.date_range("2026-11-23T07:00:00Z", periods=3, freq="h")
+        close = np.array([100.0, 101.0, 102.0])
+        frame = pd.DataFrame({
+            "Open": close - 0.2, "High": close + 0.5,
+            "Low": close - 0.5, "Close": close,
+        }, index=index)
+        result = completed_hourly_candles(frame, datetime.fromisoformat("2026-11-23T09:30:00+00:00"))
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result.index[-1], pd.Timestamp("2026-11-23T08:00:00Z"))
 
     def test_resample_requires_four_complete_hourly_bars(self):
         index = pd.date_range("2026-11-23T00:00:00Z", periods=12, freq="h")
