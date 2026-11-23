@@ -12,5 +12,9 @@
     "liquidity": 5
   },
   "score_interpretation": "Rule-based ranking score, not a win probability.",
-  "missing_data_policy": "null_and_renormalize_available_components; hard gates still block active status."
+  "missing_data_policy": "null_and_renormalize_available_components; hard gates still block active status.",
+  "correlation_threshold": 0.85,
+  "correlation_penalty_points": 10,
+  "correlation_minimum_observations": 30,
+  "correlation_method": "absolute Pearson correlation of aligned daily close-to-close returns; penalty is transparent and separate from raw score"
 }
