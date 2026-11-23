@@ -205,14 +205,18 @@
       "yahoo": "BTC-USD",
       "category": "crypto",
       "name": "Bitcoin",
-      "enabled": true
+      "enabled": true,
+      "quote_currency": "USD",
+      "instrument_type": "spot_reference"
     },
     {
       "symbol": "ETHUSD",
       "yahoo": "ETH-USD",
       "category": "crypto",
       "name": "Ethereum",
-      "enabled": true
+      "enabled": true,
+      "quote_currency": "USD",
+      "instrument_type": "spot_reference"
     }
   ],
   "iran_local": [
