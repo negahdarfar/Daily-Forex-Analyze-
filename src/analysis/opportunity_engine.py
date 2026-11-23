@@ -183,7 +183,18 @@ def build_opportunity(
     cutoff = analysis_cutoff_utc or datetime.now(timezone.utc).isoformat()
     frames = dict(frames)
     frames["1h"] = completed_hourly_candles(frames.get("1h"))
-    analyses = {tf: analyze(frames.get(tf), settings) for tf in TIMEFRAMES}
+    cleaned_frames = {tf: _clean_ohlc(frames.get(tf)) for tf in TIMEFRAMES}
+    analyses = {tf: analyze(cleaned_frames[tf], settings) for tf in TIMEFRAMES}
+    quality_flags = []
+    last_closed_candles = {}
+    for tf in TIMEFRAMES:
+        original = frames.get(tf)
+        clean = cleaned_frames[tf]
+        last_closed_candles[tf] = clean.index[-1].isoformat() if not clean.empty else None
+        if original is None or original.empty:
+            quality_flags.append(f"{tf}_ohlc_missing")
+        elif len(clean) < len(original):
+            quality_flags.append(f"{tf}_invalid_or_duplicate_ohlc_rows_removed")
     result: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "symbol": symbol,
@@ -225,8 +236,8 @@ def build_opportunity(
         return result
 
     direction = directions[0]
-    hourly = _clean_ohlc(frames["1h"])
-    four = _clean_ohlc(frames["4h"])
+    hourly = cleaned_frames["1h"]
+    four = cleaned_frames["4h"]
     signal = _setup_signal(hourly, direction, float(analyses["1h"]["atr"]))
     if signal is None:
         result["status"] = "watchlist"
