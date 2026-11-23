@@ -45,6 +45,7 @@ def main() -> None:
     analysis_cutoff_utc = datetime.now(timezone.utc).isoformat()
     results = []
     opportunity_candidates = []
+    daily_returns = {}
     enabled = []
     for category in ("forex", "commodities", "crypto"):
         enabled.extend(a for a in assets.get(category, []) if a.get("enabled"))
@@ -100,6 +101,8 @@ def main() -> None:
         # Intraday data is fetched independently; daily candles are never upsampled.
         hourly_frame = hourly_fetched.get("history") if hourly_fetched.get("status") == "available" else None
         daily_frame = fetched.get("history") if fetched.get("status") == "available" else None
+        if daily_frame is not None and "Close" in daily_frame.columns:
+            daily_returns[asset["symbol"]] = daily_frame["Close"].pct_change().dropna()
         # Freeze every timeframe at the same orchestration cutoff; exclude the still-forming 1H candle.
         cutoff_dt = datetime.fromisoformat(analysis_cutoff_utc.replace("Z", "+00:00"))
         hourly_frame = completed_hourly_candles(hourly_frame, now=cutoff_dt) if hourly_frame is not None else None
@@ -116,6 +119,7 @@ def main() -> None:
             analysis_cutoff_utc=analysis_cutoff_utc,
             instrument={
                 **market_by_symbol.get(asset["symbol"], {}),
+                "market_session_status": "24x7_reference_market" if asset.get("category") == "crypto" else "provider_calendar_unverified",
                 "provider": hourly_fetched.get("provider"),
                 "provider_symbol": asset.get("yahoo"),
             },
@@ -180,7 +184,11 @@ def main() -> None:
         analysis_candidates=analysis_candidates, source_registry=source_registry,
     )
     opportunity_ranking = rank_opportunities(
-        opportunity_candidates, max_items=int(settings.get("ranking", {}).get("max_top_setups", 10))
+        opportunity_candidates,
+        max_items=int(settings.get("ranking", {}).get("max_top_setups", 10)),
+        returns_by_symbol=daily_returns,
+        correlation_threshold=float(settings.get("ranking", {}).get("correlation_threshold", 0.85)),
+        correlation_penalty_points=float(settings.get("ranking", {}).get("correlation_penalty_points", 10.0)),
     )
     report = render_report(
         results, settings, local_now, news=news, source_registry=source_registry,
