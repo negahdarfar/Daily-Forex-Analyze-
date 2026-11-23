@@ -320,11 +320,59 @@ def build_opportunity(
     return result
 
 
-def rank_opportunities(items: list[dict[str, Any]], max_items: int = 10) -> dict[str, Any]:
-    """Return up to N active opportunities; conditional/watchlist items remain separate."""
-    active = [item for item in items if item.get("status") == "active" and isinstance(item.get("score_adjusted"), (int, float))]
-    active.sort(key=lambda item: item["score_adjusted"], reverse=True)
-    selected = active[:max(0, min(int(max_items), 10))]
+def rank_opportunities(
+    items: list[dict[str, Any]],
+    max_items: int = 10,
+    returns_by_symbol: dict[str, pd.Series] | None = None,
+    correlation_threshold: float = 0.85,
+    correlation_penalty_points: float = 10.0,
+) -> dict[str, Any]:
+    """Rank active opportunities with a transparent, optional return-correlation penalty."""
+    active = [
+        item for item in items
+        if item.get("status") == "active"
+        and isinstance(item.get("score_raw", item.get("score_adjusted")), (int, float))
+    ]
+    active.sort(key=lambda item: float(item.get("score_raw", item.get("score_adjusted"))), reverse=True)
+    selected: list[dict[str, Any]] = []
+    checked = 0
+    unavailable = 0
+    total_penalty = 0.0
+
+    for source in active:
+        item = dict(source)
+        raw_score = float(item.get("score_raw", item.get("score_adjusted")))
+        series = (returns_by_symbol or {}).get(item.get("symbol"))
+        correlations = []
+        if isinstance(series, pd.Series):
+            for prior in selected:
+                prior_series = (returns_by_symbol or {}).get(prior.get("symbol"))
+                if not isinstance(prior_series, pd.Series):
+                    continue
+                aligned = pd.concat([series.rename("candidate"), prior_series.rename("prior")], axis=1).dropna()
+                if len(aligned) >= 30 and aligned["candidate"].std() > 0 and aligned["prior"].std() > 0:
+                    correlations.append(abs(float(aligned["candidate"].corr(aligned["prior"]))))
+        if correlations:
+            checked += 1
+            maximum = max(correlations)
+            excess = max(0.0, maximum - correlation_threshold) / max(1e-9, 1.0 - correlation_threshold)
+            penalty = min(correlation_penalty_points, correlation_penalty_points * excess)
+            item["max_abs_correlation_to_higher_ranked"] = round(maximum, 4)
+            item["diversification_penalty_points"] = round(penalty, 2)
+            item["score_adjusted"] = round(max(0.0, raw_score - penalty), 2)
+            if penalty:
+                item.setdefault("risk_flags", []).append("high_correlation_with_higher_ranked_opportunity")
+            total_penalty += penalty
+        else:
+            unavailable += 1
+            item["max_abs_correlation_to_higher_ranked"] = None
+            item["diversification_penalty_points"] = None
+            item["score_adjusted"] = round(raw_score, 2)
+            item.setdefault("risk_flags", []).append("correlation_check_unavailable")
+        selected.append(item)
+
+    selected.sort(key=lambda item: float(item.get("score_adjusted", 0.0)), reverse=True)
+    selected = selected[:max(0, min(int(max_items), 10))]
     return {
         "schema_version": SCHEMA_VERSION,
         "ranked_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -333,5 +381,8 @@ def rank_opportunities(items: list[dict[str, Any]], max_items: int = 10) -> dict
         "conditional_count": sum(item.get("status") == "conditional" for item in items),
         "watchlist_count": sum(item.get("status") == "watchlist" for item in items),
         "unrankable_count": sum(item.get("status") == "unrankable" for item in items),
-        "note": "Only active opportunities are ranked; fewer than ten is valid. Score is not win probability.",
+        "correlation_checked_count": checked,
+        "correlation_unavailable_count": unavailable,
+        "total_diversification_penalty_points": round(total_penalty, 2),
+        "note": "Only active opportunities are ranked; fewer than ten is valid. Score is not win probability. Correlation penalty is separate from raw score.",
     }
