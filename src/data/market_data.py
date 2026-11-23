@@ -42,11 +42,23 @@ def fetch_history(symbol: str, period: str = "6mo", interval: str = "1d") -> dic
                 "symbol": symbol, "status": "unavailable", "reason": "قیمت پایانی معتبر موجود نیست.",
                 "collected_at": collected_at, "provider": "Yahoo Finance"
             }
-        market_timestamp = _normalize_timestamp(frame.index[-1])
+        interval_delta = {
+            "1d": pd.Timedelta(days=1),
+            "1h": pd.Timedelta(hours=1),
+            "4h": pd.Timedelta(hours=4),
+            "15m": pd.Timedelta(minutes=15),
+        }.get(interval)
+        # yfinance labels OHLC bars by their opening timestamp; report the estimated
+        # close time so freshness checks do not treat a fresh bar as one interval older.
+        market_timestamp = _normalize_timestamp(
+            pd.Timestamp(frame.index[-1]) + interval_delta
+            if interval_delta is not None else frame.index[-1]
+        )
         last = frame.iloc[-1]
         return {
             "symbol": symbol, "status": "available", "provider": "Yahoo Finance",
             "collected_at": collected_at, "market_timestamp": market_timestamp,
+            "market_timestamp_basis": "bar_open_plus_interval_estimate",
             "close": float(last["Close"]),
             "high": float(last["High"]) if pd.notna(last.get("High")) else None,
             "low": float(last["Low"]) if pd.notna(last.get("Low")) else None,
@@ -139,7 +151,8 @@ def _exclude_unfinished_daily_bar(result: dict[str, Any], interval: str) -> dict
     updated = dict(result)
     updated.update({
         "history": completed,
-        "market_timestamp": _normalize_timestamp(completed.index[-1]),
+        "market_timestamp": _normalize_timestamp(completed.index[-1] + pd.Timedelta(days=1)),
+        "market_timestamp_basis": "daily_bar_open_plus_1d_estimate",
         "close": float(last["Close"]),
         "high": float(last["High"]) if pd.notna(last.get("High")) else None,
         "low": float(last["Low"]) if pd.notna(last.get("Low")) else None,
