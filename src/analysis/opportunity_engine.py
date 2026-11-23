@@ -352,7 +352,12 @@ def rank_opportunities(
                 aligned = pd.concat([series.rename("candidate"), prior_series.rename("prior")], axis=1).dropna()
                 if len(aligned) >= 30 and aligned["candidate"].std() > 0 and aligned["prior"].std() > 0:
                     correlations.append(abs(float(aligned["candidate"].corr(aligned["prior"]))))
-        if correlations:
+        if not selected:
+            # The first selected opportunity has no higher-ranked peer to compare.
+            item["max_abs_correlation_to_higher_ranked"] = None
+            item["diversification_penalty_points"] = 0.0
+            item["score_adjusted"] = round(raw_score, 2)
+        elif correlations:
             checked += 1
             maximum = max(correlations)
             excess = max(0.0, maximum - correlation_threshold) / max(1e-9, 1.0 - correlation_threshold)
