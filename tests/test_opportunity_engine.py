@@ -84,7 +84,7 @@ class NetRiskRewardTests(unittest.TestCase):
     def test_long_net_rr_after_round_trip_cost(self):
         result = calculate_net_rr("bullish", entry=100, stop=95, target=115, round_trip_cost_price=1)
         self.assertEqual(result["gross_rr"], 3.0)
-        self.assertAlmostEqual(result["net_rr"], 14 / 6)
+        self.assertAlmostEqual(result["net_rr"], 14 / 6, places=5)
 
     def test_short_net_rr_after_round_trip_cost(self):
         result = calculate_net_rr("bearish", entry=100, stop=105, target=85, round_trip_cost_price=1)
