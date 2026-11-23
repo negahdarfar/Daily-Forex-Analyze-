@@ -5,6 +5,7 @@
   "history_period": "6mo",
   "history_interval": "1d",
   "max_quote_age_hours": 36,
+  "max_daily_context_age_hours": 96,
   "schedule_utc": "30 3 * * *",
   "technical": {
     "ema_fast": 20,
