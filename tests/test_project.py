@@ -23,9 +23,9 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_asset_universe_has_expected_coverage(self):
         assets = json.loads((ROOT / "config/assets.json").read_text(encoding="utf-8"))
         self.assertEqual(len(assets["forex"]), 28)
-        self.assertEqual(len(assets["commodities"]), 3)
+        self.assertEqual(len(assets["commodities"]), 4)
         self.assertEqual(len(assets["crypto"]), 2)
-        self.assertEqual(len(assets["iran_local"]), 3)
+        self.assertGreaterEqual(len(assets["iran_local"]), 7)
 
     def test_iran_quotes_are_disabled_without_source(self):
         assets = json.loads((ROOT / "config/assets.json").read_text(encoding="utf-8"))
@@ -100,17 +100,22 @@ class ProjectConfigurationTests(unittest.TestCase):
 
 
 class MarketDataSourceTests(unittest.TestCase):
-    def test_crypto_selects_freshest_valid_source(self):
+    def test_usd_crypto_does_not_mix_binance_usdt_quotes(self):
         yahoo = {
             "status": "available", "provider": "Yahoo Finance",
             "market_timestamp": "2026-11-20T00:00:00+00:00", "close": 90000
         }
-        binance = {
-            "status": "available", "provider": "Binance public API",
-            "market_timestamp": "2026-11-22T00:00:00+00:00", "close": 91000
-        }
+        with patch("src.data.market_data.fetch_history", return_value=yahoo), patch("src.data.market_data.fetch_binance_history") as binance:
+            result = fetch_asset_history({"symbol": "BTCUSD", "yahoo": "BTC-USD", "category": "crypto", "quote_currency": "USD"})
+        binance.assert_not_called()
+        self.assertEqual(result["provider"], "Yahoo Finance")
+        self.assertEqual(result["close"], 90000)
+
+    def test_usdt_crypto_can_use_matching_binance_quote(self):
+        yahoo = {"status": "available", "provider": "Yahoo Finance", "market_timestamp": "2026-11-20T00:00:00+00:00", "close": 90000}
+        binance = {"status": "available", "provider": "Binance public API", "market_timestamp": "2026-11-22T00:00:00+00:00", "close": 91000}
         with patch("src.data.market_data.fetch_history", return_value=yahoo), patch("src.data.market_data.fetch_binance_history", return_value=binance):
-            result = fetch_asset_history({"symbol": "BTCUSD", "yahoo": "BTC-USD", "category": "crypto"})
+            result = fetch_asset_history({"symbol": "BTCUSDT", "yahoo": "BTC-USD", "category": "crypto", "quote_currency": "USDT"})
         self.assertEqual(result["provider"], "Binance public API")
         self.assertEqual(result["close"], 91000)
         self.assertEqual(result["source_selection"], "freshest_available_timestamp")
