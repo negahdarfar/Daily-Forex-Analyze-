@@ -101,6 +101,31 @@ def resample_completed_4h(hourly: pd.DataFrame, now: datetime | None = None) -> 
     result.index.name = "Datetime"
     return result
 
+def calculate_net_rr(direction: str, entry: float, stop: float, target: float, round_trip_cost_price: float | None) -> dict[str, float | None]:
+    """Calculate directional R/R after round-trip costs expressed in price units."""
+    values = (entry, stop, target)
+    if not all(np.isfinite(value) and value > 0 for value in values):
+        return {"gross_rr": None, "net_rr": None}
+    if round_trip_cost_price is None or not np.isfinite(round_trip_cost_price) or round_trip_cost_price < 0:
+        return {"gross_rr": None, "net_rr": None}
+    if direction == "bullish":
+        risk, reward = entry - stop, target - entry
+    elif direction == "bearish":
+        risk, reward = stop - entry, entry - target
+    else:
+        return {"gross_rr": None, "net_rr": None}
+    if risk <= 0 or reward <= 0:
+        return {"gross_rr": None, "net_rr": None}
+    gross_rr = reward / risk
+    net_reward = reward - round_trip_cost_price
+    net_risk = risk + round_trip_cost_price
+    net_rr = net_reward / net_risk if net_reward > 0 and net_risk > 0 else None
+    return {
+        "gross_rr": round(float(gross_rr), 6),
+        "net_rr": round(float(net_rr), 6) if net_rr is not None else None,
+    }
+
+
 def _setup_signal(hourly: pd.DataFrame, direction: str, atr: float) -> str | None:
     if len(hourly) < 30 or atr is None or not np.isfinite(atr) or atr <= 0:
         return None
@@ -181,7 +206,9 @@ def build_opportunity(
         "expires_at": None,
         "gross_rr": None,
         "net_rr": None,
+        "stop_rationale": None,
         "estimated_costs": costs,
+        "event_risk": None,
         "score_raw": None,
         "score_adjusted": None,
         "score_components": {},
@@ -220,6 +247,7 @@ def build_opportunity(
         "entry_zone": {"low": entry - 0.1 * atr, "high": entry + 0.1 * atr},
         "entry_trigger": {"type": "confirmed_1h_close", "close": entry, "timestamp": hourly.index[-1].isoformat()},
         "stop_loss": stop,
+        "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
         "invalidation": {"type": "1h_close_beyond_stop", "price": stop},
         "expires_at": (hourly.index[-1] + pd.Timedelta(hours=4)).isoformat(),
     })
@@ -237,11 +265,12 @@ def build_opportunity(
         and costs["round_trip_cost_price"] >= 0
     )
     if costs_available:
-        cost = float(costs["round_trip_cost_price"])
-        net_reward = reward - cost
-        net_risk = risk + cost
-        net_rr = net_reward / net_risk if net_reward > 0 and net_risk > 0 else None
-        result["net_rr"] = round(net_rr, 3) if net_rr is not None else None
+        rr_values = calculate_net_rr(
+            direction, entry, stop, target, float(costs["round_trip_cost_price"])
+        )
+        result["gross_rr"] = rr_values["gross_rr"]
+        result["net_rr"] = rr_values["net_rr"]
+        net_rr = result["net_rr"]
         if net_rr is None or net_rr < float(settings.get("risk", {}).get("minimum_net_rr", 2.0)):
             result["status"] = "watchlist"
             result["risk_flags"].append("net_rr_below_configured_minimum")
