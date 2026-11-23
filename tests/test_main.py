@@ -1,9 +1,17 @@
 import unittest
 
-from src.main import daily_context_is_usable
+from src.main import daily_context_is_usable, classify_daily_context_age
 
 
 class DailyContextFreshnessTests(unittest.TestCase):
+
+    def test_daily_age_classification_distinguishes_weekend_context(self):
+        self.assertEqual(classify_daily_context_age(20, 36, 96), "fresh")
+        self.assertEqual(classify_daily_context_age(61.5, 36, 96), "delayed_context")
+        self.assertEqual(classify_daily_context_age(96.1, 36, 96), "stale")
+        self.assertEqual(classify_daily_context_age(None, 36, 96), "stale")
+        self.assertEqual(classify_daily_context_age(-0.1, 36, 96), "stale")
+
     def test_weekend_gap_daily_bar_is_usable_with_fresh_hourly_quote(self):
         self.assertTrue(daily_context_is_usable(
             daily_status="available",
