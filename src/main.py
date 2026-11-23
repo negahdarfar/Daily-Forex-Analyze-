@@ -14,7 +14,7 @@ from src.experts.analysis_ingestion import extract_analysis_candidates
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
 from src.analysis.market_intelligence import build_market_intelligence
-from src.analysis.opportunity_engine import build_opportunity, rank_opportunities, resample_completed_4h
+from src.analysis.opportunity_engine import build_opportunity, rank_opportunities, resample_completed_4h, completed_hourly_candles
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -100,7 +100,10 @@ def main() -> None:
         # Intraday data is fetched independently; daily candles are never upsampled.
         hourly_frame = hourly_fetched.get("history") if hourly_fetched.get("status") == "available" else None
         daily_frame = fetched.get("history") if fetched.get("status") == "available" else None
-        four_hour_frame = resample_completed_4h(hourly_frame) if hourly_frame is not None else None
+        # Freeze every timeframe at the same orchestration cutoff; exclude the still-forming 1H candle.
+        cutoff_dt = datetime.fromisoformat(analysis_cutoff_utc.replace("Z", "+00:00"))
+        hourly_frame = completed_hourly_candles(hourly_frame, now=cutoff_dt) if hourly_frame is not None else None
+        four_hour_frame = resample_completed_4h(hourly_frame, now=cutoff_dt) if hourly_frame is not None else None
         frames = {"1d": daily_frame, "4h": four_hour_frame, "1h": hourly_frame}
         quote_stamp = hourly_fetched.get("market_timestamp")
         instrument_costs = settings.get("risk", {}).get("instrument_costs", {}).get(asset["symbol"])
