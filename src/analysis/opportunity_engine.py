@@ -187,28 +187,29 @@ def build_opportunity(
     gross_rr = reward / risk if reward > 0 else None
     result["targets"] = [{"price": target, "allocation_pct": 100, "basis": "nearest_confirmed_4h_swing"}]
     result["gross_rr"] = round(gross_rr, 3) if gross_rr is not None else None
-    if costs is None or not all(isinstance(costs.get(k), (int, float)) and costs[k] >= 0 for k in ("round_trip_cost_price",)):
-        result["status"] = "conditional"
+    costs_available = (
+        costs is not None
+        and isinstance(costs.get("round_trip_cost_price"), (int, float))
+        and costs["round_trip_cost_price"] >= 0
+    )
+    if costs_available:
+        cost = float(costs["round_trip_cost_price"])
+        net_reward = reward - cost
+        net_risk = risk + cost
+        net_rr = net_reward / net_risk if net_reward > 0 and net_risk > 0 else None
+        result["net_rr"] = round(net_rr, 3) if net_rr is not None else None
+        if net_rr is None or net_rr < float(settings.get("risk", {}).get("minimum_net_rr", 2.0)):
+            result["status"] = "watchlist"
+            result["risk_flags"].append("net_rr_below_configured_minimum")
+            return result
+    else:
         result["missing_evidence"].append("instrument_specific_round_trip_cost_not_configured")
         result["risk_flags"].append("net_rr_unavailable_cost_unknown")
-        return result
-    cost = float(costs["round_trip_cost_price"])
-    net_reward = reward - cost
-    net_risk = risk + cost
-    net_rr = net_reward / net_risk if net_reward > 0 and net_risk > 0 else None
-    result["net_rr"] = round(net_rr, 3) if net_rr is not None else None
-    if net_rr is None or net_rr < float(settings.get("risk", {}).get("minimum_net_rr", 2.0)):
-        result["status"] = "watchlist"
-        result["risk_flags"].append("net_rr_below_configured_minimum")
-        return result
 
     required_evidence = ("fundamental_score", "news_score", "liquidity_score", "data_quality_score", "independent_evidence_score")
     missing = [key for key in required_evidence if not isinstance(evidence.get(key), (int, float))]
     result["missing_evidence"].extend(missing)
-    if missing:
-        result["status"] = "conditional"
-    else:
-        result["status"] = "active"
+    result["status"] = "active" if costs_available and not missing else "conditional"
 
     ranking = settings.get("ranking", {})
     weights = ranking.get("weights", {
@@ -230,7 +231,8 @@ def build_opportunity(
     result["score_components"] = components
     result["score_raw"] = round(raw, 2) if raw is not None else None
     result["score_adjusted"] = result["score_raw"]
-    result["score_method"] = "weighted_available_components_renormalized; not probability"
+    result["score_coverage"] = sorted(available)
+    result["score_method"] = "weighted_available_components_renormalized; not probability; incomplete coverage cannot be active"
     return result
 
 
