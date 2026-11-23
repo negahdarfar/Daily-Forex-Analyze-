@@ -58,5 +58,7 @@
     "cost_policy": "missing_cost_is_null_and_blocks_active_status",
     "event_blackout_minutes_before": 30,
     "event_blackout_minutes_after": 30
-  }
+  },
+  "intraday_history_period": "60d",
+  "max_intraday_quote_age_minutes": 180
 }
