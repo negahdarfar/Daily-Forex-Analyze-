@@ -33,8 +33,12 @@ def _clean_ohlc(frame: pd.DataFrame | None) -> pd.DataFrame:
         data[col] = pd.to_numeric(data[col], errors="coerce")
     data = data[~data.index.duplicated(keep="last")].sort_index()
     data = data.dropna(subset=["Open", "High", "Low", "Close"])
-    data = data[(data["High"] >= data["Low"]) & (data["Close"] > 0)]
-    return data
+    valid = (
+        (data[["Open", "High", "Low", "Close"]] > 0).all(axis=1)
+        & (data["High"] >= data[["Open", "Close", "Low"]].max(axis=1))
+        & (data["Low"] <= data[["Open", "Close", "High"]].min(axis=1))
+    )
+    return data.loc[valid]
 
 
 def completed_hourly_candles(hourly: pd.DataFrame, now: datetime | None = None) -> pd.DataFrame:
@@ -93,7 +97,7 @@ def resample_completed_4h(hourly: pd.DataFrame, now: datetime | None = None) -> 
         labels.append(bucket_end)
     if not rows:
         return pd.DataFrame(columns=["Open", "High", "Low", "Close"], index=pd.DatetimeIndex([], tz="UTC"))
-    result = pd.DataFrame(rows, index=pd.DatetimeIndex(labels, tz="UTC"))
+    result = pd.DataFrame(rows, index=pd.DatetimeIndex(labels))
     result.index.name = "Datetime"
     return result
 
