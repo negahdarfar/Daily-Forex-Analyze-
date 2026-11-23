@@ -37,7 +37,7 @@ def main() -> None:
         "stop_atr_buffer": float(risk_policy.get("stop_atr_buffer", settings["risk"].get("stop_atr_buffer", 0.2))),
         "live_orders_enabled": bool(risk_policy.get("live_orders_enabled", False)),
         "mode": risk_policy.get("mode", settings["risk"].get("mode", "research_paper_trading_only")),
-        "instrument_costs": risk_policy.get("instrument_costs", {}),
+        "instrument_costs": risk_policy.get("instrument_costs", risk_policy.get("round_trip_cost_price_by_instrument", {})),
     })
     market_catalog = load_json(ROOT / "config" / "markets.json")
     market_by_symbol = {item["symbol"]: item for item in market_catalog.get("markets", [])}
