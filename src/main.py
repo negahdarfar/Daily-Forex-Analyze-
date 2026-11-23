@@ -155,6 +155,19 @@ def main() -> None:
                 "reason": asset.get("reason", "منبع پیکربندی نشده."),
                 "analysis": {"status": "unavailable"}
             })
+            local_candidate = build_opportunity(
+                asset["symbol"],
+                {"1d": None, "4h": None, "1h": None},
+                settings,
+                instrument=market_by_symbol.get(asset["symbol"], {
+                    "symbol": asset["symbol"], "category": "iran_local",
+                    "execution_capability": "not_configured",
+                }),
+                analysis_cutoff_utc=analysis_cutoff_utc,
+            )
+            local_candidate["risk_flags"].append("local_market_data_source_not_configured")
+            local_candidate["missing_evidence"].append("authorized_timestamped_local_quote_missing")
+            opportunity_candidates.append(local_candidate)
 
     registry_path = ROOT / "config" / "analysis_sources.json"
     registry_data = load_source_registry(registry_path) if registry_path.exists() else {"sources": []}
