@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/daily-forex-analyze/opportunity.schema.json",
+  "title": "Daily Forex Analyze Opportunity Snapshot",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "analysis_cutoff_utc",
+    "ranking",
+    "candidates"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "analysis_cutoff_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ranking": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "count",
+        "opportunities",
+        "conditional_count",
+        "watchlist_count",
+        "unrankable_count"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "opportunities": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "object"
+          }
+        },
+        "conditional_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "watchlist_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unrankable_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "schema_version",
+          "symbol",
+          "status",
+          "direction",
+          "timeframes",
+          "entry_zone",
+          "stop_loss",
+          "targets",
+          "gross_rr",
+          "net_rr",
+          "score_raw",
+          "missing_evidence",
+          "risk_flags"
+        ],
+        "properties": {
+          "schema_version": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "conditional",
+              "watchlist",
+              "unrankable",
+              "invalidated",
+              "expired"
+            ]
+          },
+          "direction": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "bullish",
+              "bearish",
+              null
+            ]
+          },
+          "timeframes": {
+            "type": "object",
+            "required": [
+              "1d",
+              "4h",
+              "1h"
+            ]
+          },
+          "entry_zone": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "stop_loss": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "targets": {
+            "type": "array"
+          },
+          "gross_rr": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "net_rr": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "score_raw": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "missing_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
