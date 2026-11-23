@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0.0",
-  "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-  "generated_at_utc": "2026-11-23T10:22:16.905595+00:00",
+  "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+  "generated_at_utc": "2026-11-23T11:11:38.395327+00:00",
   "ranking": {
     "schema_version": "1.0.0",
-    "ranked_at_utc": "2026-11-23T10:22:16.904708+00:00",
+    "ranked_at_utc": "2026-11-23T11:11:38.394488+00:00",
     "count": 0,
     "opportunities": [],
-    "conditional_count": 0,
-    "watchlist_count": 2,
-    "unrankable_count": 39,
+    "conditional_count": 9,
+    "watchlist_count": 25,
+    "unrankable_count": 7,
     "correlation_checked_count": 0,
     "correlation_unavailable_count": 0,
     "total_diversification_penalty_points": 0.0,
@@ -19,8 +19,8 @@
     {
       "schema_version": "1.0.0",
       "symbol": "EURUSD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "EURUSD",
         "category": "forex",
@@ -117,33 +117,33 @@
         "1h": {
           "status": "ok",
           "direction": "bearish",
-          "score": 22.0,
-          "bullish_score": 7.2,
-          "bearish_score": 22.0,
+          "score": 37.0,
+          "bullish_score": 0.1,
+          "bearish_score": 37.0,
           "score_components": {
             "ema_alignment": 0.0,
             "ema_slope": 0.0,
             "rsi_momentum": 15.0,
-            "macd_momentum": 0.0,
+            "macd_momentum": 15.0,
             "trend_strength": 0.0,
             "structure": 7.0,
             "volume_confirmation": null
           },
-          "close": 1.0976948738098145,
-          "ema_fast": 1.0985072416157138,
-          "ema_slow": 1.0983440140003564,
-          "ema_slow_slope_pct": 0.0202,
-          "rsi14": 45.596136412358746,
-          "atr": 0.0009892282778027582,
-          "atr_pct": 0.09,
-          "adx": 16.067618533582674,
-          "plus_di": 29.650662336652378,
-          "minus_di": 29.65233183106304,
-          "macd_histogram": 7.707355981954552e-05,
+          "close": 1.0967316627502441,
+          "ema_fast": 1.0983381388666213,
+          "ema_slow": 1.0982807845395677,
+          "ema_slow_slope_pct": 0.0091,
+          "rsi14": 40.6530330342567,
+          "atr": 0.0009959785187672863,
+          "atr_pct": 0.091,
+          "adx": 15.721091860471878,
+          "plus_di": 27.346154712747815,
+          "minus_di": 34.25555327231874,
+          "macd_histogram": -8.543068264607308e-05,
           "swing_high": 1.1008366346359253,
           "swing_low": 1.0963709354400635,
-          "entry": 1.0976948738098145,
-          "stop_loss": 1.1009355574637056,
+          "entry": 1.0967316627502441,
+          "stop_loss": 1.100936232487802,
           "take_profit": null,
           "risk_reward": null,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
@@ -156,11 +156,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -178,20 +178,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "GBPUSD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "GBPUSD",
         "category": "forex",
@@ -287,38 +288,38 @@
         },
         "1h": {
           "status": "ok",
-          "direction": "bullish",
-          "score": 19.5,
-          "bullish_score": 19.5,
-          "bearish_score": 7.0,
+          "direction": "bearish",
+          "score": 40.0,
+          "bullish_score": 11.4,
+          "bearish_score": 40.0,
           "score_components": {
-            "ema_alignment": 0.0,
-            "ema_slope": 0.14606927309674944,
+            "ema_alignment": 25.0,
+            "ema_slope": 0.0,
             "rsi_momentum": 8.0,
-            "macd_momentum": 7.0,
-            "trend_strength": 4.374494821043035,
-            "structure": 0.0,
+            "macd_momentum": 0.0,
+            "trend_strength": 0.0,
+            "structure": 7.0,
             "volume_confirmation": null
           },
-          "close": 1.311492681503296,
-          "ema_fast": 1.311133536639445,
-          "ema_slow": 1.311752694748437,
-          "ema_slow_slope_pct": 0.0122,
-          "rsi14": 51.98120403193395,
-          "atr": 0.0012845829665171992,
-          "atr_pct": 0.098,
-          "adx": 23.74898964208607,
-          "plus_di": 32.13481997794945,
-          "minus_di": 15.084847393376629,
-          "macd_histogram": 0.00036100816906906236,
+          "close": 1.3107362985610962,
+          "ema_fast": 1.3110957044415068,
+          "ema_slow": 1.311712836074424,
+          "ema_slow_slope_pct": 0.0071,
+          "rsi14": 48.352535245547706,
+          "atr": 0.0012664898663305283,
+          "atr_pct": 0.097,
+          "adx": 23.54058329320982,
+          "plus_di": 30.265763055121734,
+          "minus_di": 19.83013571498788,
+          "macd_histogram": 0.00021766087418735477,
           "swing_high": 1.3144232034683228,
           "swing_low": 1.3076339960098267,
-          "entry": 1.311492681503296,
-          "stop_loss": 1.30956580705352,
-          "take_profit": 1.318281888961792,
-          "risk_reward": 3.52,
-          "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
-          "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
+          "entry": 1.3107362985610962,
+          "stop_loss": 1.3145498524549557,
+          "take_profit": 1.3039470911026,
+          "risk_reward": 1.78,
+          "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
+          "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
@@ -327,42 +328,78 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
-      "direction": null,
-      "setup_type": null,
-      "status": "unrankable",
-      "entry_zone": null,
-      "entry_trigger": null,
-      "stop_loss": null,
-      "targets": [],
-      "invalidation": null,
-      "expires_at": null,
-      "gross_rr": null,
+      "direction": "bearish",
+      "setup_type": "trend_pullback",
+      "status": "conditional",
+      "entry_zone": {
+        "low": 1.3106096495744632,
+        "high": 1.3108629475477291
+      },
+      "entry_trigger": {
+        "type": "confirmed_1h_close",
+        "close": 1.3107362985610962,
+        "timestamp": "2026-11-23T10:00:00+00:00"
+      },
+      "stop_loss": 1.3146765014415889,
+      "targets": [
+        {
+          "price": 1.3095004558563232,
+          "allocation_pct": 100,
+          "basis": "nearest_confirmed_4h_swing"
+        }
+      ],
+      "invalidation": {
+        "type": "1h_close_beyond_stop",
+        "price": 1.3146765014415889
+      },
+      "expires_at": "2026-11-23T14:00:00+00:00",
+      "gross_rr": 0.314,
       "net_rr": null,
-      "stop_rationale": null,
+      "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
       "event_risk": null,
-      "score_raw": null,
-      "score_adjusted": null,
-      "score_components": {},
-      "missing_evidence": [],
-      "risk_flags": [
-        "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+      "score_raw": 49.37,
+      "score_adjusted": 49.37,
+      "score_components": {
+        "technical": 49.36666666666667,
+        "net_rr": null,
+        "fundamental": null,
+        "news": null,
+        "data_quality": null,
+        "independent_evidence": null,
+        "liquidity": null
+      },
+      "missing_evidence": [
+        "instrument_specific_round_trip_cost_not_configured",
+        "fundamental_score",
+        "news_score",
+        "liquidity_score",
+        "data_quality_score",
+        "independent_evidence_score"
       ],
+      "risk_flags": [
+        "net_rr_unavailable_cost_unknown",
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
+      ],
+      "score_coverage": [
+        "technical"
+      ],
+      "score_method": "weighted_available_components_renormalized; not probability; incomplete coverage cannot be active",
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "AUDUSD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "AUDUSD",
         "category": "forex",
@@ -458,39 +495,39 @@
         },
         "1h": {
           "status": "ok",
-          "direction": "neutral",
-          "score": 10.4,
-          "bullish_score": 10.4,
-          "bearish_score": 8.5,
+          "direction": "bearish",
+          "score": 47.5,
+          "bullish_score": 9.8,
+          "bearish_score": 47.5,
           "score_components": {
-            "ema_alignment": 0.0,
-            "ema_slope": 0.0,
-            "rsi_momentum": 0.0,
-            "macd_momentum": 7.0,
-            "trend_strength": 3.4370195605975766,
-            "structure": 0.0,
+            "ema_alignment": 25.0,
+            "ema_slope": 0.5478091230874504,
+            "rsi_momentum": 15.0,
+            "macd_momentum": 0.0,
+            "trend_strength": 0.0,
+            "structure": 7.0,
             "volume_confirmation": null
           },
-          "close": 0.6647168397903442,
-          "ema_fast": 0.6646231143851924,
-          "ema_slow": 0.6662478573746791,
-          "ema_slow_slope_pct": -0.0456,
-          "rsi14": 48.59860605385561,
-          "atr": 0.0010182901536539626,
-          "atr_pct": 0.153,
-          "adx": 21.874039121195153,
-          "plus_di": 27.882834754862078,
-          "minus_di": 22.231587386911496,
-          "macd_histogram": 0.0003368848920786091,
+          "close": 0.6642311811447144,
+          "ema_fast": 0.6645857874099087,
+          "ema_slow": 0.6661687720323276,
+          "ema_slow_slope_pct": -0.0457,
+          "rsi14": 45.782150024719456,
+          "atr": 0.0009991865505526508,
+          "atr_pct": 0.15,
+          "adx": 20.574902262268424,
+          "plus_di": 26.38622165234039,
+          "minus_di": 24.510119852981234,
+          "macd_histogram": 0.0002790134037730272,
           "swing_high": 0.6672894954681396,
           "swing_low": 0.6612444519996643,
-          "entry": null,
-          "stop_loss": null,
-          "take_profit": null,
-          "risk_reward": null,
-          "stop_basis": "not_applicable",
-          "target_basis": "not_applicable",
-          "execution_status": "direction_not_confirmed",
+          "entry": 0.6642311811447144,
+          "stop_loss": 0.6657299609705434,
+          "take_profit": 0.658186137676239,
+          "risk_reward": 4.03,
+          "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
+          "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
+          "execution_status": "watchlist_candidate_structural_RR",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
         }
@@ -498,42 +535,78 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
-      "direction": null,
-      "setup_type": null,
-      "status": "unrankable",
-      "entry_zone": null,
-      "entry_trigger": null,
-      "stop_loss": null,
-      "targets": [],
-      "invalidation": null,
-      "expires_at": null,
-      "gross_rr": null,
+      "direction": "bearish",
+      "setup_type": "trend_pullback",
+      "status": "conditional",
+      "entry_zone": {
+        "low": 0.664131262489659,
+        "high": 0.6643310997997697
+      },
+      "entry_trigger": {
+        "type": "confirmed_1h_close",
+        "close": 0.6642311811447144,
+        "timestamp": "2026-11-23T10:00:00+00:00"
+      },
+      "stop_loss": 0.6674893327782502,
+      "targets": [
+        {
+          "price": 0.6617258191108704,
+          "allocation_pct": 100,
+          "basis": "nearest_confirmed_4h_swing"
+        }
+      ],
+      "invalidation": {
+        "type": "1h_close_beyond_stop",
+        "price": 0.6674893327782502
+      },
+      "expires_at": "2026-11-23T14:00:00+00:00",
+      "gross_rr": 0.769,
       "net_rr": null,
-      "stop_rationale": null,
+      "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
       "event_risk": null,
-      "score_raw": null,
-      "score_adjusted": null,
-      "score_components": {},
-      "missing_evidence": [],
-      "risk_flags": [
-        "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+      "score_raw": 54.03,
+      "score_adjusted": 54.03,
+      "score_components": {
+        "technical": 54.03333333333333,
+        "net_rr": null,
+        "fundamental": null,
+        "news": null,
+        "data_quality": null,
+        "independent_evidence": null,
+        "liquidity": null
+      },
+      "missing_evidence": [
+        "instrument_specific_round_trip_cost_not_configured",
+        "fundamental_score",
+        "news_score",
+        "liquidity_score",
+        "data_quality_score",
+        "independent_evidence_score"
       ],
+      "risk_flags": [
+        "net_rr_unavailable_cost_unknown",
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
+      ],
+      "score_coverage": [
+        "technical"
+      ],
+      "score_method": "weighted_available_components_renormalized; not probability; incomplete coverage cannot be active",
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "NZDUSD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "NZDUSD",
         "category": "forex",
@@ -630,35 +703,35 @@
         "1h": {
           "status": "ok",
           "direction": "bearish",
-          "score": 40.5,
+          "score": 47.6,
           "bullish_score": 7.0,
-          "bearish_score": 40.5,
+          "bearish_score": 47.6,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.5394948338050654,
+            "ema_slope": 0.6159400946532223,
             "rsi_momentum": 15.0,
             "macd_momentum": 0.0,
             "trend_strength": 0.0,
-            "structure": 0.0,
+            "structure": 7.0,
             "volume_confirmation": null
           },
-          "close": 0.5472854375839233,
-          "ema_fast": 0.5479580444022814,
-          "ema_slow": 0.5487824509106027,
-          "ema_slow_slope_pct": -0.045,
-          "rsi14": 42.62192679556526,
-          "atr": 0.000743125228331922,
-          "atr_pct": 0.136,
-          "adx": 17.71472258855778,
-          "plus_di": 22.720984999659148,
-          "minus_di": 30.741303083332244,
-          "macd_histogram": 6.27556301590178e-05,
-          "swing_high": 0.5507517457008362,
+          "close": 0.5466870665550232,
+          "ema_fast": 0.5478369988930187,
+          "ema_slow": 0.5487002789750899,
+          "ema_slow_slope_pct": -0.0513,
+          "rsi14": 38.876988423053824,
+          "atr": 0.000734927152395511,
+          "atr_pct": 0.134,
+          "adx": 18.151307741874966,
+          "plus_di": 21.333405284738642,
+          "minus_di": 34.67956887935353,
+          "macd_histogram": 1.704604918276566e-05,
+          "swing_high": 0.5501155257225037,
           "swing_low": 0.5465675592422485,
-          "entry": 0.5472854375839233,
-          "stop_loss": 0.5484401438979553,
-          "take_profit": 0.5431012511253357,
-          "risk_reward": 3.62,
+          "entry": 0.5466870665550232,
+          "stop_loss": 0.5482589604352713,
+          "take_profit": 0.5425028800964355,
+          "risk_reward": 2.66,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -669,27 +742,27 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": "bearish",
       "setup_type": "trend_pullback",
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": {
-        "low": 0.5472111250610902,
-        "high": 0.5473597501067565
+        "low": 0.5466135738397836,
+        "high": 0.5467605592702628
       },
       "entry_trigger": {
         "type": "confirmed_1h_close",
-        "close": 0.5472854375839233,
-        "timestamp": "2026-11-23T09:00:00+00:00"
+        "close": 0.5466870665550232,
+        "timestamp": "2026-11-23T10:00:00+00:00"
       },
-      "stop_loss": 0.5509003707465026,
+      "stop_loss": 0.5502625111529827,
       "targets": [],
       "invalidation": {
         "type": "1h_close_beyond_stop",
-        "price": 0.5509003707465026
+        "price": 0.5502625111529827
       },
-      "expires_at": "2026-11-23T13:00:00+00:00",
+      "expires_at": "2026-11-23T14:00:00+00:00",
       "gross_rr": null,
       "net_rr": null,
       "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
@@ -701,20 +774,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "no_valid_structural_stop_or_target",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "USDJPY",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "USDJPY",
         "category": "forex",
@@ -811,35 +885,35 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 34.1,
-          "bullish_score": 34.1,
+          "score": 26.9,
+          "bullish_score": 26.9,
           "bearish_score": 0.1,
           "score_components": {
             "ema_alignment": 0.0,
             "ema_slope": 0.0,
             "rsi_momentum": 15.0,
             "macd_momentum": 7.0,
-            "trend_strength": 5.085501927878472,
-            "structure": 7.0,
+            "trend_strength": 4.891752538968479,
+            "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 159.11599731445312,
-          "ema_fast": 158.9604095910973,
-          "ema_slow": 159.10615138903043,
-          "ema_slow_slope_pct": -0.0088,
-          "rsi14": 55.76523248065499,
-          "atr": 0.1853367437883419,
-          "atr_pct": 0.116,
-          "adx": 25.171003855756943,
-          "plus_di": 24.76982043018685,
-          "minus_di": 15.770506952540543,
-          "macd_histogram": 0.06743341302331719,
+          "close": 159.12100219726562,
+          "ema_fast": 158.9757041250181,
+          "ema_slow": 159.10673377366712,
+          "ema_slow_slope_pct": -0.0043,
+          "rsi14": 55.96801078415982,
+          "atr": 0.1787414277560273,
+          "atr_pct": 0.112,
+          "adx": 24.783505077936958,
+          "plus_di": 23.849236522046954,
+          "minus_di": 15.983797310055705,
+          "macd_histogram": 0.06481013510854795,
           "swing_high": 159.18899536132812,
           "swing_low": 158.4080047607422,
-          "entry": 159.11599731445312,
-          "stop_loss": 158.83799219877062,
-          "take_profit": 159.84100341796875,
-          "risk_reward": 2.61,
+          "entry": 159.12100219726562,
+          "stop_loss": 158.85289005563158,
+          "take_profit": 159.90199279785156,
+          "risk_reward": 2.91,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -850,11 +924,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -872,20 +946,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "USDCHF",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "USDCHF",
         "category": "forex",
@@ -982,35 +1057,35 @@
         "1h": {
           "status": "ok",
           "direction": "bearish",
-          "score": 47.6,
-          "bullish_score": 0.0,
-          "bearish_score": 47.6,
+          "score": 40.6,
+          "bullish_score": 22.0,
+          "bearish_score": 40.6,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.6182039587615318,
+            "ema_slope": 0.6203113633142632,
             "rsi_momentum": 15.0,
-            "macd_momentum": 7.0,
+            "macd_momentum": 0.0,
             "trend_strength": 0.0,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 0.8391199707984924,
-          "ema_fast": 0.8397051427252686,
-          "ema_slow": 0.8407122962408851,
-          "ema_slow_slope_pct": -0.0515,
-          "rsi14": 43.82745931305396,
-          "atr": 0.0012568909032605975,
+          "close": 0.8388199806213379,
+          "ema_fast": 0.8396208415725134,
+          "ema_slow": 0.8406380877852166,
+          "ema_slow_slope_pct": -0.0517,
+          "rsi14": 42.1485272185278,
+          "atr": 0.00125568122626073,
           "atr_pct": 0.15,
-          "adx": 33.851877327249184,
-          "plus_di": 14.048203805484128,
-          "minus_di": 31.440080267779084,
-          "macd_histogram": -2.443218081565478e-06,
+          "adx": 33.54255175776162,
+          "plus_di": 15.901337321066293,
+          "minus_di": 29.222485018999816,
+          "macd_histogram": 1.2425030293044268e-05,
           "swing_high": 0.8411200046539307,
           "swing_low": 0.8366299867630005,
-          "entry": 0.8391199707984924,
-          "stop_loss": 0.8410053071533833,
-          "take_profit": 0.833389937877655,
-          "risk_reward": 3.04,
+          "entry": 0.8388199806213379,
+          "stop_loss": 0.840703502460729,
+          "take_profit": 0.8343299627304077,
+          "risk_reward": 2.38,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -1021,11 +1096,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -1043,20 +1118,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "USDCAD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "USDCAD",
         "category": "forex",
@@ -1153,35 +1229,35 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 40.0,
-          "bullish_score": 40.0,
-          "bearish_score": 7.1,
+          "score": 47.0,
+          "bullish_score": 47.0,
+          "bearish_score": 7.0,
           "score_components": {
             "ema_alignment": 25.0,
             "ema_slope": 0.0,
-            "rsi_momentum": 8.0,
+            "rsi_momentum": 15.0,
             "macd_momentum": 0.0,
             "trend_strength": 0.0,
             "structure": 7.0,
             "volume_confirmation": null
           },
-          "close": 1.4326900243759155,
-          "ema_fast": 1.4326427570823546,
-          "ema_slow": 1.4324553408819705,
-          "ema_slow_slope_pct": -0.0059,
-          "rsi14": 50.30665881598749,
-          "atr": 0.0015166176085676876,
+          "close": 1.433609962463379,
+          "ema_fast": 1.4327348718805473,
+          "ema_slow": 1.4325006201596728,
+          "ema_slow_slope_pct": -0.0018,
+          "rsi14": 55.838170627991516,
+          "atr": 0.0015175686381053333,
           "atr_pct": 0.106,
-          "adx": 12.568432893870384,
-          "plus_di": 14.532928362904952,
-          "minus_di": 15.995023523673382,
-          "macd_histogram": -0.0001323276048022286,
+          "adx": 12.311660079226936,
+          "plus_di": 17.76977791662398,
+          "minus_di": 14.843214068706818,
+          "macd_histogram": -3.393642490066409e-05,
           "swing_high": 1.4356399774551392,
-          "swing_low": 1.4294999837875366,
-          "entry": 1.4326900243759155,
-          "stop_loss": 1.430415097963064,
-          "take_profit": 1.438830018043518,
-          "risk_reward": 2.7,
+          "swing_low": 1.430400013923645,
+          "entry": 1.433609962463379,
+          "stop_loss": 1.4305481876323443,
+          "take_profit": 1.4397499561309814,
+          "risk_reward": 2.01,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -1192,11 +1268,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -1214,20 +1290,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "EURGBP",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "EURGBP",
         "category": "forex",
@@ -1324,33 +1401,33 @@
         "1h": {
           "status": "ok",
           "direction": "bearish",
-          "score": 37.0,
-          "bullish_score": 0.1,
-          "bearish_score": 37.0,
+          "score": 45.0,
+          "bullish_score": 0.0,
+          "bearish_score": 45.0,
           "score_components": {
             "ema_alignment": 0.0,
             "ema_slope": 0.0,
             "rsi_momentum": 15.0,
             "macd_momentum": 15.0,
             "trend_strength": 0.0,
-            "structure": 7.0,
+            "structure": 15.0,
             "volume_confirmation": null
           },
-          "close": 0.8367599844932556,
-          "ema_fast": 0.8375533136360654,
-          "ema_slow": 0.8370346635893565,
-          "ema_slow_slope_pct": 0.0087,
-          "rsi14": 39.524100282873995,
-          "atr": 0.0005965880043232668,
+          "close": 0.8365100026130676,
+          "ema_fast": 0.8374539506814942,
+          "ema_slow": 0.83701408864911,
+          "ema_slow_slope_pct": 0.0028,
+          "rsi14": 36.88048123328165,
+          "atr": 0.0005946888052992521,
           "atr_pct": 0.071,
-          "adx": 17.341341503078766,
-          "plus_di": 17.423622830499415,
-          "minus_di": 27.614875132121888,
-          "macd_histogram": -0.00016050041002186162,
+          "adx": 17.90248238431686,
+          "plus_di": 16.230747870473824,
+          "minus_di": 27.165415298977884,
+          "macd_histogram": -0.00019236112524825583,
           "swing_high": 0.8384299874305725,
-          "swing_low": 0.8365399837493896,
-          "entry": 0.8367599844932556,
-          "stop_loss": 0.8384896462310049,
+          "swing_low": 0.836430013179779,
+          "entry": 0.8365100026130676,
+          "stop_loss": 0.8384894563111024,
           "take_profit": null,
           "risk_reward": null,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
@@ -1363,11 +1440,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -1385,20 +1462,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "EURJPY",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "EURJPY",
         "category": "forex",
@@ -1494,39 +1572,39 @@
         },
         "1h": {
           "status": "ok",
-          "direction": "bullish",
-          "score": 20.5,
-          "bullish_score": 20.5,
-          "bearish_score": 7.0,
+          "direction": "bearish",
+          "score": 47.0,
+          "bullish_score": 11.8,
+          "bearish_score": 47.0,
           "score_components": {
-            "ema_alignment": 0.0,
-            "ema_slope": 0.15490254795658132,
-            "rsi_momentum": 8.0,
-            "macd_momentum": 7.0,
-            "trend_strength": 5.375834501894193,
-            "structure": 0.0,
+            "ema_alignment": 25.0,
+            "ema_slope": 0.0,
+            "rsi_momentum": 15.0,
+            "macd_momentum": 0.0,
+            "trend_strength": 0.0,
+            "structure": 7.0,
             "volume_confirmation": null
           },
-          "close": 174.6060028076172,
-          "ema_fast": 174.5548781927734,
-          "ema_slow": 174.68675623889175,
-          "ema_slow_slope_pct": 0.0129,
-          "rsi14": 51.193745880511884,
-          "atr": 0.225102297168873,
+          "close": 174.4669952392578,
+          "ema_fast": 174.54650838767668,
+          "ema_slow": 174.67813816047473,
+          "ema_slow_slope_pct": 0.0064,
+          "rsi14": 47.10372753619,
+          "atr": 0.22445237722600708,
           "atr_pct": 0.129,
-          "adx": 25.751669003788386,
-          "plus_di": 28.91916509535083,
-          "minus_di": 20.055365419299616,
-          "macd_histogram": 0.08759693342413599,
+          "adx": 24.367364163001223,
+          "plus_di": 26.93126694882315,
+          "minus_di": 23.705025582269087,
+          "macd_histogram": 0.059093680074953345,
           "swing_high": 175.04600524902344,
           "swing_low": 173.73199462890625,
-          "entry": 174.6060028076172,
-          "stop_loss": 173.70948439918936,
-          "take_profit": null,
-          "risk_reward": null,
-          "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
-          "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
-          "execution_status": "no_valid_structural_target",
+          "entry": 174.4669952392578,
+          "stop_loss": 175.06845048674603,
+          "take_profit": 173.15298461914062,
+          "risk_reward": 2.18,
+          "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
+          "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
+          "execution_status": "watchlist_candidate_structural_RR",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
         }
@@ -1534,42 +1612,78 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
-      "direction": null,
-      "setup_type": null,
-      "status": "unrankable",
-      "entry_zone": null,
-      "entry_trigger": null,
-      "stop_loss": null,
-      "targets": [],
-      "invalidation": null,
-      "expires_at": null,
-      "gross_rr": null,
+      "direction": "bearish",
+      "setup_type": "trend_pullback",
+      "status": "conditional",
+      "entry_zone": {
+        "low": 174.44455000153522,
+        "high": 174.4894404769804
+      },
+      "entry_trigger": {
+        "type": "confirmed_1h_close",
+        "close": 174.4669952392578,
+        "timestamp": "2026-11-23T10:00:00+00:00"
+      },
+      "stop_loss": 175.09089572446865,
+      "targets": [
+        {
+          "price": 174.4320068359375,
+          "allocation_pct": 100,
+          "basis": "nearest_confirmed_4h_swing"
+        }
+      ],
+      "invalidation": {
+        "type": "1h_close_beyond_stop",
+        "price": 175.09089572446865
+      },
+      "expires_at": "2026-11-23T14:00:00+00:00",
+      "gross_rr": 0.056,
       "net_rr": null,
-      "stop_rationale": null,
+      "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
       "event_risk": null,
-      "score_raw": null,
-      "score_adjusted": null,
-      "score_components": {},
-      "missing_evidence": [],
-      "risk_flags": [
-        "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+      "score_raw": 49.23,
+      "score_adjusted": 49.23,
+      "score_components": {
+        "technical": 49.23333333333333,
+        "net_rr": null,
+        "fundamental": null,
+        "news": null,
+        "data_quality": null,
+        "independent_evidence": null,
+        "liquidity": null
+      },
+      "missing_evidence": [
+        "instrument_specific_round_trip_cost_not_configured",
+        "fundamental_score",
+        "news_score",
+        "liquidity_score",
+        "data_quality_score",
+        "independent_evidence_score"
       ],
+      "risk_flags": [
+        "net_rr_unavailable_cost_unknown",
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
+      ],
+      "score_coverage": [
+        "technical"
+      ],
+      "score_method": "weighted_available_components_renormalized; not probability; incomplete coverage cannot be active",
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "EURCHF",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "EURCHF",
         "category": "forex",
@@ -1666,38 +1780,38 @@
         "1h": {
           "status": "ok",
           "direction": "bearish",
-          "score": 47.4,
-          "bullish_score": 7.0,
-          "bearish_score": 47.4,
+          "score": 62.5,
+          "bullish_score": 0.0,
+          "bearish_score": 62.5,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.3866967383964415,
+            "ema_slope": 0.5198507808494401,
             "rsi_momentum": 15.0,
-            "macd_momentum": 0.0,
+            "macd_momentum": 15.0,
             "trend_strength": 0.0,
             "structure": 7.0,
             "volume_confirmation": null
           },
-          "close": 0.9207800030708313,
-          "ema_fast": 0.9221229553236202,
-          "ema_slow": 0.9231064160579452,
-          "ema_slow_slope_pct": -0.0322,
-          "rsi14": 37.33440891950664,
-          "atr": 0.0014056813360037888,
-          "atr_pct": 0.153,
-          "adx": 24.62245309987201,
-          "plus_di": 12.31752654028361,
-          "minus_di": 21.16110721425858,
-          "macd_histogram": 5.718581247490535e-05,
+          "close": 0.9197099804878235,
+          "ema_fast": 0.9218931481964014,
+          "ema_slow": 0.9229732225061758,
+          "ema_slow_slope_pct": -0.0433,
+          "rsi14": 32.01552274623394,
+          "atr": 0.0014431325547054573,
+          "atr_pct": 0.157,
+          "adx": 25.33133790629285,
+          "plus_di": 11.140879529761385,
+          "minus_di": 22.901417575844047,
+          "macd_histogram": -5.693543791445376e-05,
           "swing_high": 0.9234600067138672,
           "swing_low": 0.9192900061607361,
-          "entry": 0.9207800030708313,
-          "stop_loss": 0.9233605469429571,
-          "take_profit": 0.9166100025177002,
-          "risk_reward": 1.62,
+          "entry": 0.9197099804878235,
+          "stop_loss": 0.9233642920648273,
+          "take_profit": null,
+          "risk_reward": null,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
-          "execution_status": "watchlist_candidate_structural_RR",
+          "execution_status": "no_valid_structural_target",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
         }
@@ -1705,11 +1819,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -1727,20 +1841,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "EURCAD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "EURCAD",
         "category": "forex",
@@ -1838,7 +1953,7 @@
           "status": "ok",
           "direction": "bearish",
           "score": 37.0,
-          "bullish_score": 4.8,
+          "bullish_score": 0.1,
           "bearish_score": 37.0,
           "score_components": {
             "ema_alignment": 0.0,
@@ -1849,26 +1964,26 @@
             "structure": 7.0,
             "volume_confirmation": null
           },
-          "close": 1.572059988975525,
-          "ema_fast": 1.5732257452122853,
-          "ema_slow": 1.572789779541639,
-          "ema_slow_slope_pct": 0.0132,
-          "rsi14": 43.62097649000729,
-          "atr": 0.0015259476720349066,
-          "atr_pct": 0.097,
-          "adx": 24.255138316316042,
-          "plus_di": 19.880107357111434,
-          "minus_di": 18.35778639085413,
-          "macd_histogram": -5.9883319597404364e-05,
+          "close": 1.5717600584030151,
+          "ema_fast": 1.5730861559923548,
+          "ema_slow": 1.5727493983205165,
+          "ema_slow_slope_pct": 0.0061,
+          "rsi14": 42.02780870452381,
+          "atr": 0.001515520462306688,
+          "atr_pct": 0.096,
+          "adx": 22.68032807251476,
+          "plus_di": 18.5871103994862,
+          "minus_di": 19.426370084092856,
+          "macd_histogram": -0.0001757232417209626,
           "swing_high": 1.5754200220108032,
-          "swing_low": 1.570970058441162,
-          "entry": 1.572059988975525,
-          "stop_loss": 1.5755726167780066,
-          "take_profit": 1.5665799379348755,
-          "risk_reward": 1.56,
+          "swing_low": 1.5710899829864502,
+          "entry": 1.5717600584030151,
+          "stop_loss": 1.575571574057034,
+          "take_profit": null,
+          "risk_reward": null,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
-          "execution_status": "watchlist_candidate_structural_RR",
+          "execution_status": "no_valid_structural_target",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
         }
@@ -1876,11 +1991,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -1898,20 +2013,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "EURAUD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "EURAUD",
         "category": "forex",
@@ -2009,7 +2125,7 @@
           "status": "ok",
           "direction": "bearish",
           "score": 30.0,
-          "bullish_score": 0.8,
+          "bullish_score": 0.7,
           "bearish_score": 30.0,
           "score_components": {
             "ema_alignment": 0.0,
@@ -2020,23 +2136,23 @@
             "structure": 7.0,
             "volume_confirmation": null
           },
-          "close": 1.6514300107955933,
-          "ema_fast": 1.6527941948433982,
-          "ema_slow": 1.6485557737847862,
-          "ema_slow_slope_pct": 0.0659,
-          "rsi14": 48.73928926164425,
-          "atr": 0.0029416804441622217,
-          "atr_pct": 0.178,
-          "adx": 27.471570384631164,
-          "plus_di": 19.81869385040737,
-          "minus_di": 23.109341466406107,
-          "macd_histogram": -0.0007050626927716762,
+          "close": 1.6511800289154053,
+          "ema_fast": 1.652640464755018,
+          "ema_slow": 1.6486586857506929,
+          "ema_slow_slope_pct": 0.055,
+          "rsi14": 48.01405162204519,
+          "atr": 0.002826553186309814,
+          "atr_pct": 0.171,
+          "adx": 26.056850916497595,
+          "plus_di": 19.152641390288256,
+          "minus_di": 22.332699279407688,
+          "macd_histogram": -0.0008030574514026083,
           "swing_high": 1.659060001373291,
           "swing_low": 1.6459499597549438,
-          "entry": 1.6514300107955933,
-          "stop_loss": 1.6562242103112619,
-          "take_profit": 1.6379400491714478,
-          "risk_reward": 2.81,
+          "entry": 1.6511800289154053,
+          "stop_loss": 1.6562126975854767,
+          "take_profit": 1.638069987297058,
+          "risk_reward": 2.6,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -2047,11 +2163,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -2069,20 +2185,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "EURNZD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "EURNZD",
         "category": "forex",
@@ -2179,35 +2296,35 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 49.6,
-          "bullish_score": 49.6,
-          "bearish_score": 22.0,
+          "score": 49.3,
+          "bullish_score": 49.3,
+          "bearish_score": 15.0,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.7975817008096797,
+            "ema_slope": 0.749257598999975,
             "rsi_momentum": 15.0,
             "macd_momentum": 0.0,
-            "trend_strength": 8.843268526534331,
+            "trend_strength": 8.54769435809957,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 2.005620002746582,
-          "ema_fast": 2.0044889961236505,
-          "ema_slow": 2.001175532451518,
-          "ema_slow_slope_pct": 0.0665,
-          "rsi14": 56.218008777796015,
-          "atr": 0.0028391348472678857,
-          "atr_pct": 0.142,
-          "adx": 32.68653705306866,
-          "plus_di": 26.706389092031323,
-          "minus_di": 16.22631772331552,
-          "macd_histogram": -5.1660363718326104e-05,
+          "close": 2.006160020828247,
+          "ema_fast": 2.004648141333612,
+          "ema_slow": 2.0013710025839386,
+          "ema_slow_slope_pct": 0.0624,
+          "rsi14": 57.4946055670699,
+          "atr": 0.002748481382704736,
+          "atr_pct": 0.137,
+          "adx": 32.09538871619914,
+          "plus_di": 25.616731092437544,
+          "minus_di": 15.564261282430488,
+          "macd_histogram": -0.00017454474506551753,
           "swing_high": 2.01104998588562,
-          "swing_low": 1.9958900213241577,
-          "entry": 2.005620002746582,
-          "stop_loss": 2.00136130047568,
-          "take_profit": 2.02197003364563,
-          "risk_reward": 3.84,
+          "swing_low": 1.9971599578857422,
+          "entry": 2.006160020828247,
+          "stop_loss": 2.00203729875419,
+          "take_profit": 2.0213199853897095,
+          "risk_reward": 3.68,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -2218,20 +2335,30 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": "bullish",
-      "setup_type": null,
-      "status": "unrankable",
-      "entry_zone": null,
-      "entry_trigger": null,
-      "stop_loss": null,
+      "setup_type": "trend_pullback",
+      "status": "watchlist",
+      "entry_zone": {
+        "low": 2.0058851726899767,
+        "high": 2.0064348689665175
+      },
+      "entry_trigger": {
+        "type": "confirmed_1h_close",
+        "close": 2.006160020828247,
+        "timestamp": "2026-11-23T10:00:00+00:00"
+      },
+      "stop_loss": 1.9966102616092012,
       "targets": [],
-      "invalidation": null,
-      "expires_at": null,
+      "invalidation": {
+        "type": "1h_close_beyond_stop",
+        "price": 1.9966102616092012
+      },
+      "expires_at": "2026-11-23T14:00:00+00:00",
       "gross_rr": null,
       "net_rr": null,
-      "stop_rationale": null,
+      "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
       "event_risk": null,
       "score_raw": null,
@@ -2239,21 +2366,22 @@
       "score_components": {},
       "missing_evidence": [],
       "risk_flags": [
-        "no_confirmed_1h_setup_trigger",
-        "daily_data_unavailable_or_stale"
+        "no_valid_structural_stop_or_target",
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "GBPJPY",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "GBPJPY",
         "category": "forex",
@@ -2350,33 +2478,33 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 30.2,
-          "bullish_score": 30.2,
-          "bearish_score": 0.0,
+          "score": 30.0,
+          "bullish_score": 30.0,
+          "bearish_score": 7.0,
           "score_components": {
             "ema_alignment": 0.0,
-            "ema_slope": 0.06180251677703197,
+            "ema_slope": 0.05396686799015171,
             "rsi_momentum": 15.0,
             "macd_momentum": 7.0,
-            "trend_strength": 8.139367184208151,
+            "trend_strength": 7.992517845187734,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 208.65899658203125,
-          "ema_fast": 208.39718308709783,
-          "ema_slow": 208.68032572547853,
-          "ema_slow_slope_pct": 0.0052,
-          "rsi14": 55.00935498554903,
-          "atr": 0.3096139738235458,
-          "atr_pct": 0.148,
-          "adx": 31.278734368416302,
-          "plus_di": 30.400397239399904,
-          "minus_di": 14.057096028439789,
-          "macd_histogram": 0.14538723530777276,
+          "close": 208.55799865722656,
+          "ema_fast": 208.41249885568152,
+          "ema_slow": 208.67552858554706,
+          "ema_slow_slope_pct": 0.0045,
+          "rsi14": 52.713282408208556,
+          "atr": 0.3020708335336943,
+          "atr_pct": 0.145,
+          "adx": 30.98503569037547,
+          "plus_di": 28.93385726428957,
+          "minus_di": 16.57145148135321,
+          "macd_histogram": 0.11909907747020157,
           "swing_high": 209.17599487304688,
           "swing_low": 207.22300720214844,
-          "entry": 208.65899658203125,
-          "stop_loss": 207.19204580476608,
+          "entry": 208.55799865722656,
+          "stop_loss": 207.19280011879508,
           "take_profit": null,
           "risk_reward": null,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
@@ -2389,11 +2517,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -2411,20 +2539,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "GBPCHF",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "GBPCHF",
         "category": "forex",
@@ -2526,30 +2655,30 @@
           "bearish_score": 40.5,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.48740522834527233,
+            "ema_slope": 0.547244901677324,
             "rsi_momentum": 15.0,
             "macd_momentum": 0.0,
             "trend_strength": 0.0,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 1.1003299951553345,
-          "ema_fast": 1.1009006149865481,
-          "ema_slow": 1.1027465489166275,
-          "ema_slow_slope_pct": -0.0406,
-          "rsi14": 45.31514153976743,
-          "atr": 0.00179036015573989,
-          "atr_pct": 0.163,
-          "adx": 38.843514878372886,
-          "plus_di": 11.784295913394573,
-          "minus_di": 20.22230647331687,
-          "macd_histogram": 0.00028060080047155947,
-          "swing_high": 1.1021699905395508,
+          "close": 1.0993900299072266,
+          "ema_fast": 1.1007567497408985,
+          "ema_slow": 1.1026149207201805,
+          "ema_slow_slope_pct": -0.0456,
+          "rsi14": 41.62481482997786,
+          "atr": 0.0018124766335246522,
+          "atr_pct": 0.165,
+          "adx": 38.43904946759289,
+          "plus_di": 10.809035516655678,
+          "minus_di": 21.54414359559476,
+          "macd_histogram": 0.0001848580813965801,
+          "swing_high": 1.1020699739456177,
           "swing_low": 1.097059965133667,
-          "entry": 1.1003299951553345,
-          "stop_loss": 1.1030155353889444,
-          "take_profit": 1.0940699577331543,
-          "risk_reward": 2.33,
+          "entry": 1.0993900299072266,
+          "stop_loss": 1.1021087448575135,
+          "take_profit": 1.0942800045013428,
+          "risk_reward": 1.88,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -2560,11 +2689,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -2582,20 +2711,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "GBPCAD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "GBPCAD",
         "category": "forex",
@@ -2692,35 +2822,35 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 26.2,
-          "bullish_score": 26.2,
+          "score": 26.4,
+          "bullish_score": 26.4,
           "bearish_score": 0.0,
           "score_components": {
             "ema_alignment": 0.0,
-            "ema_slope": 0.05777533512567601,
+            "ema_slope": 0.04749510022445946,
             "rsi_momentum": 15.0,
             "macd_momentum": 7.0,
-            "trend_strength": 4.176448467647971,
+            "trend_strength": 4.30863466983201,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 1.878659963607788,
-          "ema_fast": 1.8782572442698586,
-          "ema_slow": 1.8788810935408073,
-          "ema_slow_slope_pct": 0.0048,
-          "rsi14": 52.00205285621147,
-          "atr": 0.0017911192168212783,
+          "close": 1.8789000511169434,
+          "ema_fast": 1.8783184639695811,
+          "ema_slow": 1.8788818369751659,
+          "ema_slow_slope_pct": 0.004,
+          "rsi14": 52.99504538200549,
+          "atr": 0.0017931798601605996,
           "atr_pct": 0.095,
-          "adx": 23.35289693529594,
-          "plus_di": 20.885548523285735,
-          "minus_di": 10.487935306659827,
-          "macd_histogram": 0.00029548621721604395,
+          "adx": 23.61726933966402,
+          "plus_di": 19.371437215501306,
+          "minus_di": 11.121770953149174,
+          "macd_histogram": 0.0002290189073012337,
           "swing_high": 1.8815499544143677,
           "swing_low": 1.875040054321289,
-          "entry": 1.878659963607788,
-          "stop_loss": 1.875973284782556,
-          "take_profit": 1.8859999179840088,
-          "risk_reward": 2.73,
+          "entry": 1.8789000511169434,
+          "stop_loss": 1.8762102813267025,
+          "take_profit": 1.885409951210022,
+          "risk_reward": 2.42,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -2731,11 +2861,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -2753,20 +2883,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "GBPAUD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "GBPAUD",
         "category": "forex",
@@ -2863,35 +2994,35 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 40.7,
-          "bullish_score": 40.7,
+          "score": 40.6,
+          "bullish_score": 40.6,
           "bearish_score": 15.0,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.6986073516223712,
+            "ema_slope": 0.6405177844432508,
             "rsi_momentum": 15.0,
             "macd_momentum": 0.0,
             "trend_strength": 0.0,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 1.973520040512085,
-          "ema_fast": 1.9732590790257598,
-          "ema_slow": 1.9693730500946613,
-          "ema_slow_slope_pct": 0.0582,
-          "rsi14": 53.573882514467606,
-          "atr": 0.003265243533864075,
-          "atr_pct": 0.165,
-          "adx": 18.504900804688262,
-          "plus_di": 17.713258931581986,
-          "minus_di": 19.487261913074782,
-          "macd_histogram": -0.0004516023295816716,
+          "close": 1.9738199710845947,
+          "ema_fast": 1.9733124973170775,
+          "ema_slow": 1.96954743915309,
+          "ema_slow_slope_pct": 0.0534,
+          "rsi14": 54.35079982901859,
+          "atr": 0.0031527282884424575,
+          "atr_pct": 0.16,
+          "adx": 17.523747779405078,
+          "plus_di": 17.03502684657668,
+          "minus_di": 18.741104115156293,
+          "macd_histogram": -0.0004981390147979895,
           "swing_high": 1.9791300296783447,
           "swing_low": 1.9647200107574463,
-          "entry": 1.973520040512085,
-          "stop_loss": 1.968622175211289,
-          "take_profit": 1.9879300594329834,
-          "risk_reward": 2.94,
+          "entry": 1.9738199710845947,
+          "stop_loss": 1.969090878651931,
+          "take_profit": 1.9882299900054932,
+          "risk_reward": 3.05,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -2902,42 +3033,78 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": "bullish",
-      "setup_type": null,
-      "status": "unrankable",
-      "entry_zone": null,
-      "entry_trigger": null,
-      "stop_loss": null,
-      "targets": [],
-      "invalidation": null,
-      "expires_at": null,
-      "gross_rr": null,
+      "setup_type": "trend_pullback",
+      "status": "conditional",
+      "entry_zone": {
+        "low": 1.9735046982557505,
+        "high": 1.974135243913439
+      },
+      "entry_trigger": {
+        "type": "confirmed_1h_close",
+        "close": 1.9738199710845947,
+        "timestamp": "2026-11-23T10:00:00+00:00"
+      },
+      "stop_loss": 1.9640894650997578,
+      "targets": [
+        {
+          "price": 1.9783600568771362,
+          "allocation_pct": 100,
+          "basis": "nearest_confirmed_4h_swing"
+        }
+      ],
+      "invalidation": {
+        "type": "1h_close_beyond_stop",
+        "price": 1.9640894650997578
+      },
+      "expires_at": "2026-11-23T14:00:00+00:00",
+      "gross_rr": 0.467,
       "net_rr": null,
-      "stop_rationale": null,
+      "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
       "event_risk": null,
-      "score_raw": null,
-      "score_adjusted": null,
-      "score_components": {},
-      "missing_evidence": [],
-      "risk_flags": [
-        "no_confirmed_1h_setup_trigger",
-        "daily_data_unavailable_or_stale"
+      "score_raw": 54.17,
+      "score_adjusted": 54.17,
+      "score_components": {
+        "technical": 54.166666666666664,
+        "net_rr": null,
+        "fundamental": null,
+        "news": null,
+        "data_quality": null,
+        "independent_evidence": null,
+        "liquidity": null
+      },
+      "missing_evidence": [
+        "instrument_specific_round_trip_cost_not_configured",
+        "fundamental_score",
+        "news_score",
+        "liquidity_score",
+        "data_quality_score",
+        "independent_evidence_score"
       ],
+      "risk_flags": [
+        "net_rr_unavailable_cost_unknown",
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
+      ],
+      "score_coverage": [
+        "technical"
+      ],
+      "score_method": "weighted_available_components_renormalized; not probability; incomplete coverage cannot be active",
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "GBPNZD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "GBPNZD",
         "category": "forex",
@@ -3034,35 +3201,35 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 55.9,
-          "bullish_score": 55.9,
+          "score": 56.0,
+          "bullish_score": 56.0,
           "bearish_score": 0.0,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.691624364484511,
+            "ema_slope": 0.7128796950044425,
             "rsi_momentum": 15.0,
             "macd_momentum": 7.0,
-            "trend_strength": 8.191941140062355,
+            "trend_strength": 8.32687456492245,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 2.3968100547790527,
-          "ema_fast": 2.3931533945303936,
-          "ema_slow": 2.3906667313582988,
-          "ema_slow_slope_pct": 0.0576,
-          "rsi14": 65.03805307627046,
-          "atr": 0.003442392041411072,
+          "close": 2.39805006980896,
+          "ema_fast": 2.393619744556924,
+          "ema_slow": 2.3909562740426384,
+          "ema_slow_slope_pct": 0.0594,
+          "rsi14": 67.5589851643312,
+          "atr": 0.0034529431073182333,
           "atr_pct": 0.144,
-          "adx": 31.38388228012471,
-          "plus_di": 21.54415846008876,
-          "minus_di": 10.73150010884333,
-          "macd_histogram": 0.00039105714258053786,
+          "adx": 31.6537491298449,
+          "plus_di": 20.709606009509596,
+          "minus_di": 9.934514711610447,
+          "macd_histogram": 0.00033132196699595107,
           "swing_high": 2.3989200592041016,
           "swing_low": 2.381930112838745,
-          "entry": 2.3968100547790527,
-          "stop_loss": 2.3886957540819918,
-          "take_profit": 2.413800001144409,
-          "risk_reward": 2.09,
+          "entry": 2.39805006980896,
+          "stop_loss": 2.388694698975401,
+          "take_profit": 2.4150400161743164,
+          "risk_reward": 1.82,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -3073,42 +3240,78 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": "bullish",
-      "setup_type": null,
-      "status": "unrankable",
-      "entry_zone": null,
-      "entry_trigger": null,
-      "stop_loss": null,
-      "targets": [],
-      "invalidation": null,
-      "expires_at": null,
-      "gross_rr": null,
+      "setup_type": "trend_pullback",
+      "status": "conditional",
+      "entry_zone": {
+        "low": 2.3977047754982284,
+        "high": 2.3983953641196916
+      },
+      "entry_trigger": {
+        "type": "confirmed_1h_close",
+        "close": 2.39805006980896,
+        "timestamp": "2026-11-23T10:00:00+00:00"
+      },
+      "stop_loss": 2.3812395242172815,
+      "targets": [
+        {
+          "price": 2.404170036315918,
+          "allocation_pct": 100,
+          "basis": "nearest_confirmed_4h_swing"
+        }
+      ],
+      "invalidation": {
+        "type": "1h_close_beyond_stop",
+        "price": 2.3812395242172815
+      },
+      "expires_at": "2026-11-23T14:00:00+00:00",
+      "gross_rr": 0.364,
       "net_rr": null,
-      "stop_rationale": null,
+      "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
       "event_risk": null,
-      "score_raw": null,
-      "score_adjusted": null,
-      "score_components": {},
-      "missing_evidence": [],
-      "risk_flags": [
-        "no_confirmed_1h_setup_trigger",
-        "daily_data_unavailable_or_stale"
+      "score_raw": 57.87,
+      "score_adjusted": 57.87,
+      "score_components": {
+        "technical": 57.86666666666667,
+        "net_rr": null,
+        "fundamental": null,
+        "news": null,
+        "data_quality": null,
+        "independent_evidence": null,
+        "liquidity": null
+      },
+      "missing_evidence": [
+        "instrument_specific_round_trip_cost_not_configured",
+        "fundamental_score",
+        "news_score",
+        "liquidity_score",
+        "data_quality_score",
+        "independent_evidence_score"
       ],
+      "risk_flags": [
+        "net_rr_unavailable_cost_unknown",
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
+      ],
+      "score_coverage": [
+        "technical"
+      ],
+      "score_method": "weighted_available_components_renormalized; not probability; incomplete coverage cannot be active",
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "AUDJPY",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "AUDJPY",
         "category": "forex",
@@ -3204,39 +3407,39 @@
         },
         "1h": {
           "status": "ok",
-          "direction": "bullish",
-          "score": 21.0,
-          "bullish_score": 21.0,
-          "bearish_score": 0.6,
+          "direction": "neutral",
+          "score": 15.6,
+          "bullish_score": 12.3,
+          "bearish_score": 15.6,
           "score_components": {
             "ema_alignment": 0.0,
             "ema_slope": 0.0,
-            "rsi_momentum": 8.0,
+            "rsi_momentum": 0.0,
             "macd_momentum": 7.0,
-            "trend_strength": 6.001214654212422,
+            "trend_strength": 5.26453475235931,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 105.7239990234375,
-          "ema_fast": 105.60055411365516,
-          "ema_slow": 105.95327661800341,
-          "ema_slow_slope_pct": -0.0524,
-          "rsi14": 51.63640732625547,
-          "atr": 0.24714916595145114,
-          "atr_pct": 0.234,
-          "adx": 27.002429308424844,
-          "plus_di": 24.764881502993653,
-          "minus_di": 19.555521124656725,
-          "macd_histogram": 0.09914838530034711,
+          "close": 105.66000366210938,
+          "ema_fast": 105.60621597541271,
+          "ema_slow": 105.94177571777229,
+          "ema_slow_slope_pct": -0.0479,
+          "rsi14": 49.74682777142992,
+          "atr": 0.2396383891703207,
+          "atr_pct": 0.227,
+          "adx": 25.52906950471862,
+          "plus_di": 23.716703733741088,
+          "minus_di": 20.87387924833776,
+          "macd_histogram": 0.08843645630301569,
           "swing_high": 106.00299835205078,
           "swing_low": 104.71700286865234,
-          "entry": 105.7239990234375,
-          "stop_loss": 105.29328587686189,
-          "take_profit": 107.00999450683594,
-          "risk_reward": 2.99,
-          "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
-          "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
-          "execution_status": "watchlist_candidate_structural_RR",
+          "entry": null,
+          "stop_loss": null,
+          "take_profit": null,
+          "risk_reward": null,
+          "stop_basis": "not_applicable",
+          "target_basis": "not_applicable",
+          "execution_status": "direction_not_confirmed",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
         }
@@ -3244,11 +3447,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -3266,20 +3469,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "AUDNZD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "AUDNZD",
         "category": "forex",
@@ -3376,35 +3580,35 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 31.2,
-          "bullish_score": 31.2,
+          "score": 31.0,
+          "bullish_score": 31.0,
           "bearish_score": 0.0,
           "score_components": {
             "ema_alignment": 0.0,
-            "ema_slope": 0.0059957059274751145,
+            "ema_slope": 0.08756583756417413,
             "rsi_momentum": 15.0,
             "macd_momentum": 7.0,
-            "trend_strength": 9.158262409325712,
+            "trend_strength": 8.896593017730957,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 1.2144299745559692,
-          "ema_fast": 1.2127114383035673,
-          "ema_slow": 1.2138367039820317,
-          "ema_slow_slope_pct": 0.0005,
-          "rsi14": 58.19527013593456,
-          "atr": 0.001878715618133229,
-          "atr_pct": 0.155,
-          "adx": 33.31652481865142,
-          "plus_di": 21.292604224335644,
-          "minus_di": 12.50792135957292,
-          "macd_histogram": 0.0004931425202213951,
+          "close": 1.2149499654769897,
+          "ema_fast": 1.212924631367703,
+          "ema_slow": 1.2138803612955595,
+          "ema_slow_slope_pct": 0.0073,
+          "rsi14": 60.20397229040016,
+          "atr": 0.0018323788918083528,
+          "atr_pct": 0.151,
+          "adx": 32.793186035461915,
+          "plus_di": 20.271685688231965,
+          "minus_di": 11.908202854989035,
+          "macd_histogram": 0.0004922993110969326,
           "swing_high": 1.2153899669647217,
           "swing_low": 1.2083100080490112,
-          "entry": 1.2144299745559692,
-          "stop_loss": 1.2116119011287694,
-          "take_profit": 1.2214399576187134,
-          "risk_reward": 2.49,
+          "entry": 1.2149499654769897,
+          "stop_loss": 1.2120067941161292,
+          "take_profit": 1.2220299243927002,
+          "risk_reward": 2.41,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -3415,11 +3619,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -3437,20 +3641,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "AUDCAD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "AUDCAD",
         "category": "forex",
@@ -3547,29 +3752,29 @@
         "1h": {
           "status": "ok",
           "direction": "neutral",
-          "score": 11.7,
-          "bullish_score": 11.7,
+          "score": 11.0,
+          "bullish_score": 11.0,
           "bearish_score": 8.6,
           "score_components": {
             "ema_alignment": 0.0,
             "ema_slope": 0.0,
             "rsi_momentum": 0.0,
             "macd_momentum": 7.0,
-            "trend_strength": 4.683766122599607,
+            "trend_strength": 3.9790373643078283,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 0.9519199728965759,
-          "ema_fast": 0.9517319577409088,
-          "ema_slow": 0.9539359369339458,
-          "ema_slow_slope_pct": -0.0509,
-          "rsi14": 48.678865741735514,
-          "atr": 0.002205185431484126,
-          "atr_pct": 0.232,
-          "adx": 24.367532245199214,
-          "plus_di": 16.354034464315294,
-          "minus_di": 13.928542548047147,
-          "macd_histogram": 0.0004048368917600395,
+          "close": 0.9518600106239319,
+          "ema_fast": 0.9517441532535776,
+          "ema_slow": 0.9538545280590434,
+          "ema_slow_slope_pct": -0.0471,
+          "rsi14": 48.38837018961711,
+          "atr": 0.0021655275989975716,
+          "atr_pct": 0.228,
+          "adx": 22.958074728615657,
+          "plus_di": 15.463992018919141,
+          "minus_di": 14.093944135721408,
+          "macd_histogram": 0.0003873969053712124,
           "swing_high": 0.9552099704742432,
           "swing_low": 0.9472299814224243,
           "entry": null,
@@ -3586,11 +3791,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -3608,20 +3813,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "AUDCHF",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "AUDCHF",
         "category": "forex",
@@ -3719,34 +3925,34 @@
           "status": "ok",
           "direction": "bearish",
           "score": 41.2,
-          "bullish_score": 15.0,
+          "bullish_score": 7.0,
           "bearish_score": 41.2,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 1.1755123317904292,
+            "ema_slope": 1.178355206676862,
             "rsi_momentum": 15.0,
             "macd_momentum": 0.0,
             "trend_strength": 0.0,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 0.5575199723243713,
-          "ema_fast": 0.5578491942905909,
-          "ema_slow": 0.5598954001057092,
-          "ema_slow_slope_pct": -0.098,
-          "rsi14": 44.88191363651444,
-          "atr": 0.001849089115054803,
-          "atr_pct": 0.332,
-          "adx": 36.0559338346399,
-          "plus_di": 12.951672982688292,
-          "minus_di": 15.139196071894311,
-          "macd_histogram": 0.0002787919268417854,
+          "close": 0.5569599866867065,
+          "ema_fast": 0.5577645078521257,
+          "ema_slow": 0.5597802858539837,
+          "ema_slow_slope_pct": -0.0982,
+          "rsi14": 41.97516049761813,
+          "atr": 0.0018262964373179959,
+          "atr_pct": 0.328,
+          "adx": 34.41379779779488,
+          "plus_di": 12.176648152151941,
+          "minus_di": 15.836907553952624,
+          "macd_histogram": 0.00024364466272431932,
           "swing_high": 0.560479998588562,
           "swing_low": 0.5542600154876709,
-          "entry": 0.5575199723243713,
-          "stop_loss": 0.5602936059969535,
-          "take_profit": 0.5509499907493591,
-          "risk_reward": 2.37,
+          "entry": 0.5569599866867065,
+          "stop_loss": 0.5596994313426835,
+          "take_profit": 0.5507400035858154,
+          "risk_reward": 2.27,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -3757,21 +3963,21 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": "bearish",
       "setup_type": "trend_pullback",
-      "status": "unrankable",
+      "status": "conditional",
       "entry_zone": {
-        "low": 0.5573350634128659,
-        "high": 0.5577048812358768
+        "low": 0.5567773570429747,
+        "high": 0.5571426163304384
       },
       "entry_trigger": {
         "type": "confirmed_1h_close",
-        "close": 0.5575199723243713,
-        "timestamp": "2026-11-23T09:00:00+00:00"
+        "close": 0.5569599866867065,
+        "timestamp": "2026-11-23T10:00:00+00:00"
       },
-      "stop_loss": 0.5608498164115729,
+      "stop_loss": 0.5608452578760256,
       "targets": [
         {
           "price": 0.5542700290679932,
@@ -3781,10 +3987,10 @@
       ],
       "invalidation": {
         "type": "1h_close_beyond_stop",
-        "price": 0.5608498164115729
+        "price": 0.5608452578760256
       },
-      "expires_at": "2026-11-23T13:00:00+00:00",
-      "gross_rr": 0.976,
+      "expires_at": "2026-11-23T14:00:00+00:00",
+      "gross_rr": 0.692,
       "net_rr": null,
       "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
@@ -3810,7 +4016,7 @@
       ],
       "risk_flags": [
         "net_rr_unavailable_cost_unknown",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "score_coverage": [
         "technical"
@@ -3821,13 +4027,14 @@
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "NZDJPY",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "NZDJPY",
         "category": "forex",
@@ -3924,35 +4131,35 @@
         "1h": {
           "status": "ok",
           "direction": "bearish",
-          "score": 40.6,
+          "score": 47.7,
           "bullish_score": 7.0,
-          "bearish_score": 40.6,
+          "bearish_score": 47.7,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.6228705948055246,
+            "ema_slope": 0.650259038432166,
             "rsi_momentum": 15.0,
             "macd_momentum": 0.0,
             "trend_strength": 0.0,
-            "structure": 0.0,
+            "structure": 7.0,
             "volume_confirmation": null
           },
-          "close": 87.04499816894531,
-          "ema_fast": 87.06553468982989,
-          "ema_slow": 87.27461886779659,
-          "ema_slow_slope_pct": -0.0519,
-          "rsi14": 47.0540685122708,
-          "atr": 0.17958820731723846,
-          "atr_pct": 0.206,
-          "adx": 28.45134975385598,
-          "plus_di": 19.53163382024654,
-          "minus_di": 24.750956288499165,
-          "macd_histogram": 0.047180720137297044,
-          "swing_high": 87.36399841308594,
+          "close": 86.95800018310547,
+          "ema_fast": 87.05529330823708,
+          "ema_slow": 87.2622024487891,
+          "ema_slow_slope_pct": -0.0542,
+          "rsi14": 44.02907181767657,
+          "atr": 0.174617664676833,
+          "atr_pct": 0.201,
+          "adx": 27.75006840921609,
+          "plus_di": 18.652778356483726,
+          "minus_di": 27.195962679431958,
+          "macd_histogram": 0.03845335042001827,
+          "swing_high": 87.3479995727539,
           "swing_low": 86.5719985961914,
-          "entry": 87.04499816894531,
-          "stop_loss": 87.31438047992117,
-          "take_profit": 86.25299835205078,
-          "risk_reward": 2.94,
+          "entry": 86.95800018310547,
+          "stop_loss": 87.24445914195597,
+          "take_profit": 86.16600036621094,
+          "risk_reward": 2.76,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -3963,21 +4170,21 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": "bearish",
       "setup_type": "trend_pullback",
-      "status": "unrankable",
+      "status": "conditional",
       "entry_zone": {
-        "low": 87.02703934821359,
-        "high": 87.06295698967703
+        "low": 86.94053841663778,
+        "high": 86.97546194957316
       },
       "entry_trigger": {
         "type": "confirmed_1h_close",
-        "close": 87.04499816894531,
-        "timestamp": "2026-11-23T09:00:00+00:00"
+        "close": 86.95800018310547,
+        "timestamp": "2026-11-23T10:00:00+00:00"
       },
-      "stop_loss": 87.39991605454938,
+      "stop_loss": 87.38292310568927,
       "targets": [
         {
           "price": 86.7040023803711,
@@ -3987,18 +4194,18 @@
       ],
       "invalidation": {
         "type": "1h_close_beyond_stop",
-        "price": 87.39991605454938
+        "price": 87.38292310568927
       },
-      "expires_at": "2026-11-23T13:00:00+00:00",
-      "gross_rr": 0.961,
+      "expires_at": "2026-11-23T14:00:00+00:00",
+      "gross_rr": 0.598,
       "net_rr": null,
       "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
       "event_risk": null,
-      "score_raw": 50.0,
-      "score_adjusted": 50.0,
+      "score_raw": 52.37,
+      "score_adjusted": 52.37,
       "score_components": {
-        "technical": 50.0,
+        "technical": 52.366666666666674,
         "net_rr": null,
         "fundamental": null,
         "news": null,
@@ -4016,7 +4223,7 @@
       ],
       "risk_flags": [
         "net_rr_unavailable_cost_unknown",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "score_coverage": [
         "technical"
@@ -4027,13 +4234,14 @@
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "NZDCAD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "NZDCAD",
         "category": "forex",
@@ -4130,35 +4338,35 @@
         "1h": {
           "status": "ok",
           "direction": "bearish",
-          "score": 40.6,
-          "bullish_score": 15.0,
-          "bearish_score": 40.6,
+          "score": 55.7,
+          "bullish_score": 0.0,
+          "bearish_score": 55.7,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.6204461078310075,
+            "ema_slope": 0.6530437824451507,
             "rsi_momentum": 15.0,
-            "macd_momentum": 0.0,
+            "macd_momentum": 15.0,
             "trend_strength": 0.0,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 0.7836800217628479,
-          "ema_fast": 0.7846886255670672,
-          "ema_slow": 0.7857568528324318,
-          "ema_slow_slope_pct": -0.0517,
-          "rsi14": 40.51464466944417,
-          "atr": 0.001115366650479275,
-          "atr_pct": 0.142,
-          "adx": 30.320464163948287,
-          "plus_di": 13.663347726344325,
-          "minus_di": 24.675516409642828,
-          "macd_histogram": 4.2913774143634505e-07,
-          "swing_high": 0.7875099778175354,
+          "close": 0.7833499908447266,
+          "ema_fast": 0.7845611365458919,
+          "ema_slow": 0.785662466087816,
+          "ema_slow_slope_pct": -0.0544,
+          "rsi14": 38.7291012926624,
+          "atr": 0.00110070072661866,
+          "atr_pct": 0.141,
+          "adx": 30.687389303299117,
+          "plus_di": 12.856443319057945,
+          "minus_di": 26.9821951275752,
+          "macd_histogram": -1.0099263614296258e-05,
+          "swing_high": 0.7872899770736694,
           "swing_low": 0.7829399704933167,
-          "entry": 0.7836800217628479,
-          "stop_loss": 0.7856415077877896,
-          "take_profit": 0.7791100144386292,
-          "risk_reward": 2.33,
+          "entry": 0.7833499908447266,
+          "stop_loss": 0.7850010419346546,
+          "take_profit": 0.7787799835205078,
+          "risk_reward": 2.77,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -4169,77 +4377,53 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": "bearish",
       "setup_type": "trend_pullback",
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": {
-        "low": 0.7835684850978,
-        "high": 0.7837915584278958
+        "low": 0.7832399207720647,
+        "high": 0.7834600609173884
       },
       "entry_trigger": {
         "type": "confirmed_1h_close",
-        "close": 0.7836800217628479,
-        "timestamp": "2026-11-23T09:00:00+00:00"
+        "close": 0.7833499908447266,
+        "timestamp": "2026-11-23T10:00:00+00:00"
       },
-      "stop_loss": 0.7877330511476313,
-      "targets": [
-        {
-          "price": 0.7836199998855591,
-          "allocation_pct": 100,
-          "basis": "nearest_confirmed_4h_swing"
-        }
-      ],
+      "stop_loss": 0.7875101172189931,
+      "targets": [],
       "invalidation": {
         "type": "1h_close_beyond_stop",
-        "price": 0.7877330511476313
+        "price": 0.7875101172189931
       },
-      "expires_at": "2026-11-23T13:00:00+00:00",
-      "gross_rr": 0.015,
+      "expires_at": "2026-11-23T14:00:00+00:00",
+      "gross_rr": null,
       "net_rr": null,
       "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
       "event_risk": null,
-      "score_raw": 48.87,
-      "score_adjusted": 48.87,
-      "score_components": {
-        "technical": 48.86666666666667,
-        "net_rr": null,
-        "fundamental": null,
-        "news": null,
-        "data_quality": null,
-        "independent_evidence": null,
-        "liquidity": null
-      },
-      "missing_evidence": [
-        "instrument_specific_round_trip_cost_not_configured",
-        "fundamental_score",
-        "news_score",
-        "liquidity_score",
-        "data_quality_score",
-        "independent_evidence_score"
-      ],
+      "score_raw": null,
+      "score_adjusted": null,
+      "score_components": {},
+      "missing_evidence": [],
       "risk_flags": [
-        "net_rr_unavailable_cost_unknown",
-        "daily_data_unavailable_or_stale"
+        "no_valid_structural_stop_or_target",
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
-      "score_coverage": [
-        "technical"
-      ],
-      "score_method": "weighted_available_components_renormalized; not probability; incomplete coverage cannot be active",
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "NZDCHF",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "NZDCHF",
         "category": "forex",
@@ -4337,34 +4521,34 @@
           "status": "ok",
           "direction": "bearish",
           "score": 41.2,
-          "bullish_score": 15.0,
+          "bullish_score": 7.0,
           "bearish_score": 41.2,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 1.163583990124284,
+            "ema_slope": 1.249668604027665,
             "rsi_momentum": 15.0,
             "macd_momentum": 0.0,
             "trend_strength": 0.0,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 0.4589900076389313,
-          "ema_fast": 0.4599356904014065,
-          "ema_slow": 0.4611744064844226,
-          "ema_slow_slope_pct": -0.097,
-          "rsi14": 38.45399940058425,
-          "atr": 0.0009742237143117196,
+          "close": 0.4583500027656555,
+          "ema_fast": 0.459784672531335,
+          "ema_slow": 0.46106364555427487,
+          "ema_slow_slope_pct": -0.1041,
+          "rsi14": 34.632555566868504,
+          "atr": 0.0009724940654860656,
           "atr_pct": 0.212,
-          "adx": 44.449372489020526,
-          "plus_di": 10.064783265668037,
-          "minus_di": 25.33720616602746,
-          "macd_histogram": 4.058355145924021e-05,
-          "swing_high": 0.46230000257492065,
-          "swing_low": 0.4582799971103668,
-          "entry": 0.4589900076389313,
-          "stop_loss": 0.4604513432103989,
-          "take_profit": 0.4546700119972229,
-          "risk_reward": 2.96,
+          "adx": 44.792409359530296,
+          "plus_di": 9.362492460115146,
+          "minus_di": 27.535402716198206,
+          "macd_histogram": 1.102412878379081e-05,
+          "swing_high": 0.46202000975608826,
+          "swing_low": 0.4582599997520447,
+          "entry": 0.4583500027656555,
+          "stop_loss": 0.4598172351300441,
+          "take_profit": 0.4543299973011017,
+          "risk_reward": 2.74,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -4375,11 +4559,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": "bearish",
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -4397,20 +4581,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "no_confirmed_1h_setup_trigger",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "CADJPY",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "CADJPY",
         "category": "forex",
@@ -4507,33 +4692,33 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 27.2,
-          "bullish_score": 27.2,
-          "bearish_score": 0.0,
+          "score": 19.8,
+          "bullish_score": 19.8,
+          "bearish_score": 7.0,
           "score_components": {
             "ema_alignment": 0.0,
-            "ema_slope": 0.00041793701646142267,
-            "rsi_momentum": 15.0,
+            "ema_slope": 0.004636650116651708,
+            "rsi_momentum": 8.0,
             "macd_momentum": 7.0,
-            "trend_strength": 5.210729823147037,
+            "trend_strength": 4.8115323697912835,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 111.05999755859375,
-          "ema_fast": 110.94408069613476,
-          "ema_slow": 111.05836558040264,
-          "ema_slow_slope_pct": 0.0,
-          "rsi14": 55.12500105742809,
-          "atr": 0.1527465299130118,
-          "atr_pct": 0.138,
-          "adx": 25.421459646294075,
-          "plus_di": 23.526631425262188,
-          "minus_di": 13.631143329164649,
-          "macd_histogram": 0.060101929513225384,
+          "close": 110.99299621582031,
+          "ema_fast": 110.94873931705719,
+          "ema_slow": 111.05580207590923,
+          "ema_slow_slope_pct": 0.0004,
+          "rsi14": 51.473316872599185,
+          "atr": 0.150550466915598,
+          "atr_pct": 0.136,
+          "adx": 24.623064739582567,
+          "plus_di": 22.164825237144267,
+          "minus_di": 16.637805331287936,
+          "macd_histogram": 0.05015890045746291,
           "swing_high": 111.18699645996094,
           "swing_low": 110.41899871826172,
-          "entry": 111.05999755859375,
-          "stop_loss": 110.40372406527042,
+          "entry": 110.99299621582031,
+          "stop_loss": 110.40394367157016,
           "take_profit": null,
           "risk_reward": null,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
@@ -4546,11 +4731,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -4568,20 +4753,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "CADCHF",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "CADCHF",
         "category": "forex",
@@ -4678,38 +4864,38 @@
         "1h": {
           "status": "ok",
           "direction": "bearish",
-          "score": 40.5,
-          "bullish_score": 15.0,
-          "bearish_score": 40.5,
+          "score": 40.6,
+          "bullish_score": 7.0,
+          "bearish_score": 40.6,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.5167983877842008,
+            "ema_slope": 0.5671141649927769,
             "rsi_momentum": 15.0,
             "macd_momentum": 0.0,
             "trend_strength": 0.0,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 0.5856199860572815,
-          "ema_fast": 0.5860248870608233,
-          "ema_slow": 0.586799081506392,
-          "ema_slow_slope_pct": -0.0431,
-          "rsi14": 42.757766216030234,
-          "atr": 0.0013493943749258725,
-          "atr_pct": 0.23,
-          "adx": 35.852465567943675,
-          "plus_di": 6.907522927643851,
-          "minus_di": 13.138493092190492,
-          "macd_histogram": 6.61460162471564e-05,
-          "swing_high": 0.5870100259780884,
+          "close": 0.5851100087165833,
+          "ema_fast": 0.5859377557899433,
+          "ema_slow": 0.5867328433577721,
+          "ema_slow_slope_pct": -0.0473,
+          "rsi14": 38.30842120132869,
+          "atr": 0.0013558653919403577,
+          "atr_pct": 0.232,
+          "adx": 35.826350242970335,
+          "plus_di": 6.383516297958242,
+          "minus_di": 13.406298332763557,
+          "macd_histogram": 3.640202663643714e-05,
+          "swing_high": 0.5867900252342224,
           "swing_low": 0.5841500163078308,
-          "entry": 0.5856199860572815,
-          "stop_loss": 0.5876440776196703,
-          "take_profit": 0.5823699831962585,
-          "risk_reward": 1.61,
+          "entry": 0.5851100087165833,
+          "stop_loss": 0.5871438068044937,
+          "take_profit": null,
+          "risk_reward": null,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
-          "execution_status": "watchlist_candidate_structural_RR",
+          "execution_status": "no_valid_structural_target",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
         }
@@ -4717,11 +4903,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -4739,20 +4925,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "CHFJPY",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "CHFJPY",
         "category": "forex",
@@ -4849,33 +5036,33 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 51.1,
-          "bullish_score": 51.1,
-          "bearish_score": 0.0,
+          "score": 51.5,
+          "bullish_score": 51.5,
+          "bearish_score": 7.0,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.5388484120566694,
+            "ema_slope": 0.5945738601091932,
             "rsi_momentum": 15.0,
             "macd_momentum": 7.0,
-            "trend_strength": 3.526157136543512,
+            "trend_strength": 3.906432863213105,
             "structure": 0.0,
             "volume_confirmation": null
           },
-          "close": 189.6020050048828,
-          "ema_fast": 189.27444312285044,
-          "ema_slow": 189.21713780492377,
-          "ema_slow_slope_pct": 0.0449,
-          "rsi14": 63.326160209904955,
-          "atr": 0.24743186053066316,
-          "atr_pct": 0.131,
-          "adx": 22.052314273087024,
-          "plus_di": 35.651748056437135,
-          "minus_di": 14.785613225798164,
-          "macd_histogram": 0.08395679616750179,
+          "close": 189.67100524902344,
+          "ema_fast": 189.31221094439073,
+          "ema_slow": 189.2349365282218,
+          "ema_slow_slope_pct": 0.0495,
+          "rsi14": 65.05434167733608,
+          "atr": 0.24547252911441045,
+          "atr_pct": 0.129,
+          "adx": 22.81286572642621,
+          "plus_di": 33.3694361994668,
+          "minus_di": 16.923596948662954,
+          "macd_histogram": 0.0763170302894561,
           "swing_high": 190.0959930419922,
           "swing_low": 188.55099487304688,
-          "entry": 189.6020050048828,
-          "stop_loss": 188.52625168699382,
+          "entry": 189.67100524902344,
+          "stop_loss": 188.52644762013543,
           "take_profit": null,
           "risk_reward": null,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
@@ -4888,11 +5075,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -4910,20 +5097,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 59.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "XAUUSD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "XAUUSD",
         "category": "commodity",
@@ -5021,38 +5209,38 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 31.7,
-          "bullish_score": 31.7,
-          "bearish_score": 7.3,
+          "score": 38.0,
+          "bullish_score": 38.0,
+          "bearish_score": 0.2,
           "score_components": {
             "ema_alignment": 0.0,
             "ema_slope": 0.0,
             "rsi_momentum": 15.0,
             "macd_momentum": 7.0,
-            "trend_strength": 9.71760602155382,
-            "structure": 0.0,
+            "trend_strength": 9.020526654641472,
+            "structure": 7.0,
             "volume_confirmation": 0.0
           },
-          "close": 3614.800048828125,
-          "ema_fast": 3593.034982296976,
-          "ema_slow": 3620.8385338056287,
-          "ema_slow_slope_pct": -0.0267,
-          "rsi14": 57.02474158959465,
-          "atr": 26.401181229127594,
-          "atr_pct": 0.73,
-          "adx": 34.43521204310764,
-          "plus_di": 24.120393350445525,
-          "minus_di": 18.00941229224873,
-          "macd_histogram": 9.421348512090411,
+          "close": 3626.0,
+          "ema_fast": 3596.1745077925025,
+          "ema_slow": 3621.0409442446235,
+          "ema_slow_slope_pct": -0.015,
+          "rsi14": 60.17055441184463,
+          "atr": 25.458236225038124,
+          "atr_pct": 0.702,
+          "adx": 33.041053309282944,
+          "plus_di": 23.423473514789055,
+          "minus_di": 17.342428136061955,
+          "macd_histogram": 8.909796106006269,
           "swing_high": 3636.39990234375,
           "swing_low": 3502.89990234375,
-          "entry": 3614.800048828125,
-          "stop_loss": 3500.2597842208374,
-          "take_profit": null,
-          "risk_reward": null,
+          "entry": 3626.0,
+          "stop_loss": 3587.8126456624427,
+          "take_profit": 3759.5,
+          "risk_reward": 3.5,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
-          "execution_status": "no_valid_structural_target",
+          "execution_status": "watchlist_candidate_structural_RR",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
         }
@@ -5060,11 +5248,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00-05:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -5082,20 +5270,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 54.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "XAGUSD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "XAGUSD",
         "category": "commodity",
@@ -5193,35 +5382,35 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 28.2,
-          "bullish_score": 28.2,
-          "bearish_score": 2.4,
+          "score": 34.5,
+          "bullish_score": 34.5,
+          "bearish_score": 2.3,
           "score_components": {
             "ema_alignment": 0.0,
             "ema_slope": 0.0,
             "rsi_momentum": 15.0,
             "macd_momentum": 7.0,
-            "trend_strength": 6.184857113110432,
-            "structure": 0.0,
+            "trend_strength": 5.494082724279274,
+            "structure": 7.0,
             "volume_confirmation": 0.0
           },
-          "close": 42.415000915527344,
-          "ema_fast": 42.106775755372496,
-          "ema_slow": 42.82757494926194,
-          "ema_slow_slope_pct": -0.2018,
-          "rsi14": 52.97313159715007,
-          "atr": 0.5679751932857192,
-          "atr_pct": 1.339,
-          "adx": 27.369714226220864,
-          "plus_di": 24.22451984694143,
-          "minus_di": 20.353187733708943,
-          "macd_histogram": 0.18118755755134436,
+          "close": 42.505001068115234,
+          "ema_fast": 42.14470197563371,
+          "ema_slow": 42.81492499313853,
+          "ema_slow_slope_pct": -0.1944,
+          "rsi14": 54.159543736567734,
+          "atr": 0.5402627012778666,
+          "atr_pct": 1.271,
+          "adx": 25.988165448558547,
+          "plus_di": 23.648025042406964,
+          "minus_di": 20.133250519690428,
+          "macd_histogram": 0.1713263943702978,
           "swing_high": 42.775001525878906,
           "swing_low": 40.6150016784668,
-          "entry": 42.415000915527344,
-          "stop_loss": 41.34320400655034,
-          "take_profit": 44.57500076293945,
-          "risk_reward": 2.02,
+          "entry": 42.505001068115234,
+          "stop_loss": 41.69460701619843,
+          "take_profit": 44.665000915527344,
+          "risk_reward": 2.67,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -5232,11 +5421,11 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00-05:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
-      "status": "unrankable",
+      "status": "watchlist",
       "entry_zone": null,
       "entry_trigger": null,
       "stop_loss": null,
@@ -5254,20 +5443,21 @@
       "missing_evidence": [],
       "risk_flags": [
         "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
       ],
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 54.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "WTI",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "WTI",
         "category": "commodity",
@@ -5364,38 +5554,38 @@
         },
         "1h": {
           "status": "ok",
-          "direction": "bullish",
-          "score": 15.4,
-          "bullish_score": 15.4,
-          "bearish_score": 7.0,
+          "direction": "bearish",
+          "score": 62.3,
+          "bullish_score": 0.0,
+          "bearish_score": 62.3,
           "score_components": {
-            "ema_alignment": 0.0,
-            "ema_slope": 0.4299210737495507,
+            "ema_alignment": 25.0,
+            "ema_slope": 0.2956613185963519,
             "rsi_momentum": 15.0,
-            "macd_momentum": 0.0,
+            "macd_momentum": 15.0,
             "trend_strength": 0.0,
-            "structure": 0.0,
+            "structure": 7.0,
             "volume_confirmation": 0.0
           },
-          "close": 83.18000030517578,
-          "ema_fast": 83.00167032256626,
-          "ema_slow": 83.01676671919762,
-          "ema_slow_slope_pct": 0.0358,
-          "rsi14": 52.46306742524984,
-          "atr": 0.6795079073357289,
-          "atr_pct": 0.817,
-          "adx": 14.679939115388542,
-          "plus_di": 18.959440698209885,
-          "minus_di": 20.034062412915336,
-          "macd_histogram": -0.010031126666849854,
+          "close": 82.48999786376953,
+          "ema_fast": 82.95293961220466,
+          "ema_slow": 82.99610911702398,
+          "ema_slow_slope_pct": -0.0246,
+          "rsi14": 45.66022203452728,
+          "atr": 0.6816858485597952,
+          "atr_pct": 0.826,
+          "adx": 13.907944105085218,
+          "plus_di": 17.548947500009504,
+          "minus_di": 18.962681032290185,
+          "macd_histogram": -0.05399153994938277,
           "swing_high": 84.06999969482422,
           "swing_low": 81.2699966430664,
-          "entry": 83.18000030517578,
-          "stop_loss": 82.16073844417218,
-          "take_profit": 85.9800033569336,
-          "risk_reward": 2.75,
-          "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
-          "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
+          "entry": 82.48999786376953,
+          "stop_loss": 84.01816553309817,
+          "take_profit": 79.68999481201172,
+          "risk_reward": 1.83,
+          "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
+          "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
@@ -5404,42 +5594,78 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00-05:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
-      "direction": null,
-      "setup_type": null,
-      "status": "unrankable",
-      "entry_zone": null,
-      "entry_trigger": null,
-      "stop_loss": null,
-      "targets": [],
-      "invalidation": null,
-      "expires_at": null,
-      "gross_rr": null,
+      "direction": "bearish",
+      "setup_type": "trend_pullback",
+      "status": "conditional",
+      "entry_zone": {
+        "low": 82.42182927891355,
+        "high": 82.55816644862551
+      },
+      "entry_trigger": {
+        "type": "confirmed_1h_close",
+        "close": 82.48999786376953,
+        "timestamp": "2026-11-23T10:00:00+00:00"
+      },
+      "stop_loss": 84.20633686453618,
+      "targets": [
+        {
+          "price": 82.37999725341797,
+          "allocation_pct": 100,
+          "basis": "nearest_confirmed_4h_swing"
+        }
+      ],
+      "invalidation": {
+        "type": "1h_close_beyond_stop",
+        "price": 84.20633686453618
+      },
+      "expires_at": "2026-11-23T14:00:00+00:00",
+      "gross_rr": 0.064,
       "net_rr": null,
-      "stop_rationale": null,
+      "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
       "event_risk": null,
-      "score_raw": null,
-      "score_adjusted": null,
-      "score_components": {},
-      "missing_evidence": [],
-      "risk_flags": [
-        "multi_timeframe_direction_not_aligned",
-        "daily_data_unavailable_or_stale"
+      "score_raw": 58.0,
+      "score_adjusted": 58.0,
+      "score_components": {
+        "technical": 58.0,
+        "net_rr": null,
+        "fundamental": null,
+        "news": null,
+        "data_quality": null,
+        "independent_evidence": null,
+        "liquidity": null
+      },
+      "missing_evidence": [
+        "instrument_specific_round_trip_cost_not_configured",
+        "fundamental_score",
+        "news_score",
+        "liquidity_score",
+        "data_quality_score",
+        "independent_evidence_score"
       ],
+      "risk_flags": [
+        "net_rr_unavailable_cost_unknown",
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
+      ],
+      "score_coverage": [
+        "technical"
+      ],
+      "score_method": "weighted_available_components_renormalized; not probability; incomplete coverage cannot be active",
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 54.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "BRENT",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "BRENT",
         "category": "commodity",
@@ -5537,38 +5763,38 @@
         "1h": {
           "status": "ok",
           "direction": "bearish",
-          "score": 53.2,
-          "bullish_score": 5.0,
-          "bearish_score": 53.2,
+          "score": 63.1,
+          "bullish_score": 0.0,
+          "bearish_score": 63.1,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 0.23938667286942383,
-            "rsi_momentum": 8.0,
+            "ema_slope": 1.074089376706544,
+            "rsi_momentum": 15.0,
             "macd_momentum": 15.0,
             "trend_strength": 0.0,
-            "structure": 0.0,
-            "volume_confirmation": 5.0
+            "structure": 7.0,
+            "volume_confirmation": 0.0
           },
-          "close": 89.41000366210938,
-          "ema_fast": 89.54988881319701,
-          "ema_slow": 89.71218883349252,
-          "ema_slow_slope_pct": -0.0199,
-          "rsi14": 48.45838680289369,
-          "atr": 0.6483414615925868,
-          "atr_pct": 0.725,
-          "adx": 13.75030409597378,
-          "plus_di": 19.832219614860325,
-          "minus_di": 22.877726410299438,
-          "macd_histogram": -0.010231605060748036,
+          "close": 88.69999694824219,
+          "ema_fast": 89.46894673082036,
+          "ema_slow": 89.67249503407093,
+          "ema_slow_slope_pct": -0.0895,
+          "rsi14": 41.74084997286225,
+          "atr": 0.6548888924191207,
+          "atr_pct": 0.738,
+          "adx": 13.7877777117795,
+          "plus_di": 18.23151717657336,
+          "minus_di": 24.303340315667732,
+          "macd_histogram": -0.0661630703453019,
           "swing_high": 90.5,
           "swing_low": 87.91999816894531,
-          "entry": 89.41000366210938,
-          "stop_loss": 90.56483414615926,
-          "take_profit": 86.83000183105469,
-          "risk_reward": 2.23,
+          "entry": 88.69999694824219,
+          "stop_loss": 90.5654888892419,
+          "take_profit": null,
+          "risk_reward": null,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_high",
           "target_basis": "nearest_underfoot_pivot_or_20_bar_range_projection",
-          "execution_status": "watchlist_candidate_structural_RR",
+          "execution_status": "no_valid_structural_target",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
         }
@@ -5576,42 +5802,78 @@
       "last_candle_index_utc": {
         "1d": "2026-11-20T00:00:00-05:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": "bearish",
-      "setup_type": null,
-      "status": "unrankable",
-      "entry_zone": null,
-      "entry_trigger": null,
-      "stop_loss": null,
-      "targets": [],
-      "invalidation": null,
-      "expires_at": null,
-      "gross_rr": null,
+      "setup_type": "trend_pullback",
+      "status": "conditional",
+      "entry_zone": {
+        "low": 88.63450805900028,
+        "high": 88.76548583748409
+      },
+      "entry_trigger": {
+        "type": "confirmed_1h_close",
+        "close": 88.69999694824219,
+        "timestamp": "2026-11-23T10:00:00+00:00"
+      },
+      "stop_loss": 90.63097777848382,
+      "targets": [
+        {
+          "price": 88.58999633789062,
+          "allocation_pct": 100,
+          "basis": "nearest_confirmed_4h_swing"
+        }
+      ],
+      "invalidation": {
+        "type": "1h_close_beyond_stop",
+        "price": 90.63097777848382
+      },
+      "expires_at": "2026-11-23T14:00:00+00:00",
+      "gross_rr": 0.057,
       "net_rr": null,
-      "stop_rationale": null,
+      "stop_rationale": "20-candle 1H swing extreme plus configured ATR buffer",
       "estimated_costs": null,
       "event_risk": null,
-      "score_raw": null,
-      "score_adjusted": null,
-      "score_components": {},
-      "missing_evidence": [],
-      "risk_flags": [
-        "no_confirmed_1h_setup_trigger",
-        "daily_data_unavailable_or_stale"
+      "score_raw": 58.47,
+      "score_adjusted": 58.47,
+      "score_components": {
+        "technical": 58.46666666666667,
+        "net_rr": null,
+        "fundamental": null,
+        "news": null,
+        "data_quality": null,
+        "independent_evidence": null,
+        "liquidity": null
+      },
+      "missing_evidence": [
+        "instrument_specific_round_trip_cost_not_configured",
+        "fundamental_score",
+        "news_score",
+        "liquidity_score",
+        "data_quality_score",
+        "independent_evidence_score"
       ],
+      "risk_flags": [
+        "net_rr_unavailable_cost_unknown",
+        "daily_context_older_than_standard_quote_limit_but_hourly_is_fresh"
+      ],
+      "score_coverage": [
+        "technical"
+      ],
+      "score_method": "weighted_available_components_renormalized; not probability; incomplete coverage cannot be active",
       "data_sources": {
         "daily": "Yahoo Finance",
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 54.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "BTCUSD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "BTCUSD",
         "category": "crypto",
@@ -5707,38 +5969,38 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 59.0,
-          "bullish_score": 59.0,
-          "bearish_score": 0.0,
+          "score": 51.8,
+          "bullish_score": 51.8,
+          "bearish_score": 15.0,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 3.608392088751522,
+            "ema_slope": 3.2734424876161405,
             "rsi_momentum": 15.0,
-            "macd_momentum": 7.0,
-            "trend_strength": 8.39579128924765,
+            "macd_momentum": 0.0,
+            "trend_strength": 8.51553868313201,
             "structure": 0.0,
-            "volume_confirmation": null
+            "volume_confirmation": 0.0
           },
-          "close": 61361.26953125,
-          "ema_fast": 60995.15936659466,
-          "ema_slow": 60601.95664532254,
-          "ema_slow_slope_pct": 0.3007,
-          "rsi14": 58.90134559617582,
-          "atr": 525.6913478394033,
-          "atr_pct": 0.857,
-          "adx": 31.7915825784953,
-          "plus_di": 30.973853039520396,
-          "minus_di": 14.864269618267674,
-          "macd_histogram": 1.0162574104589908,
+          "close": 61351.33984375,
+          "ema_fast": 61029.08131679993,
+          "ema_slow": 60631.344221731466,
+          "ema_slow_slope_pct": 0.2728,
+          "rsi14": 58.701859515377734,
+          "atr": 502.3562515651602,
+          "atr_pct": 0.819,
+          "adx": 32.03107736626402,
+          "plus_di": 30.097440741665412,
+          "minus_di": 14.443681689621526,
+          "macd_histogram": -8.085559993879599,
           "swing_high": 61819.8984375,
           "swing_low": 60287.46875,
-          "entry": 61361.26953125,
-          "stop_loss": 60234.89961521606,
-          "take_profit": null,
-          "risk_reward": null,
+          "entry": 61351.33984375,
+          "stop_loss": 60597.80546640226,
+          "take_profit": 62883.76953125,
+          "risk_reward": 2.03,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
-          "execution_status": "no_valid_structural_target",
+          "execution_status": "watchlist_candidate_structural_RR",
           "method": "EMA alignment+slope, RSI, MACD histogram, ADX/DI, 20-bar structure and optional volume; daily OHLC",
           "score_type": "multi_factor_rule_based_strength_not_probability"
         }
@@ -5746,7 +6008,7 @@
       "last_candle_index_utc": {
         "1d": "2026-11-22T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
@@ -5774,13 +6036,14 @@
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 11.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "ETHUSD",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
-      "quote_timestamp": "2026-11-23T10:00:00+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
+      "quote_timestamp": "2026-11-23T11:00:00+00:00",
       "instrument": {
         "symbol": "ETHUSD",
         "category": "crypto",
@@ -5876,35 +6139,35 @@
         "1h": {
           "status": "ok",
           "direction": "bullish",
-          "score": 56.5,
-          "bullish_score": 56.5,
+          "score": 56.2,
+          "bullish_score": 56.2,
           "bearish_score": 20.0,
           "score_components": {
             "ema_alignment": 25.0,
-            "ema_slope": 3.2099732709170326,
+            "ema_slope": 2.8829811238570535,
             "rsi_momentum": 15.0,
             "macd_momentum": 0.0,
-            "trend_strength": 8.284646785815903,
+            "trend_strength": 8.344632841622,
             "structure": 0.0,
             "volume_confirmation": 5.0
           },
-          "close": 1721.1199951171875,
-          "ema_fast": 1714.6297002379606,
-          "ema_slow": 1702.5551788518655,
-          "ema_slow_slope_pct": 0.2675,
-          "rsi14": 56.737847809102604,
-          "atr": 14.879849880279846,
-          "atr_pct": 0.865,
-          "adx": 31.569293571631807,
-          "plus_di": 30.75607215096368,
-          "minus_di": 15.407267925445813,
-          "macd_histogram": -1.1727829206280393,
+          "close": 1722.7099609375,
+          "ema_fast": 1715.399248876012,
+          "ema_slow": 1703.345562463067,
+          "ema_slow_slope_pct": 0.2402,
+          "rsi14": 57.56840682879172,
+          "atr": 14.347712863161643,
+          "atr_pct": 0.833,
+          "adx": 31.689265683244,
+          "plus_di": 29.61843182859906,
+          "minus_di": 14.837366503592339,
+          "macd_histogram": -1.2442604066013718,
           "swing_high": 1748.050048828125,
           "swing_low": 1694.1700439453125,
-          "entry": 1721.1199951171875,
-          "stop_loss": 1692.6820589572844,
-          "take_profit": 1775.0,
-          "risk_reward": 1.89,
+          "entry": 1722.7099609375,
+          "stop_loss": 1701.1883916427576,
+          "take_profit": 1776.5899658203125,
+          "risk_reward": 2.5,
           "stop_basis": "ATR_buffer_and_latest_confirmed_pivot_low",
           "target_basis": "nearest_overhead_pivot_or_20_bar_range_projection",
           "execution_status": "watchlist_candidate_structural_RR",
@@ -5915,7 +6178,7 @@
       "last_candle_index_utc": {
         "1d": "2026-11-22T00:00:00+00:00",
         "4h": "2026-11-23T08:00:00+00:00",
-        "1h": "2026-11-23T09:00:00+00:00"
+        "1h": "2026-11-23T10:00:00+00:00"
       },
       "direction": null,
       "setup_type": null,
@@ -5943,12 +6206,13 @@
         "hourly": "Yahoo Finance",
         "hourly_status": "available"
       },
-      "quote_age_minutes": 19.6
+      "quote_age_minutes": 8.8,
+      "daily_context_age_hours": 11.1
     },
     {
       "schema_version": "1.0.0",
       "symbol": "USD_IRR",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
       "quote_timestamp": null,
       "instrument": {
         "symbol": "USD_IRR",
@@ -6010,7 +6274,7 @@
     {
       "schema_version": "1.0.0",
       "symbol": "GOLD_18K_IRR",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
       "quote_timestamp": null,
       "instrument": {
         "symbol": "GOLD_18K_IRR",
@@ -6072,7 +6336,7 @@
     {
       "schema_version": "1.0.0",
       "symbol": "USDT_IRR",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
       "quote_timestamp": null,
       "instrument": {
         "symbol": "USDT_IRR",
@@ -6134,7 +6398,7 @@
     {
       "schema_version": "1.0.0",
       "symbol": "USD_IRR_FREE",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
       "quote_timestamp": null,
       "instrument": {
         "symbol": "USD_IRR_FREE",
@@ -6196,7 +6460,7 @@
     {
       "schema_version": "1.0.0",
       "symbol": "USD_IRT_FREE",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
       "quote_timestamp": null,
       "instrument": {
         "symbol": "USD_IRT_FREE",
@@ -6258,7 +6522,7 @@
     {
       "schema_version": "1.0.0",
       "symbol": "BTC_IRT",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
       "quote_timestamp": null,
       "instrument": {
         "symbol": "BTC_IRT",
@@ -6320,7 +6584,7 @@
     {
       "schema_version": "1.0.0",
       "symbol": "ETH_IRT",
-      "analysis_cutoff_utc": "2026-11-23T10:19:36.163252+00:00",
+      "analysis_cutoff_utc": "2026-11-23T11:08:46.987302+00:00",
       "quote_timestamp": null,
       "instrument": {
         "symbol": "ETH_IRT",
