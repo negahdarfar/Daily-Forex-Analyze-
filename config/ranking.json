@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "max_opportunities": 10,
+  "minimum_net_rr": 2,
+  "weights": {
+    "technical": 25,
+    "net_rr": 20,
+    "fundamental": 15,
+    "news": 10,
+    "data_quality": 15,
+    "independent_evidence": 10,
+    "liquidity": 5
+  },
+  "score_interpretation": "Rule-based ranking score, not a win probability.",
+  "missing_data_policy": "null_and_renormalize_available_components; hard gates still block active status."
+}
