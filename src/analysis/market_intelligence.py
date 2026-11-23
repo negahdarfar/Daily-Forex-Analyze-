@@ -51,7 +51,28 @@ def _currency_mentions(text: str) -> set[str]:
     return found
 
 
-def _news_scores(news: list[dict[str, Any]]) -> tuple[dict[str, float], dict[str, int]]:
+def _deduplicate_news(news: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
+    """Collapse exact syndicated copies by canonical URL or normalized headline."""
+    unique: list[dict[str, Any]] = []
+    seen_urls: set[str] = set()
+    seen_titles: set[str] = set()
+    duplicates = 0
+    for item in news:
+        url = str(item.get("url") or "").split("#", 1)[0].split("?", 1)[0].rstrip("/").lower()
+        title = re.sub(r"[^a-z0-9]+", " ", str(item.get("title") or "").lower()).strip()
+        if (url and url in seen_urls) or (title and title in seen_titles):
+            duplicates += 1
+            continue
+        if url:
+            seen_urls.add(url)
+        if title:
+            seen_titles.add(title)
+        unique.append(item)
+    return unique, duplicates
+
+
+def _news_scores(news: list[dict[str, Any]]) -> tuple[dict[str, float], dict[str, int], int]:
+    news, duplicates = _deduplicate_news(news)
     totals: dict[str, float] = defaultdict(float)
     counts: dict[str, int] = defaultdict(int)
     now = datetime.now(timezone.utc)
@@ -73,7 +94,7 @@ def _news_scores(news: list[dict[str, Any]]) -> tuple[dict[str, float], dict[str
         for code in mentions:
             totals[code] += signal
             counts[code] += 1
-    return ({k: _clamp(v / max(1, counts[k])) for k, v in totals.items()}, dict(counts))
+    return ({k: _clamp(v / max(1, counts[k])) for k, v in totals.items()}, dict(counts), duplicates)
 
 
 def _cot_scores(datasets: list[dict[str, Any]]) -> tuple[dict[str, float], dict[str, dict[str, Any]]]:
@@ -134,7 +155,7 @@ def build_market_intelligence(
         fresh_pairs += 1
 
     technical = {code: _clamp(tech_total[code] / max(1, tech_count[code])) for code in CURRENCY_NAMES}
-    news_score, news_count = _news_scores(news)
+    news_score, news_count, duplicate_news_items = _news_scores(news)
     cot_score, cot_details = _cot_scores(official_macro)
 
     currency_rows = []
@@ -200,6 +221,7 @@ def build_market_intelligence(
             "fresh_fx_pairs_with_direction": fresh_pairs,
             "stale_fx_pairs": stale_pairs,
             "news_items_received": len([n for n in news if n.get("status") != "source_error"]),
+            "duplicate_news_items_removed": duplicate_news_items,
             "news_currency_mentions": sum(news_count.values()),
             "currencies_with_cot_zscore": len(cot_score),
             "macro_datasets_available": len([d for d in official_macro if d.get("status") == "available"]),
