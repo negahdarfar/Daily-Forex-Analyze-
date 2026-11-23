@@ -51,12 +51,17 @@ def completed_hourly_candles(hourly: pd.DataFrame, now: datetime | None = None) 
 
 
 def resample_completed_4h(hourly: pd.DataFrame, now: datetime | None = None) -> pd.DataFrame:
-    """Build UTC 4h candles from hourly candles indexed by their opening time.
-
-    The final hourly bar is retained only if its full one-hour interval has closed.
-    The final 4h aggregate is retained only after its four-hour bucket has closed.
-    """
-    data = _clean_ohlc(hourly)
+    """Build UTC 4h candles only from four correctly aligned, consecutive closed 1h bars."""
+    data = completed_hourly_candles(hourly, now=now)
+    if data.empty:
+        return data
+    # Reject off-grid timestamps rather than silently assigning them to an OHLC bucket.
+    if ((data.index.minute != 0) | (data.index.second != 0) | (data.index.microsecond != 0)).any():
+        data = data.loc[
+            (data.index.minute == 0)
+            & (data.index.second == 0)
+            & (data.index.microsecond == 0)
+        ]
     if data.empty:
         return data
     now_ts = pd.Timestamp(now or datetime.now(timezone.utc))
@@ -64,17 +69,33 @@ def resample_completed_4h(hourly: pd.DataFrame, now: datetime | None = None) -> 
         now_ts = now_ts.tz_localize("UTC")
     else:
         now_ts = now_ts.tz_convert("UTC")
-    data = data.loc[(data.index + pd.Timedelta(hours=1)) <= now_ts]
-    if data.empty:
-        return data
-    agg = {"Open": "first", "High": "max", "Low": "min", "Close": "last"}
-    if "Volume" in data.columns:
-        agg["Volume"] = "sum"
-    four = data.resample("4h", origin="epoch", label="right", closed="left").agg(agg)
-    counts = data["Close"].resample("4h", origin="epoch", label="right", closed="left").count()
-    four = four.loc[(counts >= 4) & (four.index <= now_ts)]
-    return four.dropna(subset=["Open", "High", "Low", "Close"])
 
+    rows = []
+    labels = []
+    for bucket_start, group in data.groupby(
+        pd.Grouper(freq="4h", origin="epoch", label="left", closed="left")
+    ):
+        expected = pd.date_range(bucket_start, periods=4, freq="h")
+        if len(group) != 4 or not group.index.equals(expected):
+            continue
+        bucket_end = bucket_start + pd.Timedelta(hours=4)
+        if bucket_end > now_ts:
+            continue
+        row = {
+            "Open": float(group["Open"].iloc[0]),
+            "High": float(group["High"].max()),
+            "Low": float(group["Low"].min()),
+            "Close": float(group["Close"].iloc[-1]),
+        }
+        if "Volume" in group.columns:
+            row["Volume"] = float(group["Volume"].sum())
+        rows.append(row)
+        labels.append(bucket_end)
+    if not rows:
+        return pd.DataFrame(columns=["Open", "High", "Low", "Close"], index=pd.DatetimeIndex([], tz="UTC"))
+    result = pd.DataFrame(rows, index=pd.DatetimeIndex(labels, tz="UTC"))
+    result.index.name = "Datetime"
+    return result
 
 def _setup_signal(hourly: pd.DataFrame, direction: str, atr: float) -> str | None:
     if len(hourly) < 30 or atr is None or not np.isfinite(atr) or atr <= 0:
