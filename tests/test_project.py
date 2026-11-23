@@ -31,6 +31,20 @@ class ProjectConfigurationTests(unittest.TestCase):
         assets = json.loads((ROOT / "config/assets.json").read_text(encoding="utf-8"))
         self.assertTrue(all(not item["enabled"] for item in assets["iran_local"]))
 
+    def test_market_metadata_keeps_futures_proxies_distinct_from_spot(self):
+        markets = json.loads((ROOT / "config/markets.json").read_text(encoding="utf-8"))
+        by_symbol = {item["symbol"]: item for item in markets["markets"]}
+        self.assertEqual(by_symbol["XAUUSD"]["instrument_type"], "continuous_futures_proxy")
+        self.assertEqual(by_symbol["WTI"]["provider_symbol"], "CL=F")
+        self.assertEqual(by_symbol["BRENT"]["provider_symbol"], "BZ=F")
+        self.assertEqual(by_symbol["USD_IRR_FREE"]["quote_currency"], "IRR")
+        self.assertEqual(by_symbol["USD_IRT_FREE"]["quote_currency"], "IRT")
+
+    def test_live_order_execution_is_disabled(self):
+        settings = json.loads((ROOT / "config/settings.json").read_text(encoding="utf-8"))
+        self.assertFalse(settings["risk"]["live_orders_enabled"])
+        self.assertEqual(settings["risk"]["mode"], "research_paper_trading_only")
+
     def test_analysis_registry_contains_100_unique_sources(self):
         registry = load_source_registry(ROOT / "config/analysis_sources.json")
         summary = summarize_source_registry(registry)
