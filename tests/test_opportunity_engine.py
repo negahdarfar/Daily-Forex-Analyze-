@@ -34,6 +34,40 @@ class MultiTimeframeDataTests(unittest.TestCase):
         self.assertEqual(len(result), 2)
         self.assertEqual(result.index[-1], pd.Timestamp("2026-11-23T08:00:00Z"))
 
+    def test_resample_rejects_four_bars_with_missing_hour_and_wrong_bucket(self):
+        index = pd.to_datetime([
+            "2026-11-23T00:30:00Z", "2026-11-23T01:30:00Z",
+            "2026-11-23T02:30:00Z", "2026-11-23T03:30:00Z",
+        ])
+        close = np.array([100.0, 101.0, 102.0, 103.0])
+        frame = pd.DataFrame({
+            "Open": close - 0.1, "High": close + 1,
+            "Low": close - 1, "Close": close,
+        }, index=index)
+        result = resample_completed_4h(frame, datetime.fromisoformat("2026-11-23T05:00:00+00:00"))
+        self.assertEqual(len(result), 0)
+
+    def test_resample_rejects_missing_hour_even_when_four_rows_exist(self):
+        index = pd.to_datetime([
+            "2026-11-23T00:00:00Z", "2026-11-23T01:00:00Z",
+            "2026-11-23T03:00:00Z", "2026-11-23T04:00:00Z",
+        ])
+        close = np.array([100.0, 101.0, 103.0, 104.0])
+        frame = pd.DataFrame({
+            "Open": close - 0.1, "High": close + 1,
+            "Low": close - 1, "Close": close,
+        }, index=index)
+        result = resample_completed_4h(frame, datetime.fromisoformat("2026-11-23T08:00:00+00:00"))
+        self.assertEqual(len(result), 0)
+
+    def test_ohlc_inconsistent_candle_is_rejected(self):
+        from src.analysis.opportunity_engine import _clean_ohlc
+        index = pd.date_range("2026-11-23T00:00:00Z", periods=1, freq="h")
+        frame = pd.DataFrame({
+            "Open": [105.0], "High": [104.0], "Low": [99.0], "Close": [103.0]
+        }, index=index)
+        self.assertTrue(_clean_ohlc(frame).empty)
+
     def test_resample_requires_four_complete_hourly_bars(self):
         index = pd.date_range("2026-11-23T00:00:00Z", periods=12, freq="h")
         close = np.arange(100.0, 112.0)
