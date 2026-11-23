@@ -13,6 +13,7 @@ from src.experts.analysis_ingestion import extract_analysis_candidates
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
 from src.analysis.market_intelligence import build_market_intelligence
+from src.analysis.opportunity_engine import build_opportunity, rank_opportunities, resample_completed_4h
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -25,6 +26,7 @@ def main() -> None:
     assets = load_json(ROOT / "config" / "assets.json")
     settings = load_json(ROOT / "config" / "settings.json")
     results = []
+    opportunity_candidates = []
     enabled = []
     for category in ("forex", "commodities", "crypto"):
         enabled.extend(a for a in assets.get(category, []) if a.get("enabled"))
@@ -58,8 +60,50 @@ def main() -> None:
                     item["reason"] = f"آخرین کندل {item['age_hours']} ساعت قبل است؛ از رتبه‌بندی فرصت‌ها حذف شد."
         else:
             item["analysis"] = {"status": "unavailable"}
+        # Intraday data is fetched independently; daily candles are never upsampled.
+        hourly_fetched = fetch_asset_history(
+            asset,
+            period=settings.get("intraday_history_period", "60d"),
+            interval="1h",
+        )
+        hourly_frame = hourly_fetched.get("history") if hourly_fetched.get("status") == "available" else None
+        daily_frame = fetched.get("history") if fetched.get("status") == "available" else None
+        four_hour_frame = resample_completed_4h(hourly_frame) if hourly_frame is not None else None
+        frames = {"1d": daily_frame, "4h": four_hour_frame, "1h": hourly_frame}
+        quote_stamp = hourly_fetched.get("market_timestamp")
+        instrument_costs = settings.get("risk", {}).get("instrument_costs", {}).get(asset["symbol"])
+        candidate = build_opportunity(
+            asset["symbol"], frames, settings, costs=instrument_costs,
+            quote_timestamp=quote_stamp,
+            analysis_cutoff_utc=datetime.now(timezone.utc).isoformat(),
+            instrument={
+                "provider": hourly_fetched.get("provider"),
+                "provider_symbol": asset.get("yahoo"),
+                "instrument_type": asset.get("instrument_type", "unverified_provider_instrument"),
+                "execution_capability": asset.get("execution_capability", "not_established"),
+            },
+        )
+        candidate["data_sources"] = {
+            "daily": fetched.get("provider"),
+            "hourly": hourly_fetched.get("provider"),
+            "hourly_status": hourly_fetched.get("status"),
+        }
+        if fetched.get("status") != "available" or item.get("status") == "stale":
+            candidate["status"] = "unrankable"
+            candidate["risk_flags"].append("daily_data_unavailable_or_stale")
+        if hourly_fetched.get("status") != "available":
+            candidate["status"] = "unrankable"
+            candidate["risk_flags"].append("hourly_data_unavailable")
+        elif quote_stamp:
+            quote_age_minutes = (datetime.now(timezone.utc) - datetime.fromisoformat(quote_stamp.replace("Z", "+00:00"))).total_seconds() / 60
+            candidate["quote_age_minutes"] = round(max(0.0, quote_age_minutes), 1)
+            if quote_age_minutes > float(settings.get("max_intraday_quote_age_minutes", 180)):
+                candidate["status"] = "unrankable"
+                candidate["risk_flags"].append("hourly_quote_stale")
+        opportunity_candidates.append(candidate)
+
         results.append(item)
-        print(f"{asset['symbol']}: {item['status']}")
+        print(f"{asset['symbol']}: {item['status']} | opportunity={candidate['status']}")
 
     for asset in assets.get("iran_local", []):
         if not asset.get("enabled"):
@@ -98,19 +142,33 @@ def main() -> None:
         results=results, news=news, official_macro=official_macro,
         analysis_candidates=analysis_candidates, source_registry=source_registry,
     )
+    opportunity_ranking = rank_opportunities(
+        opportunity_candidates, max_items=int(settings.get("ranking", {}).get("max_top_setups", 10))
+    )
     report = render_report(
         results, settings, local_now, news=news, source_registry=source_registry,
         analysis_candidates=analysis_candidates, forex_symbols=forex_symbols,
         directional_evidence=directional_evidence, official_macro=official_macro,
         market_intelligence=market_intelligence,
+        opportunity_ranking=opportunity_ranking,
+        opportunity_candidates=opportunity_candidates,
     )
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
     out = report_dir / f"{local_now:%Y-%m-%d}.md"
     out.write_text(report, encoding="utf-8")
+    json_out = report_dir / f"{local_now:%Y-%m-%d}-opportunities.json"
+    json_out.write_text(json.dumps({
+        "schema_version": "1.0.0",
+        "analysis_cutoff_utc": datetime.now(timezone.utc).isoformat(),
+        "ranking": opportunity_ranking,
+        "candidates": opportunity_candidates,
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"News items collected: {len(news)}")
     print(f"Analysis candidates extracted: {len(analysis_candidates)}")
     print(f"Report written: {out.relative_to(ROOT)}")
+    print(f"Opportunity JSON written: {json_out.relative_to(ROOT)}")
+    print(f"Execution-qualified opportunities: {opportunity_ranking['count']}")
 
 
 if __name__ == "__main__":
