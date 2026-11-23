@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from concurrent.futures import ThreadPoolExecutor
@@ -105,7 +105,10 @@ def main() -> None:
         hourly_frame = completed_hourly_candles(hourly_frame, now=cutoff_dt) if hourly_frame is not None else None
         four_hour_frame = resample_completed_4h(hourly_frame, now=cutoff_dt) if hourly_frame is not None else None
         frames = {"1d": daily_frame, "4h": four_hour_frame, "1h": hourly_frame}
-        quote_stamp = hourly_fetched.get("market_timestamp")
+        quote_stamp = (
+            (hourly_frame.index[-1].to_pydatetime() + timedelta(hours=1)).isoformat()
+            if hourly_frame is not None and not hourly_frame.empty else None
+        )
         instrument_costs = settings.get("risk", {}).get("instrument_costs", {}).get(asset["symbol"])
         candidate = build_opportunity(
             asset["symbol"], frames, settings, costs=instrument_costs,
@@ -129,7 +132,7 @@ def main() -> None:
             candidate["status"] = "unrankable"
             candidate["risk_flags"].append("hourly_data_unavailable")
         elif quote_stamp:
-            quote_age_minutes = (datetime.now(timezone.utc) - datetime.fromisoformat(quote_stamp.replace("Z", "+00:00"))).total_seconds() / 60
+            quote_age_minutes = (cutoff_dt - datetime.fromisoformat(quote_stamp.replace("Z", "+00:00"))).total_seconds() / 60
             candidate["quote_age_minutes"] = round(max(0.0, quote_age_minutes), 1)
             if quote_age_minutes > float(settings.get("max_intraday_quote_age_minutes", 180)):
                 candidate["status"] = "unrankable"
