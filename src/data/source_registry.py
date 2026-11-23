@@ -100,8 +100,9 @@ def annotate_analysis_candidates(candidates: list[dict[str, Any]], registry: dic
 
 
 def summarize_directional_evidence(candidates: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    """Summarize explicit bullish/bearish claims; cap each publisher to one vote per asset."""
+    """Summarize explicit claims; cap publishers and exact syndicated headlines per asset."""
     grouped: dict[str, dict[str, dict[str, float]]] = {}
+    seen_headlines: set[tuple[str, str, str]] = set()
     for item in candidates:
         direction = item.get("direction")
         if direction not in {"bullish", "bearish"}:
@@ -110,7 +111,13 @@ def summarize_directional_evidence(candidates: list[dict[str, Any]]) -> dict[str
         if score <= 0:
             continue
         publisher = str(item.get("source_registry_match") or item.get("source") or "unknown")
+        headline = re.sub(r"[^a-z0-9]+", " ", str(item.get("title") or "").lower()).strip()
         for asset in item.get("assets", []):
+            fingerprint = (str(asset), direction, headline)
+            if headline and fingerprint in seen_headlines:
+                continue
+            if headline:
+                seen_headlines.add(fingerprint)
             grouped.setdefault(asset, {}).setdefault(direction, {})
             grouped[asset][direction][publisher] = max(grouped[asset][direction].get(publisher, 0.0), score)
     result = {}
