@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 
-from src.analysis.opportunity_engine import resample_completed_4h, rank_opportunities
+from src.analysis.opportunity_engine import resample_completed_4h, rank_opportunities, build_opportunity
 
 
 class MultiTimeframeDataTests(unittest.TestCase):
@@ -36,6 +36,12 @@ class MultiTimeframeDataTests(unittest.TestCase):
 
 
 class OpportunityRankingTests(unittest.TestCase):
+    def test_missing_timeframe_data_is_unrankable_not_neutral(self):
+        settings = {"technical": {"minimum_history_rows": 60}}
+        result = build_opportunity("EURUSD", {"1d": pd.DataFrame(), "4h": pd.DataFrame(), "1h": pd.DataFrame()}, settings)
+        self.assertEqual(result["status"], "unrankable")
+        self.assertIn("insufficient_or_invalid_ohlc_for_1d_4h_1h", result["missing_evidence"])
+
     def test_ranking_never_fills_ten_with_watchlist_or_conditional(self):
         rows = [
             {"symbol": "EURUSD", "status": "active", "score_adjusted": 91},
