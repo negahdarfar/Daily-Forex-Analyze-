@@ -185,10 +185,17 @@
       "enabled": true
     },
     {
-      "symbol": "USOIL",
+      "symbol": "WTI",
       "yahoo": "CL=F",
       "category": "commodity",
       "name": "WTI Crude Oil",
+      "enabled": true
+    },
+    {
+      "symbol": "BRENT",
+      "yahoo": "BZ=F",
+      "category": "commodity",
+      "name": "Brent Crude Oil",
       "enabled": true
     }
   ],
@@ -229,6 +236,34 @@
       "name": "تتر به تومان",
       "enabled": false,
       "reason": "منبع محلی معتبر و قابل‌ردیابی هنوز پیکربندی نشده."
+    },
+    {
+      "symbol": "USD_IRR_FREE",
+      "category": "iran_local",
+      "name": "USD / IRR Free Market",
+      "enabled": false,
+      "reason": "نرخ بازار آزاد؛ تا اتصال منبع مجاز و timestampدار غیرفعال است."
+    },
+    {
+      "symbol": "USD_IRT_FREE",
+      "category": "iran_local",
+      "name": "USD / IRT Free Market",
+      "enabled": false,
+      "reason": "نرخ تومان؛ معادل ریال نیست و تا اتصال منبع مجاز و timestampدار غیرفعال است."
+    },
+    {
+      "symbol": "BTC_IRT",
+      "category": "iran_local",
+      "name": "BTC / IRT",
+      "enabled": false,
+      "reason": "قیمت محلی BTC به تومان؛ بدون API مجاز و داده timestampدار غیرفعال است."
+    },
+    {
+      "symbol": "ETH_IRT",
+      "category": "iran_local",
+      "name": "ETH / IRT",
+      "enabled": false,
+      "reason": "قیمت محلی ETH به تومان؛ بدون API مجاز و داده timestampدار غیرفعال است."
     }
   ]
 }
