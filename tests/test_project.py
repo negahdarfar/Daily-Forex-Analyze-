@@ -11,7 +11,7 @@ from src.experts.registry import assess_profile
 from src.experts.performance import calculate_performance, realized_r_multiple, assess_trader_history
 from src.data.news import classify_relevance, collect_news
 from src.data.market_data import fetch_asset_history
-from src.data.source_registry import load_source_registry, summarize_source_registry, merge_active_rss_sources
+from src.data.source_registry import load_source_registry, summarize_source_registry, merge_active_rss_sources, summarize_directional_evidence
 from src.data.official_data import fetch_ecb_reference_rates, fetch_world_bank_inflation, fetch_bls_macro, fetch_cftc_cot, fetch_fred_public_series
 from src.experts.forecast_tracking import evaluate_forecast
 from src.experts.analysis_ingestion import extract_analysis_candidates
@@ -51,6 +51,18 @@ class ProjectConfigurationTests(unittest.TestCase):
         self.assertEqual(summary["total"], 100)
         self.assertEqual(summary["enabled"], 9)
         self.assertEqual(len({item["id"] for item in registry["sources"]}), 100)
+
+    def test_syndicated_analysis_headlines_count_as_one_independent_publisher(self):
+        candidates = [
+            {"direction": "bullish", "assets": ["EURUSD"], "source": "Publisher A",
+             "source_registry_match": "Publisher A", "source_authority_score": 90,
+             "title": "EURUSD bullish outlook after ECB rate hike"},
+            {"direction": "bullish", "assets": ["EURUSD"], "source": "Publisher B",
+             "source_registry_match": "Publisher B", "source_authority_score": 85,
+             "title": "EURUSD bullish outlook after ECB rate hike"},
+        ]
+        result = summarize_directional_evidence(candidates)
+        self.assertEqual(result["EURUSD"]["bullish_publishers"], 1)
 
     def test_analysis_ingestion_extracts_only_explicit_fields(self):
         items = [{
