@@ -26,6 +26,17 @@ class MarketIntelligenceTests(unittest.TestCase):
         self.assertEqual(result["coverage"]["fresh_fx_pairs_with_direction"], 2)
         self.assertEqual(result["coverage"]["stale_fx_pairs"], 1)
 
+    def test_syndicated_duplicate_headlines_are_not_independent_evidence(self):
+        headline = "US dollar gains after Federal Reserve rate hike"
+        news = [
+            {"title": headline, "source": "Publisher A", "url": "https://a.example/story", "status": "dated"},
+            {"title": headline, "source": "Publisher B", "url": "https://b.example/story", "status": "dated"},
+        ]
+        result = build_market_intelligence([], news, [], [])
+        usd = next(row for row in result["currency_strength"] if row["currency"] == "USD")
+        self.assertEqual(usd["news_items"], 1)
+        self.assertEqual(result["coverage"]["duplicate_news_items_removed"], 1)
+
     def test_cot_requires_minimum_history(self):
         macro = [{"source": "CFTC", "status": "available", "observations": [
             {"contract": "Euro FX", "net_position_52w_zscore": 1.2, "history_weeks": 30, "report_date": "2026-11-17"},
