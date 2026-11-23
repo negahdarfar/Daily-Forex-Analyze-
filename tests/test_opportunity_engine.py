@@ -151,6 +151,24 @@ class OpportunityRankingTests(unittest.TestCase):
         self.assertEqual(result["conditional_count"], 1)
         self.assertEqual(result["watchlist_count"], 1)
 
+    def test_ranking_applies_separate_penalty_to_highly_correlated_opportunities(self):
+        idx = pd.date_range("2025-01-01", periods=50, freq="D", tz="UTC")
+        base = pd.Series(np.linspace(-0.02, 0.02, 50), index=idx)
+        rows = [
+            {"symbol": "EURUSD", "status": "active", "score_raw": 90},
+            {"symbol": "GBPUSD", "status": "active", "score_raw": 85},
+        ]
+        result = rank_opportunities(
+            rows, returns_by_symbol={"EURUSD": base, "GBPUSD": base.copy()},
+            correlation_threshold=0.85, correlation_penalty_points=10,
+        )
+        self.assertEqual(result["count"], 2)
+        second = next(x for x in result["opportunities"] if x["symbol"] == "GBPUSD")
+        self.assertEqual(second["score_raw"], 85)
+        self.assertEqual(second["diversification_penalty_points"], 10)
+        self.assertEqual(second["score_adjusted"], 75)
+        self.assertEqual(result["correlation_checked_count"], 1)
+
     def test_ranking_cap_is_hard_limited_to_ten(self):
         rows = [{"symbol": f"PAIR{i}", "status": "active", "score_adjusted": 80-i} for i in range(15)]
         result = rank_opportunities(rows, max_items=50)
