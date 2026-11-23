@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "mode": "research_and_paper_trading_only",
+  "live_orders_enabled": false,
+  "minimum_net_rr": 2,
+  "stop_atr_buffer": 0.2,
+  "round_trip_cost_price_by_instrument": {},
+  "unknown_cost_policy": "block_active_status_and_keep_net_rr_null",
+  "event_blackout_minutes_before": 30,
+  "event_blackout_minutes_after": 30,
+  "position_size_policy": "do_not_calculate_without_explicit_account_equity_and_contract_specs"
+}
