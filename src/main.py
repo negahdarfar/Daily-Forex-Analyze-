@@ -19,6 +19,25 @@ from src.analysis.opportunity_engine import build_opportunity, rank_opportunitie
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def daily_context_is_usable(
+    daily_status: str | None,
+    daily_age_hours: float | None,
+    max_daily_age_hours: float,
+    hourly_status: str | None,
+    hourly_quote_age_minutes: float | None,
+    max_hourly_age_minutes: float,
+) -> bool:
+    """Validate slow daily context separately from the fresh intraday quote."""
+    return (
+        daily_status == "available"
+        and daily_age_hours is not None
+        and 0 <= float(daily_age_hours) <= max_daily_age_hours
+        and hourly_status == "available"
+        and hourly_quote_age_minutes is not None
+        and 0 <= float(hourly_quote_age_minutes) <= max_hourly_age_minutes
+    )
+
+
 def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -129,18 +148,35 @@ def main() -> None:
             "hourly": hourly_fetched.get("provider"),
             "hourly_status": hourly_fetched.get("status"),
         }
-        if fetched.get("status") != "available" or item.get("status") == "stale":
-            candidate["status"] = "unrankable"
-            candidate["risk_flags"].append("daily_data_unavailable_or_stale")
-        if hourly_fetched.get("status") != "available":
-            candidate["status"] = "unrankable"
-            candidate["risk_flags"].append("hourly_data_unavailable")
-        elif quote_stamp:
-            quote_age_minutes = (cutoff_dt - datetime.fromisoformat(quote_stamp.replace("Z", "+00:00"))).total_seconds() / 60
+        quote_age_minutes = None
+        if hourly_fetched.get("status") == "available" and quote_stamp:
+            quote_age_minutes = (
+                cutoff_dt - datetime.fromisoformat(quote_stamp.replace("Z", "+00:00"))
+            ).total_seconds() / 60
             candidate["quote_age_minutes"] = round(max(0.0, quote_age_minutes), 1)
-            if quote_age_minutes > float(settings.get("max_intraday_quote_age_minutes", 180)):
-                candidate["status"] = "unrankable"
+
+        # A completed daily candle is a slow trend-context input, not the live quote.
+        # Keep its age limit separate from the freshness gate on the completed 1H quote.
+        daily_context_age = item.get("age_hours")
+        daily_context_ok = daily_context_is_usable(
+            daily_status=fetched.get("status"),
+            daily_age_hours=daily_context_age,
+            max_daily_age_hours=float(settings.get("max_daily_context_age_hours", 96)),
+            hourly_status=hourly_fetched.get("status"),
+            hourly_quote_age_minutes=quote_age_minutes,
+            max_hourly_age_minutes=float(settings.get("max_intraday_quote_age_minutes", 180)),
+        )
+        candidate["daily_context_age_hours"] = daily_context_age
+        if not daily_context_ok:
+            candidate["status"] = "unrankable"
+            if fetched.get("status") != "available" or daily_context_age is None or daily_context_age > float(settings.get("max_daily_context_age_hours", 96)):
+                candidate["risk_flags"].append("daily_data_unavailable_or_context_too_old")
+            if hourly_fetched.get("status") != "available":
+                candidate["risk_flags"].append("hourly_data_unavailable")
+            elif quote_age_minutes is None or quote_age_minutes > float(settings.get("max_intraday_quote_age_minutes", 180)):
                 candidate["risk_flags"].append("hourly_quote_stale")
+        elif daily_context_age is not None and daily_context_age > float(settings.get("max_quote_age_hours", 36)):
+            candidate["risk_flags"].append("daily_context_older_than_standard_quote_limit_but_hourly_is_fresh")
         opportunity_candidates.append(candidate)
 
         results.append(item)
