@@ -37,6 +37,19 @@ def _clean_ohlc(frame: pd.DataFrame | None) -> pd.DataFrame:
     return data
 
 
+def completed_hourly_candles(hourly: pd.DataFrame, now: datetime | None = None) -> pd.DataFrame:
+    """Keep only fully closed hourly bars; source indexes are candle opening times."""
+    data = _clean_ohlc(hourly)
+    if data.empty:
+        return data
+    now_ts = pd.Timestamp(now or datetime.now(timezone.utc))
+    if now_ts.tzinfo is None:
+        now_ts = now_ts.tz_localize("UTC")
+    else:
+        now_ts = now_ts.tz_convert("UTC")
+    return data.loc[(data.index + pd.Timedelta(hours=1)) <= now_ts]
+
+
 def resample_completed_4h(hourly: pd.DataFrame, now: datetime | None = None) -> pd.DataFrame:
     """Build UTC 4h candles from hourly candles indexed by their opening time.
 
@@ -118,6 +131,8 @@ def build_opportunity(
     """Return a fully traceable candidate; missing execution inputs prevent active status."""
     evidence = evidence or {}
     cutoff = analysis_cutoff_utc or datetime.now(timezone.utc).isoformat()
+    frames = dict(frames)
+    frames["1h"] = completed_hourly_candles(frames.get("1h"))
     analyses = {tf: analyze(frames.get(tf), settings) for tf in TIMEFRAMES}
     result: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
@@ -126,6 +141,10 @@ def build_opportunity(
         "quote_timestamp": quote_timestamp,
         "instrument": instrument or {},
         "timeframes": analyses,
+        "last_candle_index_utc": {
+            tf: frames[tf].index[-1].isoformat() if frames.get(tf) is not None and not frames[tf].empty else None
+            for tf in TIMEFRAMES
+        },
         "direction": None,
         "setup_type": None,
         "status": "unrankable",
