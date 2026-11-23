@@ -209,6 +209,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         f"پوشش اجرا: {coverage.get('fresh_fx_pairs_with_direction', 0)} جفت‌ارز تازه جهت‌دار؛ "
         f"{coverage.get('stale_fx_pairs', 0)} جفت‌ارز قدیمی؛ {coverage.get('news_items_received', 0)} خبر؛ "
         f"{coverage.get('currencies_with_cot_zscore', 0)} ارز دارای COT معتبر؛ "
+        f"{coverage.get('duplicate_news_items_removed', 0)} خبر تکراری حذف‌شده؛ "
         f"{coverage.get('macro_datasets_available', 0)} از {coverage.get('macro_datasets_total', 0)} مجموعه کلان."
     )
     currency_rows = market_intelligence.get("currency_strength", [])
