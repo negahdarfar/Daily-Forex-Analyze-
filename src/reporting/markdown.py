@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None, economic_calendar: dict | None = None, policy_rates: dict | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None, economic_calendar: dict | None = None, policy_rates: dict | None = None, currency_strength: dict | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
     analysis_candidates = analysis_candidates or []
@@ -108,6 +108,27 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     if not fx_ranking.get("opportunities"):
         lines.append("| — | جفت‌ارز واجد شرایط برای رتبه‌بندی با داده تازه پیدا نشد | — | — | — | — | — | — | — | — | — | — | — |")
     lines.append("**محدودیت‌های قطعی این نسخه:** مؤلفه نرخ سیاستی BIS فقط proxy اختلاف carry و تغییر ۹۰روزه است؛ تورم/رشد/اشتغال و سورپرایزهای consensus هنوز محاسبه نمی‌شوند. تقویم متصل فقط رویدادهای پراثر آمریکا را پوشش می‌دهد و برای هفت ارز دیگر پوشش ندارد. نظرهای کارشناسی فقط از ناشران تخصصی فارکس و با حداقل دو ناشر مستقل وارد امتیاز می‌شوند. این امتیاز احتمال برد نیست.")
+
+    lines += ["", "## قدرت نسبی هشت ارز — Currency Strength", ""]
+    lines.append(
+        f"وضعیت: {currency_strength.get('status', 'not_calculated')} | "
+        f"تعداد جفت‌ارزهای دارای داده: {currency_strength.get('coverage_pairs', 0)} | "
+        f"دوره محاسبه: {currency_strength.get('lookback_bars', '—')} کندل روزانه."
+    )
+    lines.append("| ارز | امتیاز نسبی | تغییر میانگین دوره (%) | تعداد جفت‌ارز | وضعیت |")
+    lines.append("|---|---:|---:|---:|---|")
+    for currency, row in currency_strength.get("currencies", {}).items():
+        strength = row.get("strength_pct")
+        score = row.get("relative_score")
+        lines.append(
+            f"| {currency} | {score if score is not None else '—'} | "
+            f"{strength if strength is not None else '—'} | {row.get('pair_count', 0)} | {row.get('status', '—')} |"
+        )
+    lines.append(
+        f"قوی‌ترین ارز: {currency_strength.get('strongest') or 'نامشخص'}؛ "
+        f"ضعیف‌ترین ارز: {currency_strength.get('weakest') or 'نامشخص'}. "
+        "این شاخص نسبی و توصیفی است، نه سیگنال مستقل ورود."
+    )
 
     lines += ["", "## تقویم اقتصادی و فیلتر رویداد", ""]
     lines.append(
