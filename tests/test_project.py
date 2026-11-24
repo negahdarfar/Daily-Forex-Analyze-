@@ -57,14 +57,26 @@ class ProjectConfigurationTests(unittest.TestCase):
             {"direction": "bullish", "assets": ["EURUSD"], "source": "Publisher A",
              "source_registry_match": "Publisher A", "source_authority_score": 90,
              "source_category": "forex_analysis", "expert_eligible": True,
+             "author": "Analyst A", "named_author": True,
              "title": "EURUSD bullish outlook after ECB rate hike"},
             {"direction": "bullish", "assets": ["EURUSD"], "source": "Publisher B",
              "source_registry_match": "Publisher B", "source_authority_score": 85,
              "source_category": "forex_analysis", "expert_eligible": True,
+             "author": "Analyst B", "named_author": True,
              "title": "EURUSD bullish outlook after ECB rate hike"},
         ]
         result = summarize_directional_evidence(candidates)
         self.assertEqual(result["EURUSD"]["bullish_publishers"], 1)
+
+    def test_unnamed_rss_author_is_not_counted_as_expert(self):
+        candidates = [{
+            "direction": "bullish", "assets": ["EURUSD"], "source": "Specialist Feed",
+            "source_registry_match": "Specialist Feed", "source_authority_score": 90,
+            "source_category": "forex_analysis", "expert_eligible": False,
+            "author": "not_provided", "named_author": False,
+            "title": "EURUSD bullish outlook"
+        }]
+        self.assertEqual(summarize_directional_evidence(candidates), {})
 
     def test_news_publishers_are_not_counted_as_forex_experts(self):
         candidates = [{
