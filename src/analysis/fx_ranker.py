@@ -68,7 +68,7 @@ def rank_fx_pairs(
     })
     weights = {
         key: float(value) for key, value in configured_weights.items()
-        if key in {"technical", "mtf_confluence", "fundamental", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk", "currency_strength"}
+        if key in {"technical", "mtf_confluence", "fundamental", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk", "currency_strength", "market_structure"}
         and isinstance(value, (int, float)) and float(value) > 0
     }
     total_weight = sum(weights.values())
@@ -371,6 +371,7 @@ def rank_fx_pairs(
             ),
             "technical_multitimeframe_entry_validation": False,
             "relative_currency_strength_integrated": bool(currency_strength and currency_strength.get("status") == "available"),
+            "recent_market_structure_integrated": any(isinstance(row.get("score_components", {}).get("market_structure"), (int, float)) for row in selected),
             "evidence_consensus_integrated": True,
             "expert_consensus_threshold": int(policy.get("minimum_independent_expert_publishers", 2)),
             "us_calendar_status": economic_calendar.get("status", "not_connected"),
