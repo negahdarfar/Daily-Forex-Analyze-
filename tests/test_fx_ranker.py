@@ -47,6 +47,8 @@ class FxRankerTests(unittest.TestCase):
         result = rank_fx_pairs([row("EURUSD")])
         item = result["opportunities"][0]
         self.assertEqual(item["fundamental_status"], "not_integrated")
+        self.assertIsNone(item["score_components"]["fundamental"])
+        self.assertLess(item["score_coverage_pct"], 100.0)
         self.assertEqual(item["calendar_status"], "us_calendar_unavailable_unknown")
         self.assertIn("fundamental_rate_path_and_comparable_macro_surprise", item["missing_evidence"])
         self.assertFalse(result["coverage"]["fundamental_integrated"])
