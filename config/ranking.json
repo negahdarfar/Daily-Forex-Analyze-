@@ -16,5 +16,17 @@
   "correlation_threshold": 0.85,
   "correlation_penalty_points": 10,
   "correlation_minimum_observations": 30,
-  "correlation_method": "absolute Pearson correlation of aligned daily close-to-close returns; penalty is transparent and separate from raw score"
+  "correlation_method": "absolute Pearson correlation of aligned daily close-to-close returns; penalty is transparent and separate from raw score",
+  "fx_shortlist": {
+    "max_pairs": 10,
+    "minimum_independent_expert_publishers": 2,
+    "weights": {
+      "technical": 40,
+      "cot_positioning": 20,
+      "news": 10,
+      "expert_consensus": 15,
+      "data_freshness": 15
+    },
+    "note": "Provisional research shortlist only. Fundamental rate-path/macro-surprise and timestamped economic-calendar scores remain unavailable until validated providers are connected."
+  }
 }
