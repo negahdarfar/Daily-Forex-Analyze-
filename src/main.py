@@ -10,6 +10,7 @@ from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
 from src.data.official_data import fetch_ecb_reference_rates, fetch_world_bank_inflation, fetch_bls_macro, fetch_cftc_cot, fetch_fred_public_series
 from src.data.economic_calendar import fetch_us_economic_calendar
+from src.data.policy_rates import fetch_bis_policy_rates
 from src.data.source_registry import load_source_registry, summarize_source_registry, annotate_analysis_candidates, summarize_directional_evidence, merge_active_rss_sources
 from src.experts.analysis_ingestion import extract_analysis_candidates
 from src.reporting.markdown import render_report
@@ -251,6 +252,11 @@ def main() -> None:
         timeout=int(settings.get("economic_calendar", {}).get("timeout_seconds", 10)),
         max_age_hours=float(settings.get("economic_calendar", {}).get("max_age_hours", 24)),
     )
+    policy_rates = fetch_bis_policy_rates(
+        timeout=int(settings.get("policy_rates", {}).get("timeout_seconds", 20)),
+        max_age_days=int(settings.get("policy_rates", {}).get("max_age_days", 14)),
+        history_days=int(settings.get("policy_rates", {}).get("history_days", 400)),
+    )
     forex_symbols = [item["symbol"] for item in assets.get("forex", []) if item.get("enabled")]
     local_now = datetime.now(ZoneInfo(settings.get("timezone", "Asia/Tehran")))
     market_intelligence = build_market_intelligence(
@@ -262,6 +268,7 @@ def main() -> None:
         market_intelligence=market_intelligence,
         directional_evidence=directional_evidence,
         economic_calendar=economic_calendar,
+        policy_rates=policy_rates,
         policy=ranking_policy.get("fx_shortlist", {}),
         max_age_hours=float(settings.get("max_quote_age_hours", 36)),
     )
@@ -281,6 +288,7 @@ def main() -> None:
         opportunity_candidates=opportunity_candidates,
         fx_ranking=fx_ranking,
         economic_calendar=economic_calendar,
+        policy_rates=policy_rates,
     )
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
@@ -294,6 +302,7 @@ def main() -> None:
         "ranking": opportunity_ranking,
         "fx_ranking": fx_ranking,
         "economic_calendar": economic_calendar,
+        "policy_rates": policy_rates,
         "candidates": opportunity_candidates,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"News items collected: {len(news)}")
