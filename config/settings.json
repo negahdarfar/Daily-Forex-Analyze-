@@ -72,5 +72,9 @@
     "event_blackout_minutes_before": 30,
     "event_blackout_minutes_after": 30,
     "consensus_forecast_available": false
+  },
+  "market_data": {
+    "timeout_seconds": 10,
+    "max_concurrent_market_fetches": 8
   }
 }
