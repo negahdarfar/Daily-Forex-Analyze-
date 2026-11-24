@@ -9,6 +9,7 @@ from src.analysis.market_structure import analyze_market_structure
 from src.analysis.consensus import build_consensus
 from src.data.global_economic_calendar import fetch_global_economic_calendar, _numeric
 from src.analysis.ohlc_backtest import backtest_ohlc_signals
+from src.analysis.ecb_crosscheck import build_ecb_fx_cross_checks
 from src.experts.verified_ledger import build_verified_expert_evidence, validate_verified_trade
 
 
@@ -169,6 +170,19 @@ class IntelligenceV2Tests(unittest.TestCase):
         self.assertEqual(result["trades"][0]["exit_reason"], "stop")
         self.assertLess(result["trades"][0]["net_pnl"], 0)
         self.assertEqual(result["initial_equity"], 10000.0)
+
+
+    def test_ecb_reference_crosscheck_derives_cross_rates_without_replacing_primary(self):
+        results = [{"asset": "EURUSD", "provider": "Yahoo Finance",
+                    "analysis": {"close": 1.10}}]
+        ecb = {"observations": [{"currency": "USD", "value": 1.10,
+                                 "data_timestamp": "2026-11-24"}]}
+        result = build_ecb_fx_cross_checks(results, ecb)
+        self.assertEqual(result["status"], "available")
+        self.assertEqual(result["coverage_pairs"], 1)
+        self.assertEqual(result["checks"][0]["reference_type"],
+                         "official_daily_ECB_reference_not_executable_spot")
+        self.assertEqual(result["checks"][0]["difference_pct"], 0.0)
 
 if __name__ == "__main__":
     unittest.main()
