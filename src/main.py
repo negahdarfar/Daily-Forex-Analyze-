@@ -14,6 +14,7 @@ from src.experts.analysis_ingestion import extract_analysis_candidates
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
 from src.analysis.market_intelligence import build_market_intelligence
+from src.analysis.fx_ranker import rank_fx_pairs
 from src.analysis.opportunity_engine import build_opportunity, rank_opportunities, resample_completed_4h, completed_hourly_candles
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -248,6 +249,13 @@ def main() -> None:
         results=results, news=news, official_macro=official_macro,
         analysis_candidates=analysis_candidates, source_registry=source_registry,
     )
+    fx_ranking = rank_fx_pairs(
+        results=results,
+        market_intelligence=market_intelligence,
+        directional_evidence=directional_evidence,
+        policy=ranking_policy.get("fx_shortlist", {}),
+        max_age_hours=float(settings.get("max_quote_age_hours", 36)),
+    )
     opportunity_ranking = rank_opportunities(
         opportunity_candidates,
         max_items=int(settings.get("ranking", {}).get("max_top_setups", 10)),
@@ -262,6 +270,7 @@ def main() -> None:
         market_intelligence=market_intelligence,
         opportunity_ranking=opportunity_ranking,
         opportunity_candidates=opportunity_candidates,
+        fx_ranking=fx_ranking,
     )
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
@@ -273,6 +282,7 @@ def main() -> None:
         "analysis_cutoff_utc": analysis_cutoff_utc,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "ranking": opportunity_ranking,
+        "fx_ranking": fx_ranking,
         "candidates": opportunity_candidates,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"News items collected: {len(news)}")
