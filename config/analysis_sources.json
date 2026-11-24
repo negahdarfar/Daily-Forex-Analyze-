@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
-  "updated_at": "2026-11-22",
-  "description": "User-specified 100-source universe, ordered by source authority class. Authority score is a prior for source weighting, not a forecast or verified historical accuracy score. Registration does not imply access permission or active ingestion.",
+  "updated_at": "2026-11-25",
+  "description": "102-source research universe ordered by authority class. Authority score is a source prior, not a forecast or verified historical accuracy score. Registration does not imply permission for every use; data/calendar adapters are documented separately from RSS news ingestion.",
   "ordering_policy": [
     "official_primary",
     "data_calendar_tools",
@@ -10,10 +10,10 @@
     "metals",
     "forex_analysis"
   ],
-  "active_ingestion_count": 5,
+  "active_ingestion_count": 7,
   "categories": {
     "official_primary": 35,
-    "data_calendar_tools": 15,
+    "data_calendar_tools": 17,
     "news_media": 20,
     "energy": 10,
     "metals": 8,
@@ -1840,6 +1840,46 @@
       "allowed_content": "metadata_short_excerpt_and_original_link",
       "rights_note": "Validate terms, API/feed availability and reuse rights before automated ingestion.",
       "bias_note": "Potential commercial/broker positioning bias; corroborate with independent primary data."
+    },
+    {
+      "id": "source_101",
+      "rank": 101,
+      "name": "ShowMyTrades Economic Calendar",
+      "domain": "showmytrades.com",
+      "homepage": "https://showmytrades.com/tools/economic-calendar",
+      "category": "data_calendar_tools",
+      "source_type": "economic_calendar_provider",
+      "authority_score": 88,
+      "reliability_tier": "B_specialist_data",
+      "access_method": "official_public_api",
+      "feed_url": null,
+      "enabled": true,
+      "status": "active_global_fx_calendar_api",
+      "allowed_content": "event_metadata_forecast_actual_timestamps_and_original_links",
+      "rights_note": "Free no-key calendar for eight major FX currencies plus CNY. Preserve confidence/status; attribution is optional but appreciated. Do not resell the calendar as a standalone product.",
+      "bias_note": "Third-party calendar aggregation; verify high-impact dates with the relevant central bank/statistical agency.",
+      "api_endpoint": "https://showmytrades.com/api/public/calendar/v1",
+      "integration": "src/data/global_economic_calendar.py"
+    },
+    {
+      "id": "source_102",
+      "rank": 102,
+      "name": "XOOMAR US Economic Calendar",
+      "domain": "xoomar.com",
+      "homepage": "https://xoomar.com/markets/calendar",
+      "category": "data_calendar_tools",
+      "source_type": "official_schedule_aggregator",
+      "authority_score": 91,
+      "reliability_tier": "B_specialist_data",
+      "access_method": "official_public_api",
+      "feed_url": null,
+      "enabled": true,
+      "status": "active_us_calendar_supplement",
+      "allowed_content": "event_schedule_actual_previous_and_source_attribution",
+      "rights_note": "No-key US agency schedule aggregator. Credit XOOMAR and agency sources; observe terms and rate limits. No consensus forecast is provided.",
+      "bias_note": "USD-only official release schedule supplement; do not infer non-US event coverage.",
+      "api_endpoint": "https://xoomar.com/api/markets/calendar",
+      "integration": "src/data/economic_calendar.py"
     }
   ]
 }
