@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None, economic_calendar: dict | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None, economic_calendar: dict | None = None, policy_rates: dict | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
     analysis_candidates = analysis_candidates or []
@@ -15,6 +15,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     opportunity_candidates = opportunity_candidates or []
     fx_ranking = fx_ranking or {}
     economic_calendar = economic_calendar or {}
+    policy_rates = policy_rates or {}
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
@@ -139,6 +140,32 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             )
     else:
         lines.append("رویداد آینده‌ای در داده دریافت‌شده وجود ندارد یا تقویم قابل‌استفاده نیست؛ این وضعیت فقط با timestamp تازه منبع قابل تفسیر است.")
+
+    lines += ["", "## نرخ سیاستی بانک‌های مرکزی — مؤلفه بنیادی", ""]
+    lines.append(
+        f"منبع: BIS WS_CBPOL | وضعیت پنل: {policy_rates.get('status', 'not_connected')} | "
+        f"ارزهای تازه: {policy_rates.get('available_currency_count', 0)}/8 | "
+        f"آخرین دریافت: {policy_rates.get('collected_at', '—')}."
+    )
+    lines.append(
+        "امتیاز بنیادی فعلی فقط از اختلاف نرخ سیاستی و تغییر ۹۰روزه آن ساخته می‌شود؛ این یک proxy برای carry/جهت سیاست پولی است، نه تحلیل کامل تورم، رشد، اشتغال یا انتظارات بازار."
+    )
+    lines.append(f"[داده BIS]({policy_rates.get('source_url', 'https://stats.bis.org/api-doc/v2/')}) | [مستندات]({policy_rates.get('documentation_url', 'https://stats.bis.org/api-doc/v2/')}) | [شرایط استفاده]({policy_rates.get('license_url', 'https://data.bis.org/help/legal')})")
+    rate_rows = policy_rates.get("rates", {})
+    if rate_rows:
+        lines += ["", "| ارز | حوزه BIS | نرخ سیاستی٪ | تغییر ۹۰روزه (واحد درصد) | آخرین تاریخ | عمر داده (روز) | وضعیت |", "|---|---|---:|---:|---|---:|---|"]
+        for currency in ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"):
+            row = rate_rows.get(currency, {})
+            rate_value = row.get("policy_rate_pct")
+            change_value = row.get("change_90d_pp")
+            lines.append(
+                f"| {currency} | {row.get('area_code', '—')} | "
+                f"{fx_component(rate_value)} | {fx_component(change_value)} | "
+                f"{row.get('latest_period', '—')} | {row.get('age_days', '—')} | {row.get('status', 'missing')} |"
+            )
+    else:
+        lines.append("داده نرخ سیاستی در این اجرا دریافت نشد؛ امتیاز بنیادی برای جفت‌ارزها خالی می‌ماند.")
+    lines.append(policy_rates.get("methodology_note", "نرخ سیاستی باید همراه با منابع رسمی بانک مرکزی و زمان انتشار بررسی شود."))
 
     lines += ["", "## وضعیت داده دارایی‌ها", "",
               "| دارایی | منبع | وضعیت | آخرین timestamp بازار | زمان جمع‌آوری UTC | عمر داده (ساعت) | توضیح |",
