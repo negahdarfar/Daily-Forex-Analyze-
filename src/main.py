@@ -14,6 +14,7 @@ from src.data.global_economic_calendar import fetch_global_economic_calendar
 from src.data.policy_rates import fetch_bis_policy_rates
 from src.data.source_registry import load_source_registry, summarize_source_registry, annotate_analysis_candidates, summarize_directional_evidence, merge_active_rss_sources
 from src.experts.analysis_ingestion import extract_analysis_candidates
+from src.experts.verified_ledger import build_verified_expert_evidence
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
 from src.analysis.market_intelligence import build_market_intelligence
@@ -268,6 +269,14 @@ def main() -> None:
     analysis_candidates = extract_analysis_candidates(news, known_symbols)
     analysis_candidates = annotate_analysis_candidates(analysis_candidates, registry_data)
     directional_evidence = summarize_directional_evidence(analysis_candidates)
+    verified_ledger_path = ROOT / "data" / "verified_trades.json"
+    verified_ledger = load_json(verified_ledger_path) if verified_ledger_path.exists() else {"trades": []}
+    verified_expert_evidence = build_verified_expert_evidence(
+        analysis_candidates, verified_ledger,
+        minimum_sample=int(ranking_policy.get("fx_shortlist", {}).get("minimum_verified_expert_trades", 30)),
+    )
+    for symbol, evidence in verified_expert_evidence.items():
+        directional_evidence.setdefault(symbol, {}).update(evidence)
     # Verified public official APIs add slow macro context and ECB reference-rate cross-checks.
     official_macro = [
         fetch_ecb_reference_rates(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 15))),
@@ -371,6 +380,7 @@ def main() -> None:
         "economic_calendar": economic_calendar,
         "policy_rates": policy_rates,
         "currency_strength": currency_strength,
+        "verified_expert_evidence": verified_expert_evidence,
         "candidates": opportunity_candidates,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"News items collected: {len(news)}")
