@@ -5,10 +5,10 @@ This upgrade is additive. Existing report generation, risk gates, market adapter
 ## Ten upgrade stages
 
 1. **Technical integrity:** reusable OHLC and timestamp quality gates; completed-bar discipline remains mandatory.
-2. **Currency strength:** cross-sectional signed pair returns for all eight currencies with pair coverage and missing-data reporting.
-3. **ICT/SMC foundation:** confirmed swing points, BOS/CHoCH and three-candle fair-value gaps. Pivots are timestamped only when confirmed to avoid repainting.
+2. **Currency strength:** cross-sectional signed pair returns for all eight currencies with pair coverage and missing-data reporting; now calculated in the daily orchestration and displayed in the Persian report/JSON.
+3. **ICT/SMC foundation:** confirmed swing points, BOS/CHoCH and three-candle fair-value gaps. Pivots are timestamped only when confirmed to avoid repainting; hourly annotations are attached to opportunity candidates.
 4. **Macro surprise:** actual-versus-consensus calculations and standardized surprise only with at least eight comparable historical releases.
-5. **News intelligence baseline:** transparent headline lexicon, local negation handling and exact-title deduplication. This is not a semantic model and must not be treated as currency impact.
+5. **News intelligence baseline:** transparent headline lexicon, local negation handling and exact-title deduplication. Headline labels are attached to collected RSS records and shown in the report. This is not a semantic model and must not be treated as currency impact.
 6. **Expert validation:** preserve existing verified-trade ledger as the sole performance basis; future integration must use sample-size gates, expectancy, profit factor and drawdown. Social popularity is excluded.
 7. **Walk-forward evaluation:** deterministic evaluator for timestamped signals and forward returns; production use still requires transaction costs, non-overlap rules and untouched out-of-sample periods.
 8. **Consensus integration:** keep technical, macro, news, positioning and expert evidence separate; missing evidence remains null and conflicts are explicit. Do not blend until source timestamps and provenance are present.
