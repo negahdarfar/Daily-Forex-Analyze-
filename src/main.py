@@ -435,11 +435,11 @@ def main() -> None:
     }, sort_keys=True)
     run_id = hashlib.sha256(run_seed.encode("utf-8")).hexdigest()[:20]
     report += (
-        "\\n\\n## شناسه و ممیزی اجرای گزارش\\n\\n"
-        f"- شناسه اجرا: `{run_id}`\\n"
-        f"- زمان قطع داده‌ها (UTC): `{analysis_cutoff_utc}`\\n"
-        f"- هش پیکربندی: `{hashlib.sha256(run_seed.encode('utf-8')).hexdigest()}`\\n"
-        "- این شناسه برای ردیابی نسخه پیکربندی و زمان قطع داده است؛ به‌تنهایی تضمین بازتولید عین داده‌های بازار نیست.\\n"
+        "\n\n## شناسه و ممیزی اجرای گزارش\n\n"
+        f"- شناسه اجرا: `{run_id}`\n"
+        f"- زمان قطع داده‌ها (UTC): `{analysis_cutoff_utc}`\n"
+        f"- هش پیکربندی: `{hashlib.sha256(run_seed.encode('utf-8')).hexdigest()}`\n"
+        "- این شناسه برای ردیابی نسخه پیکربندی و زمان قطع داده است؛ به‌تنهایی تضمین بازتولید عین داده‌های بازار نیست.\n"
     )
     out = report_dir / f"{local_now:%Y-%m-%d}.md"
     report_text = report
