@@ -64,6 +64,9 @@ def fetch_global_economic_calendar(
         if server_time is None or generated is None:
             raise ValueError("Calendar server_time_iso/generated_at missing or invalid")
         generated_age = (server_time - generated).total_seconds() / 60.0
+        server_clock_delta = abs((collected - server_time).total_seconds()) / 60.0
+        if server_clock_delta > 15:
+            raise ValueError("Calendar server clock is too far from local UTC collection time")
         if generated_age < -1 or generated_age > float(max_generated_age_minutes):
             raise ValueError("Calendar body is stale or has a future generated_at")
         events = []
@@ -117,6 +120,7 @@ def fetch_global_economic_calendar(
             "server_time": server_time.isoformat(),
             "updated_at": generated.isoformat(),
             "age_minutes": round(max(0.0, generated_age), 2),
+            "server_clock_delta_minutes": round(server_clock_delta, 2),
             "events": events,
             "event_currencies_present": event_currencies,
             "forecast_policy": "consensus_forecast_is_provider_supplied_and_may_be_revised_until_release",
