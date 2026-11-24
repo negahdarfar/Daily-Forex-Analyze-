@@ -32,7 +32,7 @@
       "currency_strength": 8,
       "market_structure": 8
     },
-    "note": "Provisional research shortlist. The no-key calendar provider covers US high-impact events only; non-US event risk and comparative macro rate-path scoring remain unavailable.",
+    "note": "Provisional research shortlist. The ShowMyTrades no-key calendar covers eight major FX currencies and supplies consensus/actuals; XOOMAR supplements US agency schedules. ECB is a daily reference cross-check, not an intraday price feed. Expert scoring requires matched, independently audited closed trades.",
     "event_blackout_minutes_before": 30,
     "event_blackout_minutes_after": 30,
     "max_intraday_quote_age_minutes": 180,
