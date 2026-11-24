@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timedelta, timezone
 
 from src.analysis.fx_ranker import rank_fx_pairs
 
@@ -46,7 +47,7 @@ class FxRankerTests(unittest.TestCase):
         result = rank_fx_pairs([row("EURUSD")])
         item = result["opportunities"][0]
         self.assertEqual(item["fundamental_status"], "not_integrated")
-        self.assertEqual(item["calendar_status"], "not_connected")
+        self.assertEqual(item["calendar_status"], "us_calendar_unavailable_unknown")
         self.assertIn("fundamental_rate_path_and_comparable_macro_surprise", item["missing_evidence"])
         self.assertIn("timestamped_economic_calendar_and_event_blackout", item["missing_evidence"])
         self.assertFalse(result["coverage"]["fundamental_integrated"])
@@ -64,6 +65,29 @@ class FxRankerTests(unittest.TestCase):
         self.assertGreater(bullish["score_components"]["news"], 50)
         self.assertLess(bearish["score_components"]["news"], 50)
 
+    def test_us_calendar_blackout_is_flagged_and_non_us_coverage_stays_unknown(self):
+        event_time = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+        calendar = {
+            "status": "available",
+            "events": [{"scheduled_at_utc": event_time, "name": "FOMC", "importance": "high"}],
+        }
+        usd_pair = rank_fx_pairs([row("EURUSD")], economic_calendar=calendar)["opportunities"][0]
+        non_us_pair = rank_fx_pairs([row("EURJPY")], economic_calendar=calendar)["opportunities"][0]
+        self.assertEqual(usd_pair["calendar_status"], "high_impact_us_event_blackout")
+        self.assertEqual(usd_pair["score_components"]["calendar_risk"], 0.0)
+        self.assertIn("high_impact_us_event_blackout_window", usd_pair["missing_evidence"])
+        self.assertEqual(non_us_pair["calendar_status"], "non_us_currency_calendar_not_covered")
+        self.assertIsNone(non_us_pair["score_components"]["calendar_risk"])
+
+    def test_stale_us_calendar_never_clears_event_risk(self):
+        result = rank_fx_pairs([row("EURUSD")], economic_calendar={
+            "status": "stale", "events": []
+        })
+        item = result["opportunities"][0]
+        self.assertEqual(item["calendar_status"], "stale_us_calendar_unknown")
+        self.assertIsNone(item["score_components"]["calendar_risk"])
+        self.assertIn("fresh_us_economic_calendar_required", item["missing_evidence"])
+
     def test_expert_consensus_requires_two_independent_publishers(self):
         result = rank_fx_pairs(
             [row("EURUSD")],
@@ -73,7 +97,7 @@ class FxRankerTests(unittest.TestCase):
         )
         item = result["opportunities"][0]
         self.assertIsNone(item["score_components"]["expert_consensus"])
-        self.assertIn("two_or_more_independent_expert_publishers", item["missing_evidence"])
+        self.assertIn("two_or_more_independent_forex_analysis_publishers", item["missing_evidence"])
 
         confirmed = rank_fx_pairs(
             [row("EURUSD")],
