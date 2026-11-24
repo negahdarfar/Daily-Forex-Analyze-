@@ -18,6 +18,8 @@ from src.technical.indicators import analyze
 from src.analysis.market_intelligence import build_market_intelligence
 from src.analysis.fx_ranker import rank_fx_pairs
 from src.analysis.opportunity_engine import build_opportunity, rank_opportunities, resample_completed_4h, completed_hourly_candles
+from src.analysis.currency_strength import calculate_currency_strength
+from src.analysis.market_structure import analyze_market_structure
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -164,6 +166,7 @@ def main() -> None:
                 "provider_symbol": asset.get("yahoo"),
             },
         )
+        candidate["market_structure"] = analyze_market_structure(hourly_frame) if hourly_frame is not None else {"status": "unavailable", "events": []}
         candidate["data_sources"] = {
             "daily": fetched.get("provider"),
             "hourly": hourly_fetched.get("provider"),
@@ -225,6 +228,20 @@ def main() -> None:
             local_candidate["risk_flags"].append("local_market_data_source_not_configured")
             local_candidate["missing_evidence"].append("authorized_timestamped_local_quote_missing")
             opportunity_candidates.append(local_candidate)
+
+    # Relative strength uses the same daily FX close histories already fetched in this run.
+    fx_close_series = {}
+    for fx_asset in assets.get("forex", []):
+        symbol = fx_asset.get("symbol")
+        fetched_pair = fetched_data.get(symbol, ({} , {}))[0]
+        frame_pair = fetched_pair.get("history") if fetched_pair.get("status") == "available" else None
+        if frame_pair is not None and "Close" in frame_pair.columns:
+            fx_close_series[symbol] = frame_pair["Close"]
+    currency_strength = calculate_currency_strength(
+        fx_close_series,
+        lookback=int(settings.get("currency_strength", {}).get("lookback_bars", 20)),
+        min_pairs_per_currency=int(settings.get("currency_strength", {}).get("min_pairs_per_currency", 2)),
+    )
 
     registry_path = ROOT / "config" / "analysis_sources.json"
     registry_data = load_source_registry(registry_path) if registry_path.exists() else {"sources": []}
