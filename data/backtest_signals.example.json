@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Example only. Copy to backtest_signals.json after creating timestamped signals from a strategy that uses only information available at signal_time.",
+  "signals": [
+    {
+      "symbol": "EURUSD",
+      "timeframe": "1h",
+      "signal_time": "2026-01-05T10:00:00Z",
+      "direction": "bullish",
+      "stop_loss": 1.165,
+      "take_profit": 1.175
+    }
+  ]
+}
