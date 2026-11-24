@@ -22,6 +22,8 @@ from src.analysis.fx_ranker import rank_fx_pairs
 from src.analysis.opportunity_engine import build_opportunity, rank_opportunities, resample_completed_4h, completed_hourly_candles
 from src.analysis.currency_strength import calculate_currency_strength
 from src.analysis.market_structure import analyze_market_structure
+from src.analysis.ecb_crosscheck import build_ecb_fx_cross_checks
+from src.analysis.ohlc_backtest import backtest_ohlc_signals
 from src.analysis.news_sentiment import score_headline
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -285,6 +287,10 @@ def main() -> None:
         fetch_cftc_cot(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 25))),
         fetch_fred_public_series(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 15))),
     ]
+    ecb_fx_cross_checks = build_ecb_fx_cross_checks(
+        results, official_macro[0],
+        discrepancy_threshold_pct=float(settings.get("market_data", {}).get("ecb_reference_discrepancy_threshold_pct", 0.75)),
+    )
     # Global no-key major-FX calendar (consensus + actuals) with official-agency US schedule as a supplemental check.
     global_calendar = fetch_global_economic_calendar(
         timeout=int(settings.get("economic_calendar", {}).get("timeout_seconds", 12)),
@@ -381,6 +387,7 @@ def main() -> None:
         "policy_rates": policy_rates,
         "currency_strength": currency_strength,
         "verified_expert_evidence": verified_expert_evidence,
+        "ecb_fx_cross_checks": ecb_fx_cross_checks,
         "candidates": opportunity_candidates,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"News items collected: {len(news)}")
