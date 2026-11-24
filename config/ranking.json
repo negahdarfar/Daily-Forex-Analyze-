@@ -21,16 +21,18 @@
     "max_pairs": 10,
     "minimum_independent_expert_publishers": 2,
     "weights": {
-      "technical": 30,
+      "technical": 20,
+      "mtf_confluence": 15,
       "fundamental": 20,
       "cot_positioning": 15,
       "news": 10,
       "expert_consensus": 10,
-      "data_freshness": 10,
+      "data_freshness": 5,
       "calendar_risk": 5
     },
     "note": "Provisional research shortlist. The no-key calendar provider covers US high-impact events only; non-US event risk and comparative macro rate-path scoring remain unavailable.",
     "event_blackout_minutes_before": 30,
-    "event_blackout_minutes_after": 30
+    "event_blackout_minutes_after": 30,
+    "max_intraday_quote_age_minutes": 180
   }
 }
