@@ -21,20 +21,22 @@
     "max_pairs": 10,
     "minimum_independent_expert_publishers": 2,
     "weights": {
-      "technical": 18,
-      "mtf_confluence": 14,
-      "fundamental": 18,
-      "cot_positioning": 14,
-      "news": 9,
-      "expert_consensus": 9,
+      "technical": 16,
+      "mtf_confluence": 12,
+      "fundamental": 17,
+      "cot_positioning": 13,
+      "news": 8,
+      "expert_consensus": 8,
       "data_freshness": 5,
       "calendar_risk": 5,
-      "currency_strength": 8
+      "currency_strength": 8,
+      "market_structure": 8
     },
     "note": "Provisional research shortlist. The no-key calendar provider covers US high-impact events only; non-US event risk and comparative macro rate-path scoring remain unavailable.",
     "event_blackout_minutes_before": 30,
     "event_blackout_minutes_after": 30,
     "max_intraday_quote_age_minutes": 180,
-    "minimum_consensus_coverage_pct": 50
+    "minimum_consensus_coverage_pct": 50,
+    "structure_event_max_age_hours": 24
   }
 }
