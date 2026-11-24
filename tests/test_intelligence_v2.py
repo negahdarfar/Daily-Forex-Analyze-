@@ -6,6 +6,7 @@ from src.analysis.macro_surprise import standardized_surprise
 from src.analysis.news_sentiment import score_headline, deduplicate_headlines
 from src.analysis.walk_forward import evaluate_signals
 from src.analysis.market_structure import analyze_market_structure
+from src.analysis.consensus import build_consensus
 
 
 class IntelligenceV2Tests(unittest.TestCase):
@@ -30,6 +31,17 @@ class IntelligenceV2Tests(unittest.TestCase):
         frame = pd.DataFrame({"Open":[1,1],"High":[2,2],"Low":[.5,.5],"Close":[1.5,1.5]}, index=idx)
         self.assertEqual(validate_ohlc(frame)["status"], "available")
         self.assertEqual(age_status("2025-01-01T00:00:00Z", 10, now=pd.Timestamp("2025-01-01T00:05:00Z").to_pydatetime())["status"], "fresh")
+
+    def test_consensus_excludes_stale_and_unverified_domains(self):
+        evidence = {
+            "technical": {"score": 80, "verified": True, "fresh": True, "source": "unit-test"},
+            "macro": {"score": 20, "verified": True, "fresh": False},
+            "news": {"score": 10, "verified": False, "fresh": True},
+        }
+        result = build_consensus(evidence, weights={"technical": 1, "macro": 1, "news": 1}, minimum_coverage_pct=30)
+        self.assertEqual(result["status"], "available")
+        self.assertEqual(result["score"], 80)
+        self.assertEqual(result["coverage_pct"], 33.3)
 
     def test_market_structure_reports_confirmed_only_events(self):
         idx = pd.date_range("2025-01-01", periods=40, freq="h", tz="UTC")
