@@ -92,11 +92,13 @@ def main() -> None:
                     fetch_asset_history, asset,
                     period=settings.get("history_period", "6mo"),
                     interval=settings.get("history_interval", "1d"),
+                    timeout=int(settings.get("market_data", {}).get("timeout_seconds", 10)),
                 ),
                 executor.submit(
                     fetch_asset_history, asset,
                     period=settings.get("intraday_history_period", "60d"),
                     interval="1h",
+                    timeout=int(settings.get("market_data", {}).get("timeout_seconds", 10)),
                 ),
             )
             for asset in enabled
