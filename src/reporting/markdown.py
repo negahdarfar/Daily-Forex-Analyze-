@@ -155,12 +155,13 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         except (TypeError, ValueError):
             continue
     if future_events:
-        lines += ["", "| زمان UTC | رویداد | اهمیت | دوره | مقدار قبلی | مقدار واقعی | پیش‌بینی |", "|---|---|---|---|---:|---:|---:|"]
+        lines += ["", "| زمان UTC | ارز | رویداد | اهمیت | وضعیت/اطمینان | دوره | قبلی | واقعی | اجماع | سورپرایز عددی |", "|---|---|---|---|---|---|---:|---:|---:|---:|"]
         for event in future_events[:20]:
             lines.append(
-                f"| {event.get('scheduled_at_utc')} | {event.get('name')} | {event.get('importance')} | "
-                f"{event.get('period') or '—'} | {event.get('previous') or '—'} | "
-                f"{event.get('actual') or '—'} | {event.get('forecast') or '—'} |"
+                f"| {event.get('scheduled_at_utc')} | {event.get('currency', event.get('currency_scope', 'USD'))} | {event.get('name')} | {event.get('importance')} | "
+                f"{event.get('status', '—')}/{event.get('confidence', '—')} | {event.get('period') or '—'} | "
+                f"{event.get('previous') or '—'} | {event.get('actual') or '—'} | "
+                f"{event.get('forecast') or '—'} | {event.get('surprise_raw_same_unit', '—')} |"
             )
     else:
         lines.append("رویداد آینده‌ای در داده دریافت‌شده وجود ندارد یا تقویم قابل‌استفاده نیست؛ این وضعیت فقط با timestamp تازه منبع قابل تفسیر است.")
