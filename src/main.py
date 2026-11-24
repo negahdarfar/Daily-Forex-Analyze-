@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
 from src.data.official_data import fetch_ecb_reference_rates, fetch_world_bank_inflation, fetch_bls_macro, fetch_cftc_cot, fetch_fred_public_series
+from src.data.economic_calendar import fetch_us_economic_calendar
 from src.data.source_registry import load_source_registry, summarize_source_registry, annotate_analysis_candidates, summarize_directional_evidence, merge_active_rss_sources
 from src.experts.analysis_ingestion import extract_analysis_candidates
 from src.reporting.markdown import render_report
@@ -243,6 +244,11 @@ def main() -> None:
         fetch_cftc_cot(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 25))),
         fetch_fred_public_series(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 15))),
     ]
+    # One low-frequency, no-key request; the adapter rejects stale snapshots.
+    economic_calendar = fetch_us_economic_calendar(
+        timeout=int(settings.get("economic_calendar", {}).get("timeout_seconds", 10)),
+        max_age_hours=float(settings.get("economic_calendar", {}).get("max_age_hours", 24)),
+    )
     forex_symbols = [item["symbol"] for item in assets.get("forex", []) if item.get("enabled")]
     local_now = datetime.now(ZoneInfo(settings.get("timezone", "Asia/Tehran")))
     market_intelligence = build_market_intelligence(
@@ -253,6 +259,7 @@ def main() -> None:
         results=results,
         market_intelligence=market_intelligence,
         directional_evidence=directional_evidence,
+        economic_calendar=economic_calendar,
         policy=ranking_policy.get("fx_shortlist", {}),
         max_age_hours=float(settings.get("max_quote_age_hours", 36)),
     )
@@ -271,6 +278,7 @@ def main() -> None:
         opportunity_ranking=opportunity_ranking,
         opportunity_candidates=opportunity_candidates,
         fx_ranking=fx_ranking,
+        economic_calendar=economic_calendar,
     )
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
@@ -283,6 +291,7 @@ def main() -> None:
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "ranking": opportunity_ranking,
         "fx_ranking": fx_ranking,
+        "economic_calendar": economic_calendar,
         "candidates": opportunity_candidates,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"News items collected: {len(news)}")
