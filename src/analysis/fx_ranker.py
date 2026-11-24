@@ -180,6 +180,18 @@ def rank_fx_pairs(
             freshness_score = _clamp(0.35 * daily_freshness + 0.65 * hourly_freshness)
         else:
             freshness_score = daily_freshness
+        base_strength = strength_rows.get(base, {})
+        quote_strength = strength_rows.get(quote, {})
+        base_relative = base_strength.get("relative_score")
+        quote_relative = quote_strength.get("relative_score")
+        pair_strength_score = None
+        if (base_strength.get("status") == "available"
+                and quote_strength.get("status") == "available"
+                and isinstance(base_relative, (int, float))
+                and isinstance(quote_relative, (int, float))):
+            relative_diff = float(base_relative) - float(quote_relative)
+            sign = 1.0 if direction == "bullish" else -1.0
+            pair_strength_score = _clamp(50.0 + sign * relative_diff / 2.0)
         components: dict[str, float | None] = {
             "technical": _clamp(float(analysis.get("score", 0.0))),
             "mtf_confluence": mtf_score,
@@ -193,6 +205,7 @@ def rank_fx_pairs(
             "expert_consensus": None,
             "data_freshness": freshness_score,
             "calendar_risk": calendar_score,
+            "currency_strength": pair_strength_score,
         }
         expert = directional_evidence.get(symbol, {})
         publishers = int(expert.get("bullish_publishers", 0) or 0) + int(expert.get("bearish_publishers", 0) or 0)
