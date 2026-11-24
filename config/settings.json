@@ -61,5 +61,16 @@
     "event_blackout_minutes_after": 30
   },
   "intraday_history_period": "60d",
-  "max_intraday_quote_age_minutes": 180
+  "max_intraday_quote_age_minutes": 180,
+  "economic_calendar": {
+    "provider": "xoomar_us_high_impact",
+    "timeout_seconds": 10,
+    "max_age_hours": 24,
+    "scope": [
+      "USD"
+    ],
+    "event_blackout_minutes_before": 30,
+    "event_blackout_minutes_after": 30,
+    "consensus_forecast_available": false
+  }
 }
