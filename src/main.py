@@ -308,6 +308,7 @@ def main() -> None:
         fx_ranking=fx_ranking,
         economic_calendar=economic_calendar,
         policy_rates=policy_rates,
+        currency_strength=currency_strength,
     )
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
@@ -322,6 +323,7 @@ def main() -> None:
         "fx_ranking": fx_ranking,
         "economic_calendar": economic_calendar,
         "policy_rates": policy_rates,
+        "currency_strength": currency_strength,
         "candidates": opportunity_candidates,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"News items collected: {len(news)}")
