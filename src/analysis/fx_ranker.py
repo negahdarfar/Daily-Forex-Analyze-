@@ -265,6 +265,15 @@ def rank_fx_pairs(
             weights={"technical": 1.0, "macro": 1.0, "currency_strength": 1.0},
             minimum_coverage_pct=float(policy.get("minimum_consensus_coverage_pct", 50.0)),
         )
+        consensus["pair_direction"] = direction
+        consensus["alignment_status"] = (
+            "strong_alignment" if isinstance(consensus.get("score"), (int, float)) and consensus["score"] > 55
+            else "opposed_evidence" if isinstance(consensus.get("score"), (int, float)) and consensus["score"] < 45
+            else "mixed_or_neutral_evidence" if isinstance(consensus.get("score"), (int, float))
+            else "insufficient_evidence"
+        )
+        consensus["direction"] = direction
+        consensus["score_type"] = "pair_aligned_evidence_index_not_probability"
         available = {
             key: value for key, value in components.items()
             if key in weights and isinstance(value, (int, float))
