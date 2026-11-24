@@ -1,4 +1,6 @@
 import unittest
+from io import BytesIO
+from zipfile import ZipFile
 from datetime import date, timedelta
 from unittest.mock import patch
 
@@ -38,6 +40,18 @@ class PolicyRateTests(unittest.TestCase):
         self.assertEqual(result["rates"]["EUR"]["area_code"], "XM")
         self.assertEqual(get.call_count, 1)
         self.assertIn("WS_CBPOL", get.call_args.args[0])
+
+    @patch("src.data.policy_rates.requests.get")
+    def test_bis_zipped_csv_response_is_supported(self, get):
+        today = date.today()
+        raw = csv_payload(today, today - timedelta(days=90))
+        buffer = BytesIO()
+        with ZipFile(buffer, "w") as archive:
+            archive.writestr("WS_CBPOL.csv", raw)
+        get.return_value = FakeResponse(buffer.getvalue())
+        result = fetch_bis_policy_rates()
+        self.assertEqual(result["status"], "available")
+        self.assertEqual(result["available_currency_count"], 8)
 
     @patch("src.data.policy_rates.requests.get")
     def test_stale_policy_rate_panel_is_not_available(self, get):
