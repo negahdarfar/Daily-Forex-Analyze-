@@ -78,6 +78,7 @@ def merge_active_rss_sources(news_sources: list[dict[str, Any]], registry: dict[
             "name": source.get("name"), "url": url, "reliability": "unscored",
             "registry_rank": source.get("rank"), "registry_id": source.get("id"),
             "usage_note": source.get("rights_note", ""),
+            "summary_max_chars": int(source.get("summary_max_chars", 500)),
         })
     return output
 
@@ -98,7 +99,11 @@ def annotate_analysis_candidates(candidates: list[dict[str, Any]], registry: dic
         enriched["source_registry_match"] = match.get("name") if match else None
         enriched["source_category"] = match.get("category") if match else None
         enriched["source_type"] = match.get("source_type") if match else None
-        enriched["expert_eligible"] = bool(match and match.get("category") == "forex_analysis")
+        author = str(enriched.get("author") or "").strip().casefold()
+        enriched["named_author"] = author not in {"", "not_provided", "unknown", "n/a"}
+        enriched["expert_eligible"] = bool(
+            match and match.get("category") == "forex_analysis" and enriched["named_author"]
+        )
         output.append(enriched)
     return output
 
@@ -113,7 +118,7 @@ def summarize_directional_evidence(candidates: list[dict[str, Any]]) -> dict[str
             continue
         # News outlets and official institutions are not treated as expert analyst opinions.
         # Only registered specialist forex-analysis publishers can enter this consensus.
-        if item.get("source_category") != "forex_analysis" or not item.get("expert_eligible"):
+        if item.get("source_category") != "forex_analysis" or not item.get("expert_eligible") or not item.get("named_author"):
             continue
         score = float(item.get("source_authority_score", 0) or 0)
         if score <= 0:
