@@ -419,13 +419,38 @@ def main() -> None:
     )
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
+    config_paths = [
+        ROOT / "config" / name for name in (
+            "assets.json", "settings.json", "ranking.json", "risk.json",
+            "markets.json", "backtest.json", "analysis_sources.json", "news_sources.json"
+        ) if (ROOT / "config" / name).exists()
+    ]
+    config_hashes = {
+        item.name: hashlib.sha256(item.read_bytes()).hexdigest()
+        for item in config_paths
+    }
+    run_seed = json.dumps({
+        "analysis_cutoff_utc": analysis_cutoff_utc,
+        "config_hashes": config_hashes,
+    }, sort_keys=True)
+    run_id = hashlib.sha256(run_seed.encode("utf-8")).hexdigest()[:20]
+    report += (
+        "\\n\\n## شناسه و ممیزی اجرای گزارش\\n\\n"
+        f"- شناسه اجرا: `{run_id}`\\n"
+        f"- زمان قطع داده‌ها (UTC): `{analysis_cutoff_utc}`\\n"
+        f"- هش پیکربندی: `{hashlib.sha256(run_seed.encode('utf-8')).hexdigest()}`\\n"
+        "- این شناسه برای ردیابی نسخه پیکربندی و زمان قطع داده است؛ به‌تنهایی تضمین بازتولید عین داده‌های بازار نیست.\\n"
+    )
     out = report_dir / f"{local_now:%Y-%m-%d}.md"
-    out.write_text(report, encoding="utf-8")
+    report_text = report
+    out.write_text(report_text, encoding="utf-8")
     json_out = report_dir / f"{local_now:%Y-%m-%d}-opportunities.json"
-    json_out.write_text(json.dumps({
-        "schema_version": "1.0.0",
+    payload = {
+        "schema_version": "1.1.0",
+        "run_id": run_id,
         "analysis_cutoff_utc": analysis_cutoff_utc,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "config_sha256": config_hashes,
         "ranking": opportunity_ranking,
         "fx_ranking": fx_ranking,
         "economic_calendar": economic_calendar,
@@ -436,11 +461,51 @@ def main() -> None:
         "backtest": backtest_result,
         "paper_trading": paper_trading_status,
         "candidates": opportunity_candidates,
-    }, ensure_ascii=False, indent=2), encoding="utf-8")
+    }
+    json_text = json.dumps(payload, ensure_ascii=False, indent=2)
+    json_out.write_text(json_text, encoding="utf-8")
+    source_statuses = {
+        "market_assets": {
+            row.get("asset"): {
+                "provider": row.get("provider"),
+                "status": row.get("status"),
+                "market_timestamp": row.get("market_timestamp"),
+            } for row in results
+        },
+        "global_calendar": economic_calendar.get("status"),
+        "BIS_policy_rates": policy_rates.get("status"),
+        "ECB_reference_crosscheck": ecb_fx_cross_checks.get("status"),
+    }
+    manifest = {
+        "manifest_schema_version": "1.0.0",
+        "run_id": run_id,
+        "analysis_cutoff_utc": analysis_cutoff_utc,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "python_version": __import__("sys").version.split()[0],
+        "config_sha256": config_hashes,
+        "source_statuses": source_statuses,
+        "counts": {
+            "market_assets": len(results),
+            "available_assets": sum(1 for row in results if row.get("status") == "available"),
+            "news_items": len(news),
+            "analysis_candidates": len(analysis_candidates),
+            "ranked_fx_pairs": fx_ranking.get("ranked_count", 0),
+            "verified_expert_symbols": len(verified_expert_evidence),
+        },
+        "backtest_status": backtest_result.get("status"),
+        "paper_trading_status": paper_trading_status.get("status"),
+        "report_sha256": hashlib.sha256(report_text.encode("utf-8")).hexdigest(),
+        "opportunities_json_sha256": hashlib.sha256(json_text.encode("utf-8")).hexdigest(),
+        "secret_values_included": False,
+        "reproducibility_note": "Captures config fingerprints, source timestamps/statuses and output hashes. Third-party market feeds can revise historical data; exact replay requires archived raw source payloads and terms permitting storage.",
+    }
+    manifest_out = report_dir / f"{local_now:%Y-%m-%d}-run-manifest.json"
+    manifest_out.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"News items collected: {len(news)}")
     print(f"Analysis candidates extracted: {len(analysis_candidates)}")
     print(f"Report written: {out.relative_to(ROOT)}")
     print(f"Opportunity JSON written: {json_out.relative_to(ROOT)}")
+    print(f"Run manifest written: {manifest_out.relative_to(ROOT)}")
     print(f"Execution-qualified opportunities: {opportunity_ranking['count']}")
 
 
