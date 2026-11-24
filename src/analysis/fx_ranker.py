@@ -50,12 +50,12 @@ def rank_fx_pairs(
     economic_calendar = economic_calendar or {}
     max_pairs = max(1, min(10, int(policy.get("max_pairs", 10))))
     configured_weights = policy.get("weights", {
-        "technical": 35, "cot_positioning": 15, "news": 10,
-        "expert_consensus": 10, "data_freshness": 15, "calendar_risk": 15,
+        "technical": 30, "fundamental": 20, "cot_positioning": 15, "news": 10,
+        "expert_consensus": 10, "data_freshness": 10, "calendar_risk": 5,
     })
     weights = {
         key: float(value) for key, value in configured_weights.items()
-        if key in {"technical", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk"}
+        if key in {"technical", "fundamental", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk"}
         and isinstance(value, (int, float)) and float(value) > 0
     }
     total_weight = sum(weights.values())
@@ -123,6 +123,7 @@ def rank_fx_pairs(
                 calendar_status = "us_calendar_unavailable_unknown"
         components: dict[str, float | None] = {
             "technical": _clamp(float(analysis.get("score", 0.0))),
+            "fundamental": None,
             "cot_positioning": _pair_directional_spread(
                 currency_rows, base, quote, "cot_score", direction
             ),
