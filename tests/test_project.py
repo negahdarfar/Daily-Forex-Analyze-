@@ -56,13 +56,24 @@ class ProjectConfigurationTests(unittest.TestCase):
         candidates = [
             {"direction": "bullish", "assets": ["EURUSD"], "source": "Publisher A",
              "source_registry_match": "Publisher A", "source_authority_score": 90,
+             "source_category": "forex_analysis", "expert_eligible": True,
              "title": "EURUSD bullish outlook after ECB rate hike"},
             {"direction": "bullish", "assets": ["EURUSD"], "source": "Publisher B",
              "source_registry_match": "Publisher B", "source_authority_score": 85,
+             "source_category": "forex_analysis", "expert_eligible": True,
              "title": "EURUSD bullish outlook after ECB rate hike"},
         ]
         result = summarize_directional_evidence(candidates)
         self.assertEqual(result["EURUSD"]["bullish_publishers"], 1)
+
+    def test_news_publishers_are_not_counted_as_forex_experts(self):
+        candidates = [{
+            "direction": "bullish", "assets": ["EURUSD"], "source": "General News",
+            "source_registry_match": "General News", "source_authority_score": 95,
+            "source_category": "news_media", "expert_eligible": False,
+            "title": "EURUSD bullish outlook"
+        }]
+        self.assertEqual(summarize_directional_evidence(candidates), {})
 
     def test_analysis_ingestion_extracts_only_explicit_fields(self):
         items = [{
