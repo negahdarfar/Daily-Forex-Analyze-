@@ -74,7 +74,10 @@ class IntelligenceV2Tests(unittest.TestCase):
         candidate = {"symbol": "EURUSD", "timeframes": {
             "1d": {"status": "ok", "direction": "bullish", "score": 70},
             "4h": {"status": "ok", "direction": "bullish", "score": 72},
-            "1h": {"status": "ok", "direction": "bullish", "score": 75}}}
+            "1h": {"status": "ok", "direction": "bullish", "score": 75}},
+            "market_structure": {"status": "available", "events": [
+                {"type": "BOS", "direction": "bullish", "at": pd.Timestamp.now(tz="UTC").isoformat()},
+                {"type": "bullish_FVG", "at": pd.Timestamp.now(tz="UTC").isoformat()}]}}
         strength = {"status": "available", "currencies": {
             "EUR": {"status": "available", "relative_score": 80},
             "USD": {"status": "available", "relative_score": 40}}}
@@ -84,6 +87,7 @@ class IntelligenceV2Tests(unittest.TestCase):
         self.assertEqual(result["ranked_count"], 1)
         row = result["opportunities"][0]
         self.assertGreater(row["score_components"]["currency_strength"], 50)
+        self.assertEqual(row["score_components"]["market_structure"], 90.0)
         self.assertEqual(row["consensus"]["status"], "available")
         self.assertTrue(result["coverage"]["relative_currency_strength_integrated"])
 
