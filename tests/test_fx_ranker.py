@@ -150,7 +150,7 @@ class FxRankerTests(unittest.TestCase):
         )
         item = result["opportunities"][0]
         self.assertIsNone(item["score_components"]["expert_consensus"])
-        self.assertIn("two_or_more_independent_forex_analysis_publishers", item["missing_evidence"])
+        self.assertIn("two_or_more_independent_named_forex_analysts", item["missing_evidence"])
 
         confirmed = rank_fx_pairs(
             [row("EURUSD")],
