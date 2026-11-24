@@ -10,6 +10,9 @@ from datetime import datetime, timezone
 from typing import Any
 
 
+CURRENCY_CODES = {"USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"}
+
+
 def _clamp(value: float, low: float = 0.0, high: float = 100.0) -> float:
     return max(low, min(high, float(value)))
 
@@ -64,7 +67,7 @@ def rank_fx_pairs(
 
     for item in results:
         symbol = str(item.get("asset", ""))
-        if len(symbol) != 6 or not symbol.isalpha():
+        if len(symbol) != 6 or not symbol.isalpha() or symbol[:3] not in CURRENCY_CODES or symbol[3:] not in CURRENCY_CODES:
             continue
         if item.get("status") == "stale":
             excluded["stale"] += 1
