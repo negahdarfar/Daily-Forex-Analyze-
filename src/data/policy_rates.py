@@ -47,7 +47,7 @@ def fetch_bis_policy_rates(
         )
         response.raise_for_status()
         raw_content = response.content
-        if raw_content.startswith(b"PK\\x03\\x04"):
+        if raw_content.startswith(bytes((0x50, 0x4B, 0x03, 0x04))):
             try:
                 with ZipFile(BytesIO(raw_content)) as archive:
                     csv_names = [name for name in archive.namelist() if name.lower().endswith(".csv")]
