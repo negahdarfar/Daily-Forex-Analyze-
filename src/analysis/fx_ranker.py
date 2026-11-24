@@ -257,7 +257,7 @@ def rank_fx_pairs(
             "market_structure": structure_score,
         }
         expert = directional_evidence.get(symbol, {})
-        publishers = int(expert.get("bullish_publishers", 0) or 0) + int(expert.get("bearish_publishers", 0) or 0)
+        publishers = int(expert.get("verified_analyst_publishers", 0) or 0)
         # A single unverified publisher is shown in the report but is not treated
         # as a consensus component.
         verified_sample = int(expert.get("verified_trade_sample_size", 0) or 0)
