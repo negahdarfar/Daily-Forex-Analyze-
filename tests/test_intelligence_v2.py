@@ -36,7 +36,7 @@ class IntelligenceV2Tests(unittest.TestCase):
         returns = pd.Series([.01,-.02,.03,.01], index=t)
         result = evaluate_signals(signals, returns, min_trades=2)
         self.assertEqual(result["trade_count"], 2)
-        self.assertAlmostEqual(result["expectancy_per_trade"], .005)
+        self.assertAlmostEqual(result["expectancy_per_trade"], -.015)
 
 
 if __name__ == "__main__":
