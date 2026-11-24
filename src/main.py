@@ -269,7 +269,9 @@ def main() -> None:
         directional_evidence=directional_evidence,
         economic_calendar=economic_calendar,
         policy_rates=policy_rates,
+        opportunity_candidates=opportunity_candidates,
         policy=ranking_policy.get("fx_shortlist", {}),
+
         max_age_hours=float(settings.get("max_quote_age_hours", 36)),
     )
     opportunity_ranking = rank_opportunities(
