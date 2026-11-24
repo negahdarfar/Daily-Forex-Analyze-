@@ -96,6 +96,9 @@ def annotate_analysis_candidates(candidates: list[dict[str, Any]], registry: dic
         enriched["source_authority_score"] = match.get("authority_score", 0) if match else 0
         enriched["source_reliability_tier"] = match.get("reliability_tier", "unmatched") if match else "unmatched"
         enriched["source_registry_match"] = match.get("name") if match else None
+        enriched["source_category"] = match.get("category") if match else None
+        enriched["source_type"] = match.get("source_type") if match else None
+        enriched["expert_eligible"] = bool(match and match.get("category") == "forex_analysis")
         output.append(enriched)
     return output
 
@@ -107,6 +110,10 @@ def summarize_directional_evidence(candidates: list[dict[str, Any]]) -> dict[str
     for item in candidates:
         direction = item.get("direction")
         if direction not in {"bullish", "bearish"}:
+            continue
+        # News outlets and official institutions are not treated as expert analyst opinions.
+        # Only registered specialist forex-analysis publishers can enter this consensus.
+        if item.get("source_category") != "forex_analysis" or not item.get("expert_eligible"):
             continue
         score = float(item.get("source_authority_score", 0) or 0)
         if score <= 0:
