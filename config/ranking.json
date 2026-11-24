@@ -21,12 +21,15 @@
     "max_pairs": 10,
     "minimum_independent_expert_publishers": 2,
     "weights": {
-      "technical": 40,
-      "cot_positioning": 20,
+      "technical": 35,
+      "cot_positioning": 15,
       "news": 10,
-      "expert_consensus": 15,
-      "data_freshness": 15
+      "expert_consensus": 10,
+      "data_freshness": 15,
+      "calendar_risk": 15
     },
-    "note": "Provisional research shortlist only. Fundamental rate-path/macro-surprise and timestamped economic-calendar scores remain unavailable until validated providers are connected."
+    "note": "Provisional research shortlist. The no-key calendar provider covers US high-impact events only; non-US event risk and comparative macro rate-path scoring remain unavailable.",
+    "event_blackout_minutes_before": 30,
+    "event_blackout_minutes_after": 30
   }
 }
