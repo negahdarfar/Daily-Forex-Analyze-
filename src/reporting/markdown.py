@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
     analysis_candidates = analysis_candidates or []
@@ -13,6 +13,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     market_intelligence = market_intelligence or {}
     opportunity_ranking = opportunity_ranking or {}
     opportunity_candidates = opportunity_candidates or []
+    fx_ranking = fx_ranking or {}
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
@@ -74,6 +75,37 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     if not fx_candidates:
         lines.append("| — | جفت‌ارز واجد شرایط با داده تازه و جهت‌دار موجود نیست | — | — | — | — | — | — | — | — | — |")
 
+    # This is a shortlist, not the execution-qualified opportunity table above.
+    lines += ["", "## رتبه‌بندی ترکیبی جفت‌ارزها — حداکثر ۱۰ مورد", ""]
+    lines.append(
+        "این جدول غربال پژوهشی مستقل از فرصت‌های فعال است. امتیاز فقط از حوزه‌هایی محاسبه می‌شود که شواهد واقعی آن‌ها در همین اجرا موجود است؛ پوشش ناقص کنار هر رتبه نمایش داده می‌شود. داده بنیادی نرخ/سورپرایز هم‌تراز و تقویم زمان‌دار هنوز به این رتبه‌بندی متصل نیستند؛ بنابراین هیچ ردیفی مجوز ورود معامله نیست."
+    )
+    lines.append(
+        f"جفت‌ارزهای واجد شرایط جهت‌دار: {fx_ranking.get('eligible_directional_pairs', 0)}؛ "
+        f"رتبه‌بندی‌شده: {fx_ranking.get('ranked_count', 0)}؛ "
+        f"تقویم اقتصادی متصل: {'بله' if fx_ranking.get('coverage', {}).get('economic_calendar_connected') else 'خیر'}؛ "
+        f"فاندامنتال در امتیاز نهایی: {'بله' if fx_ranking.get('coverage', {}).get('fundamental_integrated') else 'خیر'}."
+    )
+    lines += [
+        "", "| رتبه | جفت‌ارز | جهت | امتیاز موقت | پوشش وزن | تکنیکال | COT | خبر | نظر کارشناسان | عمر داده (ساعت) |",
+        "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|"
+    ]
+    def fx_component(value):
+        return f"{value:.1f}" if isinstance(value, (int, float)) else "—"
+    for row in fx_ranking.get("opportunities", []):
+        components = row.get("score_components", {})
+        lines.append(
+            f"| {row.get('rank')} | {row.get('symbol')} | {row.get('direction')} | "
+            f"{fx_component(row.get('score'))} | {fx_component(row.get('score_coverage_pct'))}% | "
+            f"{fx_component(components.get('technical'))} | {fx_component(components.get('cot_positioning'))} | "
+            f"{fx_component(components.get('news'))} | {fx_component(components.get('expert_consensus'))} | "
+            f"{fx_component(row.get('data_age_hours'))} |"
+        )
+        if row.get("missing_evidence"):
+            lines.append(f"  - شواهد ناقص: {', '.join(row.get('missing_evidence', []))}")
+    if not fx_ranking.get("opportunities"):
+        lines.append("| — | جفت‌ارز واجد شرایط برای رتبه‌بندی با داده تازه پیدا نشد | — | — | — | — | — | — | — | — |")
+    lines.append("**محدودیت‌های قطعی این نسخه:** امتیاز نرخ بهره/سورپرایزهای کلان و رویدادهای تقویم اقتصادی هنوز محاسبه نمی‌شوند؛ ادعاهای تحلیلگران فقط با حداقل دو ناشر مستقل وارد مؤلفه اجماع می‌شوند و همچنان تأییدنشده‌اند. این امتیاز احتمال برد نیست.")
     lines += ["", "## وضعیت داده دارایی‌ها", "",
               "| دارایی | منبع | وضعیت | آخرین timestamp بازار | زمان جمع‌آوری UTC | عمر داده (ساعت) | توضیح |",
               "|---|---|---|---|---|---:|---|"]
