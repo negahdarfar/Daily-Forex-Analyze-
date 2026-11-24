@@ -107,7 +107,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             lines.append(f"  - شواهد ناقص: {', '.join(row.get('missing_evidence', []))}")
     if not fx_ranking.get("opportunities"):
         lines.append("| — | جفت‌ارز واجد شرایط برای رتبه‌بندی با داده تازه پیدا نشد | — | — | — | — | — | — | — | — | — | — | — |")
-    lines.append("**محدودیت‌های قطعی این نسخه:** مؤلفه نرخ سیاستی BIS فقط proxy اختلاف carry و تغییر ۹۰روزه است؛ تورم/رشد/اشتغال و سورپرایزهای consensus هنوز محاسبه نمی‌شوند. تقویم متصل فقط رویدادهای پراثر آمریکا را پوشش می‌دهد و برای هفت ارز دیگر پوشش ندارد. نظرهای کارشناسی فقط از ناشران تخصصی فارکس و با حداقل دو ناشر مستقل وارد امتیاز می‌شوند. این امتیاز احتمال برد نیست.")
+    lines.append("**محدودیت‌های قطعی این نسخه:** مؤلفه نرخ سیاستی BIS فقط proxy اختلاف carry و تغییر ۹۰روزه است؛ تورم/رشد/اشتغال و سورپرایزهای consensus هنوز محاسبه نمی‌شوند. تقویم اصلی ShowMyTrades رویدادهای پراثر و متوسط هشت ارز اصلی را با پیش‌بینی اجماع ارائه می‌کند؛ XOOMAR منبع تکمیلی زمان‌بندی رسمی آمریکا است. این پوشش تضمین کامل‌بودن رویدادها نیست. نظرهای کارشناسی فقط از ناشران تخصصی فارکس و با حداقل دو ناشر مستقل وارد امتیاز می‌شوند. این امتیاز احتمال برد نیست.")
 
     lines += ["", "## قدرت نسبی هشت ارز — Currency Strength", ""]
     lines.append(
@@ -132,15 +132,15 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
 
     lines += ["", "## تقویم اقتصادی و فیلتر رویداد", ""]
     lines.append(
-        f"منبع: {economic_calendar.get('source', '—')} | وضعیت: {economic_calendar.get('status', 'not_connected')} | "
+        f"منبع: {', '.join(economic_calendar.get('sources', [economic_calendar.get('source', '—')]))} | وضعیت: {economic_calendar.get('status', 'not_connected')} | "
         f"محدوده: {economic_calendar.get('coverage', '—')} | آخرین به‌روزرسانی: {economic_calendar.get('updated_at', '—')} | "
-        f"سن داده: {economic_calendar.get('age_hours', '—')} ساعت."
+        f"سن داده: {economic_calendar.get('age_minutes', economic_calendar.get('age_hours', '—'))} {'دقیقه' if economic_calendar.get('age_minutes') is not None else 'ساعت'}."
     )
     lines.append(economic_calendar.get("data_note", "تقویم اقتصادی در این اجرا در دسترس نبود؛ ریسک رویداد نامشخص است."))
     if economic_calendar.get("attribution"):
         lines.append(f"انتساب منبع: {economic_calendar.get('attribution')}")
-    lines.append(f"[تقویم XOOMAR]({economic_calendar.get('source_url', 'https://xoomar.com/markets/calendar')}) | [مستندات API]({economic_calendar.get('docs_url', 'https://xoomar.com/markets/api')}) | [شرایط استفاده]({economic_calendar.get('license_url', 'https://xoomar.com/terms')})")
-    lines.append("این منبع فقط تقویم رویدادهای پراثر آمریکا را می‌دهد؛ پیش‌بینی اجماعی بازار را ارائه نمی‌کند. رویدادهای USD در پنجره ±۳۰ دقیقه به‌عنوان ریسک بالا علامت می‌خورند. برای EUR/GBP/JPY/CHF/CAD/AUD/NZD نبود رویداد در این فید به معنی نبود ریسک نیست.")
+    lines.append("[تقویم ShowMyTrades](https://showmytrades.com/tools/economic-calendar) | [مستندات API](https://showmytrades.com/docs/api/economic-calendar) | [تقویم تکمیلی XOOMAR](https://xoomar.com/markets/calendar)")
+    lines.append("تقویم اصلی شامل رویدادهای High/Medium برای USD/EUR/GBP/JPY/CHF/CAD/AUD/NZD و forecast/previous/actual ارائه‌شده توسط منبع است. وضعیت tentative/moved و confidence حفظ می‌شود. سورپرایز عددی actual−forecast فقط در صورت تبدیل‌پذیری مقادیر گزارش می‌شود؛ جهت اثر بدون شناخت ماهیت شاخص حدس زده نمی‌شود. XOOMAR منبع تکمیلی آمریکا است.")
     future_events = []
     for event in (economic_calendar.get("events", []) if economic_calendar.get("status") == "available" else []):
         try:
