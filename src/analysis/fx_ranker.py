@@ -38,6 +38,7 @@ def rank_fx_pairs(
     results: list[dict[str, Any]],
     market_intelligence: dict[str, Any] | None = None,
     directional_evidence: dict[str, dict[str, Any]] | None = None,
+    economic_calendar: dict[str, Any] | None = None,
     *,
     policy: dict[str, Any] | None = None,
     max_age_hours: float = 36.0,
@@ -46,14 +47,15 @@ def rank_fx_pairs(
     intelligence = market_intelligence or {}
     policy = policy or {}
     directional_evidence = directional_evidence or {}
+    economic_calendar = economic_calendar or {}
     max_pairs = max(1, min(10, int(policy.get("max_pairs", 10))))
     configured_weights = policy.get("weights", {
-        "technical": 40, "cot_positioning": 20, "news": 10,
-        "expert_consensus": 15, "data_freshness": 15,
+        "technical": 35, "cot_positioning": 15, "news": 10,
+        "expert_consensus": 10, "data_freshness": 15, "calendar_risk": 15,
     })
     weights = {
         key: float(value) for key, value in configured_weights.items()
-        if key in {"technical", "cot_positioning", "news", "expert_consensus", "data_freshness"}
+        if key in {"technical", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk"}
         and isinstance(value, (int, float)) and float(value) > 0
     }
     total_weight = sum(weights.values())
@@ -90,6 +92,35 @@ def rank_fx_pairs(
             continue
 
         base, quote = symbol[:3], symbol[3:]
+        calendar_score = None
+        calendar_status = "non_us_currency_calendar_not_covered"
+        if "USD" in {base, quote}:
+            if economic_calendar.get("status") == "available":
+                now = datetime.now(timezone.utc)
+                before = float(policy.get("event_blackout_minutes_before", 30))
+                after = float(policy.get("event_blackout_minutes_after", 30))
+                near_events = []
+                for event in economic_calendar.get("events", []):
+                    try:
+                        event_time = datetime.fromisoformat(
+                            str(event.get("scheduled_at_utc", "")).replace("Z", "+00:00")
+                        )
+                        if event_time.tzinfo is None:
+                            event_time = event_time.replace(tzinfo=timezone.utc)
+                        minutes = (event_time.astimezone(timezone.utc) - now).total_seconds() / 60.0
+                        if -after <= minutes <= before:
+                            near_events.append(event)
+                    except (TypeError, ValueError):
+                        continue
+                calendar_score = 0.0 if near_events else 100.0
+                calendar_status = (
+                    "high_impact_us_event_blackout" if near_events
+                    else "us_calendar_no_near_high_impact_event_partial_coverage"
+                )
+            elif economic_calendar.get("status") == "stale":
+                calendar_status = "stale_us_calendar_unknown"
+            else:
+                calendar_status = "us_calendar_unavailable_unknown"
         components: dict[str, float | None] = {
             "technical": _clamp(float(analysis.get("score", 0.0))),
             "cot_positioning": _pair_directional_spread(
@@ -100,6 +131,7 @@ def rank_fx_pairs(
             ),
             "expert_consensus": None,
             "data_freshness": _clamp(100.0 * (1.0 - float(age) / max(max_age_hours, 1.0))),
+            "calendar_risk": calendar_score,
         }
         expert = directional_evidence.get(symbol, {})
         publishers = int(expert.get("bullish_publishers", 0) or 0) + int(expert.get("bearish_publishers", 0) or 0)
@@ -130,7 +162,14 @@ def rank_fx_pairs(
         if components["news"] is None:
             missing.append("directional_currency_news")
         if components["expert_consensus"] is None:
-            missing.append("two_or_more_independent_expert_publishers")
+            missing.append("two_or_more_independent_forex_analysis_publishers")
+        if calendar_score is None:
+            missing.append(
+                "fresh_us_economic_calendar_required" if "USD" in {base, quote}
+                else "calendar_for_non_us_currency_required"
+            )
+        if calendar_status == "high_impact_us_event_blackout":
+            missing.append("high_impact_us_event_blackout_window")
 
         ranked.append({
             "symbol": symbol,
@@ -158,7 +197,7 @@ def rank_fx_pairs(
                 else "technical_only_or_insufficient_confirmation"
             ),
             "fundamental_status": "not_integrated",
-            "calendar_status": "not_connected",
+            "calendar_status": calendar_status,
             "execution_status": "not_trade_qualified",
         })
 
@@ -178,11 +217,14 @@ def rank_fx_pairs(
             "economic_calendar_connected": False,
             "technical_multitimeframe_entry_validation": False,
             "expert_consensus_threshold": int(policy.get("minimum_independent_expert_publishers", 2)),
+            "us_calendar_status": economic_calendar.get("status", "not_connected"),
+            "us_calendar_updated_at": economic_calendar.get("updated_at"),
+            "non_us_calendar_covered": False,
         },
         "limitations": [
             "Fundamental rate-path and synchronized macro-surprise scoring are not yet integrated into this shortlist.",
-            "No timestamped economic-calendar provider is connected; event risk cannot be cleared.",
-            "Expert claims are unverified and count only when at least two distinct publishers are present.",
+            "The connected free calendar covers US high-impact releases only; the other seven currency legs remain unverified.",
+            "Expert claims are unverified and count only when at least two independent forex-analysis publishers are present.",
             "A Yahoo Finance indicative quote is not an executable broker price; spread, commission, slippage and venue liquidity remain separate gates.",
             "The score is a relative research ranking, not a win probability or investment recommendation.",
         ],
