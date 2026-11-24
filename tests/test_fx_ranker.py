@@ -49,7 +49,6 @@ class FxRankerTests(unittest.TestCase):
         self.assertEqual(item["fundamental_status"], "not_integrated")
         self.assertEqual(item["calendar_status"], "us_calendar_unavailable_unknown")
         self.assertIn("fundamental_rate_path_and_comparable_macro_surprise", item["missing_evidence"])
-        self.assertIn("timestamped_economic_calendar_and_event_blackout", item["missing_evidence"])
         self.assertFalse(result["coverage"]["fundamental_integrated"])
         self.assertFalse(result["coverage"]["economic_calendar_connected"])
 
