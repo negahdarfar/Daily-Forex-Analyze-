@@ -74,7 +74,22 @@
     "consensus_forecast_available": false
   },
   "market_data": {
-    "timeout_seconds": 10,
-    "max_concurrent_market_fetches": 8
+    "timeout_seconds": 10
+  },
+  "policy_rates": {
+    "provider": "BIS_WS_CBPOL",
+    "timeout_seconds": 20,
+    "max_age_days": 14,
+    "history_days": 400,
+    "currencies": [
+      "USD",
+      "EUR",
+      "GBP",
+      "JPY",
+      "CHF",
+      "CAD",
+      "AUD",
+      "NZD"
+    ]
   }
 }
