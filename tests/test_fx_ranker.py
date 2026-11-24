@@ -66,6 +66,46 @@ class FxRankerTests(unittest.TestCase):
         self.assertGreater(bullish["score_components"]["news"], 50)
         self.assertLess(bearish["score_components"]["news"], 50)
 
+    def test_mtf_confluence_rewards_three_aligned_completed_timeframes(self):
+        candidate = {
+            "symbol": "EURUSD",
+            "quote_age_minutes": 30,
+            "timeframes": {
+                "1d": {"status": "ok", "direction": "bullish", "score": 80},
+                "4h": {"status": "ok", "direction": "bullish", "score": 70},
+                "1h": {"status": "ok", "direction": "bullish", "score": 60},
+            },
+        }
+        aligned = rank_fx_pairs(
+            [row("EURUSD", "bullish")],
+            opportunity_candidates=[candidate],
+        )["opportunities"][0]
+        self.assertAlmostEqual(aligned["score_components"]["mtf_confluence"], 88.0)
+        self.assertGreater(aligned["score_components"]["data_freshness"], 50)
+
+        candidate["timeframes"]["1h"]["direction"] = "bearish"
+        mixed = rank_fx_pairs(
+            [row("EURUSD", "bullish")],
+            opportunity_candidates=[candidate],
+        )["opportunities"][0]
+        self.assertLess(mixed["score_components"]["mtf_confluence"], aligned["score_components"]["mtf_confluence"])
+
+    def test_missing_timeframe_does_not_fabricate_mtf_score(self):
+        candidate = {
+            "symbol": "EURUSD",
+            "timeframes": {
+                "1d": {"status": "ok", "direction": "bullish", "score": 80},
+                "4h": {"status": "unavailable"},
+                "1h": {"status": "ok", "direction": "bullish", "score": 60},
+            },
+        }
+        item = rank_fx_pairs(
+            [row("EURUSD")],
+            opportunity_candidates=[candidate],
+        )["opportunities"][0]
+        self.assertIsNone(item["score_components"]["mtf_confluence"])
+        self.assertIn("completed_1d_4h_1h_multitimeframe_confluence_missing", item["missing_evidence"])
+
     def test_policy_rate_carry_and_90d_impulse_are_directional(self):
         policy_rates = {"status": "available", "rates": {
             "EUR": {"status": "available", "policy_rate_pct": 4.0, "change_90d_pp": 0.5},
