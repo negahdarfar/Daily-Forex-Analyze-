@@ -5,6 +5,7 @@ from src.analysis.data_quality import age_status, validate_ohlc
 from src.analysis.macro_surprise import standardized_surprise
 from src.analysis.news_sentiment import score_headline, deduplicate_headlines
 from src.analysis.walk_forward import evaluate_signals
+from src.analysis.market_structure import analyze_market_structure
 
 
 class IntelligenceV2Tests(unittest.TestCase):
@@ -29,6 +30,19 @@ class IntelligenceV2Tests(unittest.TestCase):
         frame = pd.DataFrame({"Open":[1,1],"High":[2,2],"Low":[.5,.5],"Close":[1.5,1.5]}, index=idx)
         self.assertEqual(validate_ohlc(frame)["status"], "available")
         self.assertEqual(age_status("2025-01-01T00:00:00Z", 10, now=pd.Timestamp("2025-01-01T00:05:00Z").to_pydatetime())["status"], "fresh")
+
+    def test_market_structure_reports_confirmed_only_events(self):
+        idx = pd.date_range("2025-01-01", periods=40, freq="h", tz="UTC")
+        close = [100 + (i % 7) for i in range(40)]
+        frame = pd.DataFrame({
+            "Open": close,
+            "High": [x + 1 for x in close],
+            "Low": [x - 1 for x in close],
+            "Close": close,
+        }, index=idx)
+        result = analyze_market_structure(frame, left=2, right=2)
+        self.assertEqual(result["status"], "available")
+        self.assertIn("confirmed_at", result["non_repainting_note"])
 
     def test_walk_forward_uses_future_observation(self):
         t = pd.date_range("2025-01-01", periods=4, freq="h", tz="UTC")
