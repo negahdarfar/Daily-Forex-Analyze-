@@ -91,5 +91,17 @@ class IntelligenceV2Tests(unittest.TestCase):
         self.assertEqual(row["consensus"]["status"], "available")
         self.assertTrue(result["coverage"]["relative_currency_strength_integrated"])
 
+    def test_walk_forward_applies_costs_and_blocks_overlapping_trades(self):
+        t = pd.date_range("2025-02-01", periods=5, freq="h", tz="UTC")
+        signals = pd.DataFrame({"signal": [1, 1], "signal_time": [t[0], t[1]]})
+        returns = pd.Series([0.0, 0.01, 0.01, 0.01, 0.01], index=t)
+        result = evaluate_signals(signals, returns, min_trades=1,
+            spread_bps=2, commission_bps=1, slippage_bps=2,
+            max_holding_bars=2, allow_overlapping=False)
+        self.assertEqual(result["trade_count"], 1)
+        self.assertEqual(result["skipped_overlapping"], 1)
+        self.assertLess(result["net_expectancy_per_trade"], result["gross_expectancy_per_trade"])
+        self.assertEqual(result["costs_bps"]["total"], 5.0)
+
 if __name__ == "__main__":
     unittest.main()
