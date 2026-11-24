@@ -125,34 +125,48 @@ def rank_fx_pairs(
             fundamental_score = _clamp(50.0 + 50.0 * direction_sign * raw_fundamental)
             fundamental_status = "policy_rate_carry_and_90d_change_proxy"
         calendar_score = None
-        calendar_status = "non_us_currency_calendar_not_covered"
-        if "USD" in {base, quote}:
-            if economic_calendar.get("status") == "available":
-                now = datetime.now(timezone.utc)
-                before = float(policy.get("event_blackout_minutes_before", 30))
-                after = float(policy.get("event_blackout_minutes_after", 30))
-                near_events = []
-                for event in economic_calendar.get("events", []):
-                    try:
-                        event_time = datetime.fromisoformat(
-                            str(event.get("scheduled_at_utc", "")).replace("Z", "+00:00")
-                        )
-                        if event_time.tzinfo is None:
-                            event_time = event_time.replace(tzinfo=timezone.utc)
-                        minutes = (event_time.astimezone(timezone.utc) - now).total_seconds() / 60.0
-                        if -after <= minutes <= before:
-                            near_events.append(event)
-                    except (TypeError, ValueError):
-                        continue
-                calendar_score = 0.0 if near_events else 100.0
-                calendar_status = (
-                    "high_impact_us_event_blackout" if near_events
-                    else "us_calendar_no_near_high_impact_event_partial_coverage"
-                )
-            elif economic_calendar.get("status") == "stale":
-                calendar_status = "stale_us_calendar_unknown"
-            else:
-                calendar_status = "us_calendar_unavailable_unknown"
+        calendar_status = "currency_calendar_not_covered"
+        covered_currencies = set(
+            economic_calendar.get("covered_currencies")
+            or economic_calendar.get("scope")
+            or []
+        )
+        pair_currencies = {base, quote}
+        if pair_currencies.issubset(covered_currencies) and economic_calendar.get("status") == "available":
+            now = datetime.now(timezone.utc)
+            before = float(policy.get("event_blackout_minutes_before", 30))
+            after = float(policy.get("event_blackout_minutes_after", 30))
+            near_high, near_medium = [], []
+            for event in economic_calendar.get("events", []):
+                event_currency = str(event.get("currency") or event.get("currency_scope") or "").upper()
+                if event_currency not in pair_currencies:
+                    continue
+                if str(event.get("status", "")).lower() in {"cancelled", "canceled"}:
+                    continue
+                try:
+                    event_time = datetime.fromisoformat(
+                        str(event.get("scheduled_at_utc", "")).replace("Z", "+00:00")
+                    )
+                    if event_time.tzinfo is None:
+                        event_time = event_time.replace(tzinfo=timezone.utc)
+                    minutes = (event_time.astimezone(timezone.utc) - now).total_seconds() / 60.0
+                    if -after <= minutes <= before:
+                        impact = str(event.get("importance", "high")).lower()
+                        (near_high if impact == "high" else near_medium).append(event)
+                except (TypeError, ValueError):
+                    continue
+            calendar_score = 0.0 if near_high else (50.0 if near_medium else 100.0)
+            calendar_status = (
+                "high_impact_pair_currency_blackout" if near_high
+                else "medium_impact_pair_currency_caution" if near_medium
+                else "covered_pair_currencies_no_near_scheduled_release"
+            )
+        elif economic_calendar.get("status") == "stale":
+            calendar_status = "stale_calendar_unknown"
+        elif economic_calendar.get("status") != "available":
+            calendar_status = "calendar_unavailable_unknown"
+        else:
+            calendar_status = "partial_pair_currency_coverage_unknown"
         candidate = candidate_by_symbol.get(symbol, {})
         timeframe_analyses = candidate.get("timeframes", {})
         required_timeframes = ("1d", "4h", "1h")
@@ -374,6 +388,7 @@ def rank_fx_pairs(
             "fundamental_scope": "BIS policy-rate carry and 90-day change proxy only",
             "policy_rate_source_status": policy_rates.get("status", "not_connected"),
             "economic_calendar_connected": economic_calendar.get("status") == "available",
+            "calendar_covered_currencies": sorted(covered_currencies),
             "mtf_confluence_integrated": any(
                 isinstance(row.get("score_components", {}).get("mtf_confluence"), (int, float))
                 for row in selected
