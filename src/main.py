@@ -232,10 +232,19 @@ def main() -> None:
 
     # Relative strength uses the same daily FX close histories already fetched in this run.
     fx_close_series = {}
+    result_by_symbol = {row.get("asset"): row for row in results}
+    max_strength_age_hours = float(settings.get("max_quote_age_hours", 36))
     for fx_asset in assets.get("forex", []):
         symbol = fx_asset.get("symbol")
-        fetched_pair = fetched_data.get(symbol, ({} , {}))[0]
-        frame_pair = fetched_pair.get("history") if fetched_pair.get("status") == "available" else None
+        quality_row = result_by_symbol.get(symbol, {})
+        fetched_pair = fetched_data.get(symbol, ({}, {}))[0]
+        age = quality_row.get("age_hours")
+        is_fresh = (
+            quality_row.get("status") == "available"
+            and isinstance(age, (int, float))
+            and 0 <= float(age) <= max_strength_age_hours
+        )
+        frame_pair = fetched_pair.get("history") if is_fresh and fetched_pair.get("status") == "available" else None
         if frame_pair is not None and "Close" in frame_pair.columns:
             fx_close_series[symbol] = frame_pair["Close"]
     currency_strength = calculate_currency_strength(
