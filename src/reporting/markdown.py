@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None, economic_calendar: dict | None = None, policy_rates: dict | None = None, currency_strength: dict | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None, economic_calendar: dict | None = None, policy_rates: dict | None = None, currency_strength: dict | None = None, ecb_fx_cross_checks: dict | None = None, backtest_result: dict | None = None, paper_trading_status: dict | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
     analysis_candidates = analysis_candidates or []
@@ -16,6 +16,9 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     fx_ranking = fx_ranking or {}
     economic_calendar = economic_calendar or {}
     policy_rates = policy_rates or {}
+    ecb_fx_cross_checks = ecb_fx_cross_checks or {}
+    backtest_result = backtest_result or {}
+    paper_trading_status = paper_trading_status or {}
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
@@ -187,6 +190,41 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     else:
         lines.append("داده نرخ سیاستی در این اجرا دریافت نشد؛ امتیاز بنیادی برای جفت‌ارزها خالی می‌ماند.")
     lines.append(policy_rates.get("methodology_note", "نرخ سیاستی باید همراه با منابع رسمی بانک مرکزی و زمان انتشار بررسی شود."))
+
+    lines += ["", "## کنترل متقابل قیمت با نرخ مرجع ECB", ""]
+    lines.append(
+        f"وضعیت: {ecb_fx_cross_checks.get('status', 'not_available')} | "
+        f"جفت‌ارزهای قابل مقایسه: {ecb_fx_cross_checks.get('coverage_pairs', 0)} | "
+        f"آستانه اختلاف هشدار: {ecb_fx_cross_checks.get('discrepancy_threshold_pct', '—')}٪."
+    )
+    lines.append(ecb_fx_cross_checks.get("methodology", "ECB reference rates were not available."))
+    checks = ecb_fx_cross_checks.get("checks", [])
+    if checks:
+        lines += ["", "| جفت‌ارز | قیمت اصلی | نرخ مرجع ECB | اختلاف٪ | وضعیت |", "|---|---:|---:|---:|---|"]
+        for check in checks:
+            lines.append(
+                f"| {check.get('symbol')} | {check.get('primary_close')} | "
+                f"{check.get('ecb_reference_rate')} | {check.get('difference_pct')} | {check.get('status')} |"
+            )
+    lines += ["", "## بک‌تست OHLC و وضعیت Paper Trading", ""]
+    lines.append(
+        f"وضعیت بک‌تست: {backtest_result.get('status', 'not_run')}؛ "
+        f"تعداد تایم‌فریم‌های ارزیابی‌شده: {len(backtest_result.get('by_timeframe', {}))}."
+    )
+    for timeframe, metrics in backtest_result.get("by_timeframe", {}).items():
+        lines.append(
+            f"- {timeframe}: {metrics.get('status')} | معاملات: {metrics.get('trade_count', 0)} | "
+            f"بازده خالص: {metrics.get('net_return_pct', '—')}٪ | "
+            f"Win rate: {metrics.get('win_rate_pct', '—')}٪ | "
+            f"Profit factor: {metrics.get('profit_factor', '—')} | "
+            f"Max DD: {metrics.get('max_drawdown_pct', '—')}٪."
+        )
+    lines.append(
+        f"Paper Trading: {paper_trading_status.get('status', 'not_run')} | "
+        f"حالت: {paper_trading_status.get('mode', '—')} | "
+        f"سفارش واقعی فعال: {paper_trading_status.get('live_orders_enabled', False)}."
+    )
+    lines.append(paper_trading_status.get("note", "Historical backtest results do not constitute forward paper validation."))
 
     lines += ["", "## وضعیت داده دارایی‌ها", "",
               "| دارایی | منبع | وضعیت | آخرین timestamp بازار | زمان جمع‌آوری UTC | عمر داده (ساعت) | توضیح |",
