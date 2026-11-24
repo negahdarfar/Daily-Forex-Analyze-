@@ -46,11 +46,11 @@ class FxRankerTests(unittest.TestCase):
     def test_missing_macro_and_calendar_are_never_fabricated(self):
         result = rank_fx_pairs([row("EURUSD")])
         item = result["opportunities"][0]
-        self.assertEqual(item["fundamental_status"], "not_integrated")
+        self.assertEqual(item["fundamental_status"], "policy_rate_data_missing_or_stale")
         self.assertIsNone(item["score_components"]["fundamental"])
         self.assertLess(item["score_coverage_pct"], 100.0)
         self.assertEqual(item["calendar_status"], "us_calendar_unavailable_unknown")
-        self.assertIn("fundamental_rate_path_and_comparable_macro_surprise", item["missing_evidence"])
+        self.assertIn("paired_policy_rate_data_missing_or_stale", item["missing_evidence"])
         self.assertFalse(result["coverage"]["fundamental_integrated"])
         self.assertFalse(result["coverage"]["economic_calendar_connected"])
 
@@ -65,6 +65,18 @@ class FxRankerTests(unittest.TestCase):
         self.assertLess(bearish["score_components"]["cot_positioning"], 50)
         self.assertGreater(bullish["score_components"]["news"], 50)
         self.assertLess(bearish["score_components"]["news"], 50)
+
+    def test_policy_rate_carry_and_90d_impulse_are_directional(self):
+        policy_rates = {"status": "available", "rates": {
+            "EUR": {"status": "available", "policy_rate_pct": 4.0, "change_90d_pp": 0.5},
+            "USD": {"status": "available", "policy_rate_pct": 2.0, "change_90d_pp": -0.25},
+        }}
+        bullish = rank_fx_pairs([row("EURUSD", "bullish")], policy_rates=policy_rates)["opportunities"][0]
+        bearish = rank_fx_pairs([row("EURUSD", "bearish")], policy_rates=policy_rates)["opportunities"][0]
+        self.assertGreater(bullish["score_components"]["fundamental"], 50)
+        self.assertLess(bearish["score_components"]["fundamental"], 50)
+        self.assertEqual(bullish["fundamental_status"], "policy_rate_carry_and_90d_change_proxy")
+        self.assertIn("inflation_growth_labor_and_market_consensus_surprise_not_integrated", bullish["missing_evidence"])
 
     def test_us_calendar_blackout_is_flagged_and_non_us_coverage_stays_unknown(self):
         event_time = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
