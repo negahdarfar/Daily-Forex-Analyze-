@@ -26,11 +26,11 @@ def _normalize_timestamp(value: Any) -> str:
     return stamp.isoformat()
 
 
-def fetch_history(symbol: str, period: str = "6mo", interval: str = "1d") -> dict[str, Any]:
+def fetch_history(symbol: str, period: str = "6mo", interval: str = "1d", timeout: int = 10) -> dict[str, Any]:
     """Yahoo Finance adapter; data is not assumed to be real-time."""
     collected_at = utc_now_iso()
     try:
-        frame = yf.Ticker(symbol).history(period=period, interval=interval, auto_adjust=False)
+        frame = yf.Ticker(symbol).history(period=period, interval=interval, auto_adjust=False, timeout=max(1, int(timeout)))
         if frame is None or frame.empty:
             return {
                 "symbol": symbol, "status": "unavailable", "reason": "منبع داده خروجی خالی برگرداند.",
@@ -162,10 +162,10 @@ def _exclude_unfinished_daily_bar(result: dict[str, Any], interval: str) -> dict
     return updated
 
 def fetch_asset_history(
-    asset: dict[str, Any], period: str = "6mo", interval: str = "1d"
+    asset: dict[str, Any], period: str = "6mo", interval: str = "1d", timeout: int = 10
 ) -> dict[str, Any]:
     """Fetch from configured sources and choose the freshest valid crypto history."""
-    yahoo = fetch_history(asset["yahoo"], period=period, interval=interval)
+    yahoo = fetch_history(asset["yahoo"], period=period, interval=interval, timeout=timeout)
     # Drop an unfinished daily candle for every asset class, not only crypto.
     yahoo = _exclude_unfinished_daily_bar(yahoo, interval)
     if asset.get("category") != "crypto" or asset.get("quote_currency") != "USDT":
