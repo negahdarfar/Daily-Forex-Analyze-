@@ -10,6 +10,7 @@ from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
 from src.data.official_data import fetch_ecb_reference_rates, fetch_world_bank_inflation, fetch_bls_macro, fetch_cftc_cot, fetch_fred_public_series
 from src.data.economic_calendar import fetch_us_economic_calendar
+from src.data.global_economic_calendar import fetch_global_economic_calendar
 from src.data.policy_rates import fetch_bis_policy_rates
 from src.data.source_registry import load_source_registry, summarize_source_registry, annotate_analysis_candidates, summarize_directional_evidence, merge_active_rss_sources
 from src.experts.analysis_ingestion import extract_analysis_candidates
@@ -275,11 +276,45 @@ def main() -> None:
         fetch_cftc_cot(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 25))),
         fetch_fred_public_series(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 15))),
     ]
-    # One low-frequency, no-key request; the adapter rejects stale snapshots.
-    economic_calendar = fetch_us_economic_calendar(
+    # Global no-key major-FX calendar (consensus + actuals) with official-agency US schedule as a supplemental check.
+    global_calendar = fetch_global_economic_calendar(
+        timeout=int(settings.get("economic_calendar", {}).get("timeout_seconds", 12)),
+        days=int(settings.get("economic_calendar", {}).get("forward_days", 7)),
+        max_generated_age_minutes=float(settings.get("economic_calendar", {}).get("max_generated_age_minutes", 30)),
+    )
+    us_calendar = fetch_us_economic_calendar(
         timeout=int(settings.get("economic_calendar", {}).get("timeout_seconds", 10)),
         max_age_hours=float(settings.get("economic_calendar", {}).get("max_age_hours", 24)),
     )
+    economic_calendar = dict(global_calendar)
+    if global_calendar.get("status") == "available":
+        combined_events = list(global_calendar.get("events", []))
+        seen = {
+            (str(row.get("currency", "")).upper(), str(row.get("name", "")).lower(),
+             str(row.get("scheduled_at_utc", ""))[:16])
+            for row in combined_events
+        }
+        if us_calendar.get("status") == "available":
+            for event in us_calendar.get("events", []):
+                event = {**event, "currency": "USD", "currency_scope": "USD",
+                         "importance": str(event.get("importance", "high")).lower(),
+                         "source": event.get("source") or "XOOMAR"}
+                key = ("USD", str(event.get("name", "")).lower(), str(event.get("scheduled_at_utc", ""))[:16])
+                if key not in seen:
+                    combined_events.append(event)
+                    seen.add(key)
+        economic_calendar["events"] = sorted(combined_events, key=lambda row: row.get("scheduled_at_utc", ""))
+        economic_calendar["supplemental_us_calendar_status"] = us_calendar.get("status")
+        economic_calendar["sources"] = ["ShowMyTrades", "XOOMAR"]
+        economic_calendar["coverage"] = "major_fx_high_medium_with_us_official_schedule_supplement"
+    elif us_calendar.get("status") == "available":
+        economic_calendar = dict(us_calendar)
+        economic_calendar["covered_currencies"] = ["USD"]
+        economic_calendar["coverage"] = "USD_only_fallback_global_feed_unavailable"
+        economic_calendar["sources"] = ["XOOMAR"]
+    else:
+        economic_calendar["sources"] = ["ShowMyTrades", "XOOMAR"]
+        economic_calendar["status"] = "source_error"
     policy_rates = fetch_bis_policy_rates(
         timeout=int(settings.get("policy_rates", {}).get("timeout_seconds", 20)),
         max_age_days=int(settings.get("policy_rates", {}).get("max_age_days", 14)),
