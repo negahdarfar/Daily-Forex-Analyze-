@@ -7,6 +7,9 @@ from src.analysis.news_sentiment import score_headline, deduplicate_headlines
 from src.analysis.walk_forward import evaluate_signals
 from src.analysis.market_structure import analyze_market_structure
 from src.analysis.consensus import build_consensus
+from src.analysis.global_economic_calendar import fetch_global_economic_calendar, _numeric
+from src.analysis.ohlc_backtest import backtest_ohlc_signals
+from src.experts.verified_ledger import build_verified_expert_evidence, validate_verified_trade
 
 
 class IntelligenceV2Tests(unittest.TestCase):
@@ -106,6 +109,66 @@ class IntelligenceV2Tests(unittest.TestCase):
         self.assertEqual(result["skipped_overlapping"], 1)
         self.assertLess(result["net_expectancy_per_trade"], result["gross_expectancy_per_trade"])
         self.assertEqual(result["costs_bps"]["total"], 5.0)
+
+    def test_global_calendar_numeric_parser_preserves_units(self):
+        self.assertEqual(_numeric("1.25M"), 1250000.0)
+        self.assertEqual(_numeric("2.4%"), 2.4)
+        self.assertIsNone(_numeric("n/a"))
+
+    def test_pair_calendar_blackout_checks_both_currencies(self):
+        from src.analysis.fx_ranker import rank_fx_pairs
+        now = pd.Timestamp.now(tz="UTC")
+        results = [{"asset": "EURUSD", "status": "available", "age_hours": 1,
+                    "analysis": {"status": "ok", "direction": "bullish", "score": 70, "close": 1.1}}]
+        calendar = {"status": "available", "scope": ["EUR", "USD"],
+                    "covered_currencies": ["EUR", "USD"], "events": [
+                        {"currency": "EUR", "importance": "high", "status": "scheduled",
+                         "scheduled_at_utc": (now + pd.Timedelta(minutes=5)).isoformat()}]}
+        result = rank_fx_pairs(results, economic_calendar=calendar,
+            policy={"weights": {"technical": 50, "calendar_risk": 50},
+                    "event_blackout_minutes_before": 30, "event_blackout_minutes_after": 30})
+        self.assertEqual(result["opportunities"][0]["calendar_status"], "high_impact_pair_currency_blackout")
+        self.assertEqual(result["opportunities"][0]["score_components"]["calendar_risk"], 0.0)
+
+    def test_verified_ledger_requires_independent_audit_and_sample(self):
+        trades = []
+        for i in range(30):
+            trades.append({
+                "trade_id": f"trade-{i}", "analyst_id": "analyst one", "symbol": "EURUSD",
+                "direction": "bullish", "entry": 1.1, "stop_loss": 1.0,
+                "exit_price": 1.15 if i < 20 else 1.075, "fees_r": 0.0,
+                "closed_at": "2026-01-10T15:00:00Z",
+                "source_url": "https://example.org/closed-trade",
+                "verification_status": "independently_verified",
+                "verified_by": "independent-reviewer",
+                "verified_at": "2026-01-11T15:00:00Z",
+                "evidence_reference": f"sha256:record-{i}"})
+        candidates = [{"expert_eligible": True, "named_author": "Analyst One",
+                       "direction": "bullish", "assets": ["EURUSD"]}]
+        result = build_verified_expert_evidence(candidates, {"trades": trades}, minimum_sample=30)
+        self.assertEqual(result["EURUSD"]["verified_trade_sample_size"], 30)
+        self.assertEqual(result["EURUSD"]["verified_analyst_publishers"], 1)
+        self.assertEqual(result["EURUSD"]["performance_verification_status"], "independently_verified")
+        trades[0]["verified_by"] = "analyst one"
+        invalid, reason, _ = validate_verified_trade(trades[0])
+        self.assertFalse(invalid)
+        self.assertEqual(reason, "self_verification_rejected")
+
+    def test_ohlc_backtest_uses_next_bar_and_stop_first_conservative(self):
+        t = pd.date_range("2026-01-01", periods=3, freq="h", tz="UTC")
+        candles = pd.DataFrame({
+            "Open": [100, 100, 100], "High": [101, 105, 102],
+            "Low": [99, 97, 99], "Close": [100, 103, 101]}, index=t)
+        signals = pd.DataFrame([{"symbol": "EURUSD", "signal_time": t[0],
+            "direction": "bullish", "stop_loss": 98, "take_profit": 104}])
+        result = backtest_ohlc_signals(signals, {"EURUSD": candles},
+            initial_equity=10000, risk_fraction=0.01,
+            spread_bps=1, commission_bps=1, slippage_bps=1)
+        self.assertEqual(result["trade_count"], 1)
+        self.assertEqual(result["trades"][0]["entry_time"], t[1].isoformat())
+        self.assertEqual(result["trades"][0]["exit_reason"], "stop")
+        self.assertLess(result["trades"][0]["net_pnl"], 0)
+        self.assertEqual(result["initial_equity"], 10000.0)
 
 if __name__ == "__main__":
     unittest.main()
