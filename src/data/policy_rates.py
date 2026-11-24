@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import csv
 from datetime import date, datetime, timedelta, timezone
-from io import StringIO
+from io import BytesIO, StringIO
+from zipfile import BadZipFile, ZipFile
 from typing import Any
 
 import requests
@@ -45,7 +46,17 @@ def fetch_bis_policy_rates(
             timeout=max(1, int(timeout)),
         )
         response.raise_for_status()
-        reader = csv.DictReader(StringIO(response.content.decode("utf-8-sig")))
+        raw_content = response.content
+        if raw_content.startswith(b"PK\\x03\\x04"):
+            try:
+                with ZipFile(BytesIO(raw_content)) as archive:
+                    csv_names = [name for name in archive.namelist() if name.lower().endswith(".csv")]
+                    if not csv_names:
+                        raise ValueError("BIS CSV archive contains no CSV file")
+                    raw_content = archive.read(csv_names[0])
+            except BadZipFile as exc:
+                raise ValueError("BIS returned an invalid CSV archive") from exc
+        reader = csv.DictReader(StringIO(raw_content.decode("utf-8-sig")))
         required = {"REF_AREA", "TIME_PERIOD", "OBS_VALUE"}
         if not reader.fieldnames or not required.issubset(set(reader.fieldnames)):
             raise ValueError("BIS CSV is missing required SDMX columns")
