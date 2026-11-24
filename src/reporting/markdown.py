@@ -88,8 +88,8 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         f"فاندامنتال در امتیاز نهایی: {'بله' if fx_ranking.get('coverage', {}).get('fundamental_integrated') else 'خیر'}."
     )
     lines += [
-        "", "| رتبه | جفت‌ارز | جهت | امتیاز موقت | پوشش وزن | تکنیکال | COT | خبر | نظر تحلیلگران | ریسک تقویم | عمر داده (ساعت) |",
-        "|---:|---|---|---:|---:|---:|---:|---:|---:|---|---:|"
+        "", "| رتبه | جفت‌ارز | جهت | امتیاز موقت | پوشش وزن | تکنیکال | فاندامنتال | COT | خبر | نظر تحلیلگران | ریسک تقویم | عمر داده (ساعت) |",
+        "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---|---:|"
     ]
     def fx_component(value):
         return f"{value:.1f}" if isinstance(value, (int, float)) else "—"
@@ -98,8 +98,8 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         lines.append(
             f"| {row.get('rank')} | {row.get('symbol')} | {row.get('direction')} | "
             f"{fx_component(row.get('score'))} | {fx_component(row.get('score_coverage_pct'))}% | "
-            f"{fx_component(components.get('technical'))} | {fx_component(components.get('cot_positioning'))} | "
-            f"{fx_component(components.get('news'))} | {fx_component(components.get('expert_consensus'))} | "
+            f"{fx_component(components.get('technical'))} | {fx_component(components.get('fundamental'))} | "
+            f"{fx_component(components.get('cot_positioning'))} | {fx_component(components.get('news'))} | {fx_component(components.get('expert_consensus'))} | "
             f"{row.get('calendar_status', '—')} | {fx_component(row.get('data_age_hours'))} |"
         )
         if row.get("missing_evidence"):
@@ -120,7 +120,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     lines.append(f"[تقویم XOOMAR]({economic_calendar.get('source_url', 'https://xoomar.com/markets/calendar')}) | [مستندات API]({economic_calendar.get('docs_url', 'https://xoomar.com/markets/api')}) | [شرایط استفاده]({economic_calendar.get('license_url', 'https://xoomar.com/terms')})")
     lines.append("این منبع فقط تقویم رویدادهای پراثر آمریکا را می‌دهد؛ پیش‌بینی اجماعی بازار را ارائه نمی‌کند. رویدادهای USD در پنجره ±۳۰ دقیقه به‌عنوان ریسک بالا علامت می‌خورند. برای EUR/GBP/JPY/CHF/CAD/AUD/NZD نبود رویداد در این فید به معنی نبود ریسک نیست.")
     future_events = []
-    for event in economic_calendar.get("events", []):
+    for event in (economic_calendar.get("events", []) if economic_calendar.get("status") == "available" else []):
         try:
             event_time = datetime.fromisoformat(str(event.get("scheduled_at_utc", "")).replace("Z", "+00:00"))
             if event_time.tzinfo is None:
