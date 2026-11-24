@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None, economic_calendar: dict | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
     analysis_candidates = analysis_candidates or []
@@ -14,6 +14,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     opportunity_ranking = opportunity_ranking or {}
     opportunity_candidates = opportunity_candidates or []
     fx_ranking = fx_ranking or {}
+    economic_calendar = economic_calendar or {}
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
@@ -87,8 +88,8 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         f"فاندامنتال در امتیاز نهایی: {'بله' if fx_ranking.get('coverage', {}).get('fundamental_integrated') else 'خیر'}."
     )
     lines += [
-        "", "| رتبه | جفت‌ارز | جهت | امتیاز موقت | پوشش وزن | تکنیکال | COT | خبر | نظر کارشناسان | عمر داده (ساعت) |",
-        "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|"
+        "", "| رتبه | جفت‌ارز | جهت | امتیاز موقت | پوشش وزن | تکنیکال | COT | خبر | نظر تحلیلگران | ریسک تقویم | عمر داده (ساعت) |",
+        "|---:|---|---|---:|---:|---:|---:|---:|---:|---|---:|"
     ]
     def fx_component(value):
         return f"{value:.1f}" if isinstance(value, (int, float)) else "—"
@@ -99,13 +100,46 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             f"{fx_component(row.get('score'))} | {fx_component(row.get('score_coverage_pct'))}% | "
             f"{fx_component(components.get('technical'))} | {fx_component(components.get('cot_positioning'))} | "
             f"{fx_component(components.get('news'))} | {fx_component(components.get('expert_consensus'))} | "
-            f"{fx_component(row.get('data_age_hours'))} |"
+            f"{row.get('calendar_status', '—')} | {fx_component(row.get('data_age_hours'))} |"
         )
         if row.get("missing_evidence"):
             lines.append(f"  - شواهد ناقص: {', '.join(row.get('missing_evidence', []))}")
     if not fx_ranking.get("opportunities"):
         lines.append("| — | جفت‌ارز واجد شرایط برای رتبه‌بندی با داده تازه پیدا نشد | — | — | — | — | — | — | — | — |")
-    lines.append("**محدودیت‌های قطعی این نسخه:** امتیاز نرخ بهره/سورپرایزهای کلان و رویدادهای تقویم اقتصادی هنوز محاسبه نمی‌شوند؛ ادعاهای تحلیلگران فقط با حداقل دو ناشر مستقل وارد مؤلفه اجماع می‌شوند و همچنان تأییدنشده‌اند. این امتیاز احتمال برد نیست.")
+    lines.append("**محدودیت‌های قطعی این نسخه:** امتیاز نرخ بهره/سورپرایزهای کلان هنوز محاسبه نمی‌شود؛ تقویم متصل فقط رویدادهای پراثر آمریکا را پوشش می‌دهد و برای هفت ارز دیگر پوشش ندارد. نظرهای کارشناسی فقط از ناشران تخصصی فارکس و با حداقل دو ناشر مستقل وارد امتیاز می‌شوند. این امتیاز احتمال برد نیست.")
+
+    lines += ["", "## تقویم اقتصادی و فیلتر رویداد", ""]
+    lines.append(
+        f"منبع: {economic_calendar.get('source', '—')} | وضعیت: {economic_calendar.get('status', 'not_connected')} | "
+        f"محدوده: {economic_calendar.get('coverage', '—')} | آخرین به‌روزرسانی: {economic_calendar.get('updated_at', '—')} | "
+        f"سن داده: {economic_calendar.get('age_hours', '—')} ساعت."
+    )
+    lines.append(economic_calendar.get("data_note", "تقویم اقتصادی در این اجرا در دسترس نبود؛ ریسک رویداد نامشخص است."))
+    if economic_calendar.get("attribution"):
+        lines.append(f"انتساب منبع: {economic_calendar.get('attribution')}")
+    lines.append(f"[تقویم XOOMAR]({economic_calendar.get('source_url', 'https://xoomar.com/markets/calendar')}) | [مستندات API]({economic_calendar.get('docs_url', 'https://xoomar.com/markets/api')}) | [شرایط استفاده]({economic_calendar.get('license_url', 'https://xoomar.com/terms')})")
+    lines.append("این منبع فقط تقویم رویدادهای پراثر آمریکا را می‌دهد؛ پیش‌بینی اجماعی بازار را ارائه نمی‌کند. رویدادهای USD در پنجره ±۳۰ دقیقه به‌عنوان ریسک بالا علامت می‌خورند. برای EUR/GBP/JPY/CHF/CAD/AUD/NZD نبود رویداد در این فید به معنی نبود ریسک نیست.")
+    future_events = []
+    for event in economic_calendar.get("events", []):
+        try:
+            event_time = datetime.fromisoformat(str(event.get("scheduled_at_utc", "")).replace("Z", "+00:00"))
+            if event_time.tzinfo is None:
+                event_time = event_time.replace(tzinfo=timezone.utc)
+            if event_time.astimezone(timezone.utc) >= datetime.now(timezone.utc):
+                future_events.append(event)
+        except (TypeError, ValueError):
+            continue
+    if future_events:
+        lines += ["", "| زمان UTC | رویداد | اهمیت | دوره | مقدار قبلی | مقدار واقعی | پیش‌بینی |", "|---|---|---|---|---:|---:|---:|"]
+        for event in future_events[:20]:
+            lines.append(
+                f"| {event.get('scheduled_at_utc')} | {event.get('name')} | {event.get('importance')} | "
+                f"{event.get('period') or '—'} | {event.get('previous') or '—'} | "
+                f"{event.get('actual') or '—'} | {event.get('forecast') or '—'} |"
+            )
+    else:
+        lines.append("رویداد آینده‌ای در داده دریافت‌شده وجود ندارد یا تقویم قابل‌استفاده نیست؛ این وضعیت فقط با timestamp تازه منبع قابل تفسیر است.")
+
     lines += ["", "## وضعیت داده دارایی‌ها", "",
               "| دارایی | منبع | وضعیت | آخرین timestamp بازار | زمان جمع‌آوری UTC | عمر داده (ساعت) | توضیح |",
               "|---|---|---|---|---|---:|---|"]
