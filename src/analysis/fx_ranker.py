@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from math import tanh
 from typing import Any
 
+from src.analysis.consensus import build_consensus
+
 
 CURRENCY_CODES = {"USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"}
 
@@ -42,6 +44,7 @@ def rank_fx_pairs(
     economic_calendar: dict[str, Any] | None = None,
     policy_rates: dict[str, Any] | None = None,
     opportunity_candidates: list[dict[str, Any]] | None = None,
+    currency_strength: dict[str, Any] | None = None,
     *,
     policy: dict[str, Any] | None = None,
     max_age_hours: float = 36.0,
@@ -65,7 +68,7 @@ def rank_fx_pairs(
     })
     weights = {
         key: float(value) for key, value in configured_weights.items()
-        if key in {"technical", "mtf_confluence", "fundamental", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk"}
+        if key in {"technical", "mtf_confluence", "fundamental", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk", "currency_strength"}
         and isinstance(value, (int, float)) and float(value) > 0
     }
     total_weight = sum(weights.values())
@@ -74,6 +77,7 @@ def rank_fx_pairs(
         for row in intelligence.get("currency_strength", [])
         if row.get("currency")
     }
+    strength_rows = (currency_strength or {}).get("currencies", {})
     ranked = []
     excluded = {"unavailable": 0, "stale": 0, "invalid": 0, "neutral": 0}
 
