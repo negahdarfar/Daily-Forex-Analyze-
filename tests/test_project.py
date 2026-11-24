@@ -49,7 +49,7 @@ class ProjectConfigurationTests(unittest.TestCase):
         registry = load_source_registry(ROOT / "config/analysis_sources.json")
         summary = summarize_source_registry(registry)
         self.assertEqual(summary["total"], 100)
-        self.assertEqual(summary["enabled"], 9)
+        self.assertEqual(summary["enabled"], 10)
         self.assertEqual(len({item["id"] for item in registry["sources"]}), 100)
 
     def test_syndicated_analysis_headlines_count_as_one_independent_publisher(self):
@@ -67,6 +67,23 @@ class ProjectConfigurationTests(unittest.TestCase):
         ]
         result = summarize_directional_evidence(candidates)
         self.assertEqual(result["EURUSD"]["bullish_publishers"], 1)
+
+    def test_two_named_specialist_publishers_can_form_consensus(self):
+        candidates = [
+            {"direction": "bullish", "assets": ["EURUSD"], "source": "Action Forex",
+             "source_registry_match": "Action Forex", "source_authority_score": 82,
+             "source_category": "forex_analysis", "expert_eligible": True,
+             "author": "Analyst A", "named_author": True,
+             "title": "EURUSD technical outlook sees further upside"},
+            {"direction": "bullish", "assets": ["EURUSD"], "source": "FXStreet",
+             "source_registry_match": "FXStreet", "source_authority_score": 84,
+             "source_category": "forex_analysis", "expert_eligible": True,
+             "author": "Analyst B", "named_author": True,
+             "title": "EURUSD forecast points to higher levels after data"},
+        ]
+        result = summarize_directional_evidence(candidates)
+        self.assertEqual(result["EURUSD"]["bullish_publishers"], 2)
+        self.assertGreater(result["EURUSD"]["net_bias"], 0)
 
     def test_unnamed_rss_author_is_not_counted_as_expert(self):
         candidates = [{
