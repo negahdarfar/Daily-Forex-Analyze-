@@ -223,7 +223,7 @@ def rank_fx_pairs(
         if components["news"] is None:
             missing.append("directional_currency_news")
         if components["expert_consensus"] is None:
-            missing.append("two_or_more_independent_forex_analysis_publishers")
+            missing.append("two_or_more_independent_named_forex_analysts")
         if calendar_score is None:
             missing.append(
                 "fresh_us_economic_calendar_required" if "USD" in {base, quote}
@@ -292,7 +292,7 @@ def rank_fx_pairs(
         "limitations": [
             "The fundamental component is only a BIS policy-rate carry and 90-day change proxy; inflation, growth, labor and market-consensus surprises are not integrated.",
             "The connected free calendar covers US high-impact releases only; the other seven currency legs remain unverified.",
-            "Expert claims are unverified and count only when at least two independent forex-analysis publishers are present.",
+            "Expert claims are unverified and count only when at least two independent specialist publishers provide named authors.",
             "A Yahoo Finance indicative quote is not an executable broker price; spread, commission, slippage and venue liquidity remain separate gates.",
             "The score is a relative research ranking, not a win probability or investment recommendation.",
         ],
