@@ -41,6 +41,7 @@ def rank_fx_pairs(
     directional_evidence: dict[str, dict[str, Any]] | None = None,
     economic_calendar: dict[str, Any] | None = None,
     policy_rates: dict[str, Any] | None = None,
+    opportunity_candidates: list[dict[str, Any]] | None = None,
     *,
     policy: dict[str, Any] | None = None,
     max_age_hours: float = 36.0,
@@ -52,14 +53,19 @@ def rank_fx_pairs(
     economic_calendar = economic_calendar or {}
     policy_rates = policy_rates or {}
     rate_rows = policy_rates.get("rates", {})
+    candidate_by_symbol = {
+        candidate.get("symbol"): candidate
+        for candidate in (opportunity_candidates or [])
+        if candidate.get("symbol")
+    }
     max_pairs = max(1, min(10, int(policy.get("max_pairs", 10))))
     configured_weights = policy.get("weights", {
-        "technical": 30, "fundamental": 20, "cot_positioning": 15, "news": 10,
-        "expert_consensus": 10, "data_freshness": 10, "calendar_risk": 5,
+        "technical": 20, "mtf_confluence": 15, "fundamental": 20, "cot_positioning": 15,
+        "news": 10, "expert_consensus": 10, "data_freshness": 5, "calendar_risk": 5,
     })
     weights = {
         key: float(value) for key, value in configured_weights.items()
-        if key in {"technical", "fundamental", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk"}
+        if key in {"technical", "mtf_confluence", "fundamental", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk"}
         and isinstance(value, (int, float)) and float(value) > 0
     }
     total_weight = sum(weights.values())
@@ -143,8 +149,36 @@ def rank_fx_pairs(
                 calendar_status = "stale_us_calendar_unknown"
             else:
                 calendar_status = "us_calendar_unavailable_unknown"
+        candidate = candidate_by_symbol.get(symbol, {})
+        timeframe_analyses = candidate.get("timeframes", {})
+        required_timeframes = ("1d", "4h", "1h")
+        mtf_rows = [
+            timeframe_analyses.get(tf, {})
+            for tf in required_timeframes
+        ]
+        mtf_score = None
+        if all(
+            row.get("status") == "ok"
+            and row.get("direction") in {"bullish", "bearish"}
+            and isinstance(row.get("score"), (int, float))
+            for row in mtf_rows
+        ):
+            alignment_pct = 100.0 * sum(
+                1 for row in mtf_rows if row.get("direction") == direction
+            ) / len(required_timeframes)
+            average_strength = sum(float(row["score"]) for row in mtf_rows) / len(required_timeframes)
+            mtf_score = _clamp(0.60 * alignment_pct + 0.40 * average_strength)
+        daily_freshness = _clamp(100.0 * (1.0 - float(age) / max(max_age_hours, 1.0)))
+        quote_age_minutes = candidate.get("quote_age_minutes")
+        max_quote_minutes = float(policy.get("max_intraday_quote_age_minutes", 180))
+        if isinstance(quote_age_minutes, (int, float)) and 0 <= float(quote_age_minutes) <= max_quote_minutes:
+            hourly_freshness = _clamp(100.0 * (1.0 - float(quote_age_minutes) / max(max_quote_minutes, 1.0)))
+            freshness_score = _clamp(0.35 * daily_freshness + 0.65 * hourly_freshness)
+        else:
+            freshness_score = daily_freshness
         components: dict[str, float | None] = {
             "technical": _clamp(float(analysis.get("score", 0.0))),
+            "mtf_confluence": mtf_score,
             "fundamental": fundamental_score,
             "cot_positioning": _pair_directional_spread(
                 currency_rows, base, quote, "cot_score", direction
@@ -153,7 +187,7 @@ def rank_fx_pairs(
                 currency_rows, base, quote, "news_score", direction
             ),
             "expert_consensus": None,
-            "data_freshness": _clamp(100.0 * (1.0 - float(age) / max(max_age_hours, 1.0))),
+            "data_freshness": freshness_score,
             "calendar_risk": calendar_score,
         }
         expert = directional_evidence.get(symbol, {})
@@ -182,6 +216,8 @@ def rank_fx_pairs(
             missing.append("paired_policy_rate_data_missing_or_stale")
         else:
             missing.append("inflation_growth_labor_and_market_consensus_surprise_not_integrated")
+        if mtf_score is None:
+            missing.append("completed_1d_4h_1h_multitimeframe_confluence_missing")
         if components["cot_positioning"] is None:
             missing.append("paired_currency_cot_positioning")
         if components["news"] is None:
@@ -242,6 +278,10 @@ def rank_fx_pairs(
             "fundamental_scope": "BIS policy-rate carry and 90-day change proxy only",
             "policy_rate_source_status": policy_rates.get("status", "not_connected"),
             "economic_calendar_connected": economic_calendar.get("status") == "available",
+            "mtf_confluence_integrated": any(
+                isinstance(row.get("score_components", {}).get("mtf_confluence"), (int, float))
+                for row in selected
+            ),
             "technical_multitimeframe_entry_validation": False,
             "expert_consensus_threshold": int(policy.get("minimum_independent_expert_publishers", 2)),
             "us_calendar_status": economic_calendar.get("status", "not_connected"),
