@@ -246,7 +246,16 @@ def rank_fx_pairs(
         publishers = int(expert.get("bullish_publishers", 0) or 0) + int(expert.get("bearish_publishers", 0) or 0)
         # A single unverified publisher is shown in the report but is not treated
         # as a consensus component.
-        if publishers >= int(policy.get("minimum_independent_expert_publishers", 2)):
+        verified_sample = int(expert.get("verified_trade_sample_size", 0) or 0)
+        verified_expectancy = expert.get("verified_expectancy_r")
+        verified_profit_factor = expert.get("verified_profit_factor")
+        verified_performance = (
+            expert.get("performance_verification_status") == "independently_verified"
+            and verified_sample >= int(policy.get("minimum_verified_expert_trades", 30))
+            and isinstance(verified_expectancy, (int, float)) and float(verified_expectancy) > 0
+            and isinstance(verified_profit_factor, (int, float)) and float(verified_profit_factor) > 1
+        )
+        if publishers >= int(policy.get("minimum_independent_expert_publishers", 2)) and verified_performance:
             net_bias = expert.get("net_bias")
             if isinstance(net_bias, (int, float)):
                 sign = 1.0 if direction == "bullish" else -1.0
@@ -297,7 +306,7 @@ def rank_fx_pairs(
         if components["news"] is None:
             missing.append("directional_currency_news")
         if components["expert_consensus"] is None:
-            missing.append("two_or_more_independent_named_forex_analysts")
+            missing.append("independently_verified_expert_trade_history_missing_or_below_sample_threshold")
         if pair_strength_score is None:
             missing.append("relative_currency_strength_pair_coverage_missing")
         if structure_score is None:
