@@ -89,8 +89,8 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         f"فاندامنتال در امتیاز نهایی: {'بله' if fx_ranking.get('coverage', {}).get('fundamental_integrated') else 'خیر'}."
     )
     lines += [
-        "", "| رتبه | جفت‌ارز | جهت | امتیاز موقت | پوشش وزن | تکنیکال | فاندامنتال | COT | خبر | نظر تحلیلگران | ریسک تقویم | عمر داده (ساعت) |",
-        "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---|---:|"
+        "", "| رتبه | جفت‌ارز | جهت | امتیاز موقت | پوشش وزن | تکنیکال روزانه | هم‌ترازی ۱D/۴H/۱H | فاندامنتال | COT | خبر | نظر تحلیلگران | ریسک تقویم | عمر داده (ساعت) |",
+        "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|"
     ]
     def fx_component(value):
         return f"{value:.1f}" if isinstance(value, (int, float)) else "—"
@@ -99,8 +99,8 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         lines.append(
             f"| {row.get('rank')} | {row.get('symbol')} | {row.get('direction')} | "
             f"{fx_component(row.get('score'))} | {fx_component(row.get('score_coverage_pct'))}% | "
-            f"{fx_component(components.get('technical'))} | {fx_component(components.get('fundamental'))} | "
-            f"{fx_component(components.get('cot_positioning'))} | {fx_component(components.get('news'))} | {fx_component(components.get('expert_consensus'))} | "
+            f"{fx_component(components.get('technical'))} | {fx_component(components.get('mtf_confluence'))} | "
+            f"{fx_component(components.get('fundamental'))} | {fx_component(components.get('cot_positioning'))} | {fx_component(components.get('news'))} | {fx_component(components.get('expert_consensus'))} | "
             f"{row.get('calendar_status', '—')} | {fx_component(row.get('data_age_hours'))} |"
         )
         if row.get("missing_evidence"):
