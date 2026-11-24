@@ -65,5 +65,27 @@ class IntelligenceV2Tests(unittest.TestCase):
         self.assertAlmostEqual(result["expectancy_per_trade"], -.015)
 
 
+    def test_fx_ranker_integrates_relative_strength_and_consensus(self):
+        from src.analysis.fx_ranker import rank_fx_pairs
+        results = [{"asset": "EURUSD", "status": "available", "age_hours": 1,
+                    "market_timestamp": "2025-01-01T00:00:00Z",
+                    "analysis": {"status": "ok", "direction": "bullish", "score": 75,
+                                 "close": 1.1, "rsi14": 55, "adx": 22, "atr_pct": 0.4}}]
+        candidate = {"symbol": "EURUSD", "timeframes": {
+            "1d": {"status": "ok", "direction": "bullish", "score": 70},
+            "4h": {"status": "ok", "direction": "bullish", "score": 72},
+            "1h": {"status": "ok", "direction": "bullish", "score": 75}}}
+        strength = {"status": "available", "currencies": {
+            "EUR": {"status": "available", "relative_score": 80},
+            "USD": {"status": "available", "relative_score": 40}}}
+        result = rank_fx_pairs(results, opportunity_candidates=[candidate],
+            currency_strength=strength,
+            policy={"weights": {"technical": 50, "currency_strength": 50}})
+        self.assertEqual(result["ranked_count"], 1)
+        row = result["opportunities"][0]
+        self.assertGreater(row["score_components"]["currency_strength"], 50)
+        self.assertEqual(row["consensus"]["status"], "available")
+        self.assertTrue(result["coverage"]["relative_currency_strength_integrated"])
+
 if __name__ == "__main__":
     unittest.main()
