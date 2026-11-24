@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import pandas as pd
+import hashlib
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -360,6 +362,46 @@ def main() -> None:
         correlation_threshold=float(settings.get("ranking", {}).get("correlation_threshold", 0.85)),
         correlation_penalty_points=float(settings.get("ranking", {}).get("correlation_penalty_points", 10.0)),
     )
+    backtest_config_path = ROOT / "config" / "backtest.json"
+    backtest_signals_path = ROOT / "data" / "backtest_signals.json"
+    backtest_config = load_json(backtest_config_path) if backtest_config_path.exists() else {}
+    backtest_input = load_json(backtest_signals_path) if backtest_signals_path.exists() else {"signals": []}
+    backtest_signals = backtest_input.get("signals", []) if isinstance(backtest_input, dict) else []
+    required_costs = ("spread_bps", "commission_bps", "slippage_bps")
+    costs_configured = all(
+        isinstance(backtest_config.get(key), (int, float)) and float(backtest_config[key]) >= 0
+        for key in required_costs
+    )
+    backtest_result = {"status": "awaiting_timestamped_signal_records", "by_timeframe": {}}
+    if backtest_signals and not costs_configured:
+        backtest_result = {"status": "blocked_missing_explicit_transaction_costs", "by_timeframe": {}}
+    elif backtest_signals and costs_configured:
+        for timeframe in sorted({str(row.get("timeframe", "1d")) for row in backtest_signals}):
+            group = [row for row in backtest_signals if str(row.get("timeframe", "1d")) == timeframe]
+            candles_by_symbol = {}
+            for symbol, pair_data in fetched_data.items():
+                selected_data = pair_data[0] if timeframe == "1d" else pair_data[1] if timeframe == "1h" else ({}, {})
+                if selected_data.get("status") == "available" and selected_data.get("history") is not None:
+                    candles_by_symbol[symbol] = selected_data["history"]
+            backtest_result["by_timeframe"][timeframe] = backtest_ohlc_signals(
+                pd.DataFrame(group), candles_by_symbol,
+                initial_equity=float(backtest_config.get("initial_equity", 10000)),
+                risk_fraction=float(backtest_config.get("risk_fraction", 0.01)),
+                spread_bps=float(backtest_config["spread_bps"]),
+                commission_bps=float(backtest_config["commission_bps"]),
+                slippage_bps=float(backtest_config["slippage_bps"]),
+                max_holding_bars=int(backtest_config.get("max_holding_bars", 48)),
+                allow_overlapping_per_symbol=bool(backtest_config.get("allow_overlapping_per_symbol", False)),
+            )
+        backtest_result["status"] = "evaluated" if any(
+            item.get("trade_count", 0) for item in backtest_result["by_timeframe"].values()
+        ) else "no_executable_signals"
+    paper_trading_status = {
+        "mode": settings.get("risk", {}).get("mode", "research_paper_trading_only"),
+        "live_orders_enabled": bool(settings.get("risk", {}).get("live_orders_enabled", False)),
+        "status": "forward_paper_validation_not_yet_run",
+        "note": "A historical OHLC backtest is not forward paper trading. Keep live orders disabled until a forward observation period is logged and independently reviewed.",
+    }
     report = render_report(
         results, settings, local_now, news=news, source_registry=source_registry,
         analysis_candidates=analysis_candidates, forex_symbols=forex_symbols,
@@ -371,6 +413,9 @@ def main() -> None:
         economic_calendar=economic_calendar,
         policy_rates=policy_rates,
         currency_strength=currency_strength,
+        ecb_fx_cross_checks=ecb_fx_cross_checks,
+        backtest_result=backtest_result,
+        paper_trading_status=paper_trading_status,
     )
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
@@ -388,6 +433,8 @@ def main() -> None:
         "currency_strength": currency_strength,
         "verified_expert_evidence": verified_expert_evidence,
         "ecb_fx_cross_checks": ecb_fx_cross_checks,
+        "backtest": backtest_result,
+        "paper_trading": paper_trading_status,
         "candidates": opportunity_candidates,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"News items collected: {len(news)}")
