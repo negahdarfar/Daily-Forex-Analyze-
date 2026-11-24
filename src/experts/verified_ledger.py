@@ -38,14 +38,24 @@ def validate_verified_trade(record: dict[str, Any]) -> tuple[bool, str, float | 
         return False, "self_verification_rejected", None
     if not _valid_time(record["closed_at"]) or not _valid_time(record["verified_at"]):
         return False, "invalid_or_future_timestamp", None
+    closed = datetime.fromisoformat(str(record["closed_at"]).replace("Z", "+00:00"))
+    verified = datetime.fromisoformat(str(record["verified_at"]).replace("Z", "+00:00"))
+    if verified <= closed:
+        return False, "verification_must_follow_trade_close", None
     source_url = str(record["source_url"]).strip().lower()
     if not source_url.startswith(("https://", "http://")):
         return False, "invalid_source_url", None
     try:
+        price_values = [float(record[key]) for key in ("entry", "stop_loss", "exit_price")]
+        if any(not isfinite(value) or value <= 0 for value in price_values):
+            return False, "non_positive_or_non_finite_trade_price", None
+        fees_r = float(record.get("fees_r", 0.0))
+        if not isfinite(fees_r) or fees_r < 0:
+            return False, "invalid_fees_r", None
         r_value = realized_r_multiple(
             str(record["direction"]), float(record["entry"]),
             float(record["stop_loss"]), float(record["exit_price"]),
-            float(record.get("fees_r", 0.0)),
+            fees_r,
         )
     except (TypeError, ValueError, ZeroDivisionError):
         return False, "invalid_trade_prices_or_direction", None
