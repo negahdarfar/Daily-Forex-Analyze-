@@ -217,6 +217,19 @@ def rank_fx_pairs(
                 sign = 1.0 if direction == "bullish" else -1.0
                 components["expert_consensus"] = _clamp(50.0 + 50.0 * sign * float(net_bias))
 
+        consensus = build_consensus(
+            {
+                "technical": {"score": components["technical"], "verified": True, "fresh": True,
+                              "source": "current-run technical analysis"},
+                "macro": {"score": fundamental_score, "verified": fundamental_score is not None,
+                          "fresh": policy_rates.get("status") == "available",
+                          "source": policy_rates.get("source")},
+                "currency_strength": {"score": pair_strength_score, "verified": pair_strength_score is not None,
+                                      "fresh": True, "source": "current-run relative FX closes"},
+            },
+            weights={"technical": 1.0, "macro": 1.0, "currency_strength": 1.0},
+            minimum_coverage_pct=float(policy.get("minimum_consensus_coverage_pct", 50.0)),
+        )
         available = {
             key: value for key, value in components.items()
             if key in weights and isinstance(value, (int, float))
@@ -241,6 +254,10 @@ def rank_fx_pairs(
             missing.append("directional_currency_news")
         if components["expert_consensus"] is None:
             missing.append("two_or_more_independent_named_forex_analysts")
+        if pair_strength_score is None:
+            missing.append("relative_currency_strength_pair_coverage_missing")
+        if consensus.get("status") != "available":
+            missing.append("verified_consensus_coverage_below_threshold")
         if calendar_score is None:
             missing.append(
                 "fresh_us_economic_calendar_required" if "USD" in {base, quote}
@@ -253,6 +270,7 @@ def rank_fx_pairs(
             "symbol": symbol,
             "direction": direction,
             "score": round(score, 2),
+            "consensus": consensus,
             "score_type": "provisional_evidence_weighted_shortlist_not_probability",
             "score_coverage_pct": round(coverage_pct, 1),
             "score_components": components,
@@ -279,7 +297,13 @@ def rank_fx_pairs(
             "execution_status": "not_trade_qualified",
         })
 
-    ranked.sort(key=lambda row: (row["score"], row["score_coverage_pct"], -row["data_age_hours"]), reverse=True)
+    ranked.sort(key=lambda row: (
+        row["score"],
+        row.get("consensus", {}).get("coverage_pct", 0.0),
+        row.get("consensus", {}).get("score") if isinstance(row.get("consensus", {}).get("score"), (int, float)) else -1.0,
+        row["score_coverage_pct"],
+        -row["data_age_hours"],
+    ), reverse=True)
     selected = [{**row, "rank": rank} for rank, row in enumerate(ranked[:max_pairs], 1)]
     return {
         "schema_version": "1.0.0",
@@ -300,6 +324,8 @@ def rank_fx_pairs(
                 for row in selected
             ),
             "technical_multitimeframe_entry_validation": False,
+            "relative_currency_strength_integrated": bool(currency_strength and currency_strength.get("status") == "available"),
+            "evidence_consensus_integrated": True,
             "expert_consensus_threshold": int(policy.get("minimum_independent_expert_publishers", 2)),
             "us_calendar_status": economic_calendar.get("status", "not_connected"),
             "us_calendar_scope": economic_calendar.get("coverage", "not_connected"),
