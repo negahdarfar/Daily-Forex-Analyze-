@@ -295,7 +295,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         for item in relevant_news[:40]:
             lines.append(
                 f"- **{item['title']}** — {item['source']} | انتشار: {item['published_at']} | "
-                f"اعتبار منبع: {item['reliability']} | جمع‌آوری: {item['collected_at']} | "
+                f"اعتبار منبع: {item['reliability']} | سنتیمنت تیتر: {item.get('sentiment', {}).get('label', 'not_scored')} | جمع‌آوری: {item['collected_at']} | "
                 f"[منبع]({item['url']})"
             )
             if item.get("summary"):
