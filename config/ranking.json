@@ -37,6 +37,7 @@
     "event_blackout_minutes_after": 30,
     "max_intraday_quote_age_minutes": 180,
     "minimum_consensus_coverage_pct": 50,
-    "structure_event_max_age_hours": 24
+    "structure_event_max_age_hours": 24,
+    "minimum_verified_expert_trades": 30
   }
 }
