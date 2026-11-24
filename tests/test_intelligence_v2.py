@@ -83,11 +83,12 @@ class IntelligenceV2Tests(unittest.TestCase):
             "USD": {"status": "available", "relative_score": 40}}}
         result = rank_fx_pairs(results, opportunity_candidates=[candidate],
             currency_strength=strength,
-            policy={"weights": {"technical": 50, "currency_strength": 50}})
+            policy={"weights": {"technical": 40, "currency_strength": 40, "market_structure": 20}})
         self.assertEqual(result["ranked_count"], 1)
         row = result["opportunities"][0]
         self.assertGreater(row["score_components"]["currency_strength"], 50)
         self.assertEqual(row["score_components"]["market_structure"], 90.0)
+        self.assertAlmostEqual(row["score"], 76.0)
         self.assertEqual(row["consensus"]["status"], "available")
         self.assertTrue(result["coverage"]["relative_currency_strength_integrated"])
 
