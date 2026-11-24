@@ -42,7 +42,7 @@ class IntelligenceV2Tests(unittest.TestCase):
         }, index=idx)
         result = analyze_market_structure(frame, left=2, right=2)
         self.assertEqual(result["status"], "available")
-        self.assertIn("confirmed_at", result["non_repainting_note"])
+        self.assertTrue(any("confirmed_at" in event for event in result["events"] if event["type"].startswith("swing_")) )
 
     def test_walk_forward_uses_future_observation(self):
         t = pd.date_range("2025-01-01", periods=4, freq="h", tz="UTC")
