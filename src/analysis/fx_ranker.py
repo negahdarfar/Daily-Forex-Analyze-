@@ -7,6 +7,7 @@ an entry signal, probability, or substitute for broker execution checks.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from math import tanh
 from typing import Any
 
 
@@ -39,6 +40,7 @@ def rank_fx_pairs(
     market_intelligence: dict[str, Any] | None = None,
     directional_evidence: dict[str, dict[str, Any]] | None = None,
     economic_calendar: dict[str, Any] | None = None,
+    policy_rates: dict[str, Any] | None = None,
     *,
     policy: dict[str, Any] | None = None,
     max_age_hours: float = 36.0,
@@ -48,6 +50,8 @@ def rank_fx_pairs(
     policy = policy or {}
     directional_evidence = directional_evidence or {}
     economic_calendar = economic_calendar or {}
+    policy_rates = policy_rates or {}
+    rate_rows = policy_rates.get("rates", {})
     max_pairs = max(1, min(10, int(policy.get("max_pairs", 10))))
     configured_weights = policy.get("weights", {
         "technical": 30, "fundamental": 20, "cot_positioning": 15, "news": 10,
@@ -92,6 +96,24 @@ def rank_fx_pairs(
             continue
 
         base, quote = symbol[:3], symbol[3:]
+        fundamental_score = None
+        fundamental_status = "policy_rate_data_missing_or_stale"
+        base_rate = rate_rows.get(base, {})
+        quote_rate = rate_rows.get(quote, {})
+        if (
+            base_rate.get("status") == "available"
+            and quote_rate.get("status") == "available"
+            and isinstance(base_rate.get("policy_rate_pct"), (int, float))
+            and isinstance(quote_rate.get("policy_rate_pct"), (int, float))
+            and isinstance(base_rate.get("change_90d_pp"), (int, float))
+            and isinstance(quote_rate.get("change_90d_pp"), (int, float))
+        ):
+            carry_diff = float(base_rate["policy_rate_pct"]) - float(quote_rate["policy_rate_pct"])
+            policy_impulse_diff = float(base_rate["change_90d_pp"]) - float(quote_rate["change_90d_pp"])
+            raw_fundamental = 0.65 * tanh(carry_diff / 2.0) + 0.35 * tanh(policy_impulse_diff / 0.5)
+            direction_sign = 1.0 if direction == "bullish" else -1.0
+            fundamental_score = _clamp(50.0 + 50.0 * direction_sign * raw_fundamental)
+            fundamental_status = "policy_rate_carry_and_90d_change_proxy"
         calendar_score = None
         calendar_status = "non_us_currency_calendar_not_covered"
         if "USD" in {base, quote}:
@@ -123,7 +145,7 @@ def rank_fx_pairs(
                 calendar_status = "us_calendar_unavailable_unknown"
         components: dict[str, float | None] = {
             "technical": _clamp(float(analysis.get("score", 0.0))),
-            "fundamental": None,
+            "fundamental": fundamental_score,
             "cot_positioning": _pair_directional_spread(
                 currency_rows, base, quote, "cot_score", direction
             ),
@@ -156,7 +178,10 @@ def rank_fx_pairs(
 
         missing = []
         # These domains are intentionally not inferred from proxy data.
-        missing.append("fundamental_rate_path_and_comparable_macro_surprise")
+        if fundamental_score is None:
+            missing.append("paired_policy_rate_data_missing_or_stale")
+        else:
+            missing.append("inflation_growth_labor_and_market_consensus_surprise_not_integrated")
         if components["cot_positioning"] is None:
             missing.append("paired_currency_cot_positioning")
         if components["news"] is None:
@@ -196,7 +221,7 @@ def rank_fx_pairs(
                 )
                 else "technical_only_or_insufficient_confirmation"
             ),
-            "fundamental_status": "not_integrated",
+            "fundamental_status": fundamental_status,
             "calendar_status": calendar_status,
             "execution_status": "not_trade_qualified",
         })
@@ -213,7 +238,9 @@ def rank_fx_pairs(
         "opportunities": selected,
         "excluded": excluded,
         "coverage": {
-            "fundamental_integrated": False,
+            "fundamental_integrated": policy_rates.get("status") == "available",
+            "fundamental_scope": "BIS policy-rate carry and 90-day change proxy only",
+            "policy_rate_source_status": policy_rates.get("status", "not_connected"),
             "economic_calendar_connected": economic_calendar.get("status") == "available",
             "technical_multitimeframe_entry_validation": False,
             "expert_consensus_threshold": int(policy.get("minimum_independent_expert_publishers", 2)),
@@ -223,7 +250,7 @@ def rank_fx_pairs(
             "non_us_calendar_covered": False,
         },
         "limitations": [
-            "Fundamental rate-path and synchronized macro-surprise scoring are not yet integrated into this shortlist.",
+            "The fundamental component is only a BIS policy-rate carry and 90-day change proxy; inflation, growth, labor and market-consensus surprises are not integrated.",
             "The connected free calendar covers US high-impact releases only; the other seven currency legs remain unverified.",
             "Expert claims are unverified and count only when at least two independent forex-analysis publishers are present.",
             "A Yahoo Finance indicative quote is not an executable broker price; spread, commission, slippage and venue liquidity remain separate gates.",
