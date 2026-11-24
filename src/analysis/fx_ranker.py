@@ -192,6 +192,40 @@ def rank_fx_pairs(
             relative_diff = float(base_relative) - float(quote_relative)
             sign = 1.0 if direction == "bullish" else -1.0
             pair_strength_score = _clamp(50.0 + sign * relative_diff / 2.0)
+        structure = candidate.get("market_structure", {})
+        structure_score = None
+        recent_structure = []
+        if structure.get("status") == "available":
+            now_utc = datetime.now(timezone.utc)
+            for event in structure.get("events", []):
+                stamp_text = event.get("confirmed_at") or event.get("at")
+                try:
+                    stamp = datetime.fromisoformat(str(stamp_text).replace("Z", "+00:00"))
+                    if stamp.tzinfo is None:
+                        stamp = stamp.replace(tzinfo=timezone.utc)
+                    age_hours_event = (now_utc - stamp.astimezone(timezone.utc)).total_seconds() / 3600
+                    if 0 <= age_hours_event <= float(policy.get("structure_event_max_age_hours", 24)):
+                        event_type = str(event.get("type", ""))
+                        event_direction = event.get("direction")
+                        if event_type.lower().startswith("bullish"):
+                            event_direction = "bullish"
+                        elif event_type.lower().startswith("bearish"):
+                            event_direction = "bearish"
+                        if event_direction in {"bullish", "bearish"}:
+                            recent_structure.append((event_type, event_direction))
+                except (TypeError, ValueError):
+                    continue
+        aligned_bos = any(kind in {"BOS", "CHoCH"} and side == direction for kind, side in recent_structure)
+        opposed_bos = any(kind in {"BOS", "CHoCH"} and side != direction for kind, side in recent_structure)
+        aligned_fvg = any("FVG" in kind and side == direction for kind, side in recent_structure)
+        if aligned_bos and aligned_fvg:
+            structure_score = 90.0
+        elif aligned_bos:
+            structure_score = 75.0
+        elif aligned_fvg:
+            structure_score = 60.0
+        elif opposed_bos:
+            structure_score = 20.0
         components: dict[str, float | None] = {
             "technical": _clamp(float(analysis.get("score", 0.0))),
             "mtf_confluence": mtf_score,
@@ -206,6 +240,7 @@ def rank_fx_pairs(
             "data_freshness": freshness_score,
             "calendar_risk": calendar_score,
             "currency_strength": pair_strength_score,
+            "market_structure": structure_score,
         }
         expert = directional_evidence.get(symbol, {})
         publishers = int(expert.get("bullish_publishers", 0) or 0) + int(expert.get("bearish_publishers", 0) or 0)
@@ -256,6 +291,8 @@ def rank_fx_pairs(
             missing.append("two_or_more_independent_named_forex_analysts")
         if pair_strength_score is None:
             missing.append("relative_currency_strength_pair_coverage_missing")
+        if structure_score is None:
+            missing.append("recent_confirmed_market_structure_event_missing")
         if consensus.get("status") != "available":
             missing.append("verified_consensus_coverage_below_threshold")
         if calendar_score is None:
