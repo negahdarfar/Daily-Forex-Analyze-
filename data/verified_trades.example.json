@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Template only. Copy to verified_trades.json only after independently reviewing closed trade evidence. Never add credentials or private account identifiers.",
+  "trades": [
+    {
+      "trade_id": "unique-public-or-audit-reference",
+      "analyst_id": "exact named analyst used by the registered forecast source",
+      "symbol": "EURUSD",
+      "direction": "bullish",
+      "entry": 1.08,
+      "stop_loss": 1.075,
+      "exit_price": 1.09,
+      "fees_r": 0.02,
+      "closed_at": "2026-01-10T15:00:00Z",
+      "source_url": "https://example.org/public-trade-record",
+      "verification_status": "pending_review",
+      "verified_by": "",
+      "verified_at": "",
+      "evidence_reference": ""
+    }
+  ]
+}
