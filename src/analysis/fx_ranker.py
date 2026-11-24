@@ -156,7 +156,6 @@ def rank_fx_pairs(
         missing = []
         # These domains are intentionally not inferred from proxy data.
         missing.append("fundamental_rate_path_and_comparable_macro_surprise")
-        missing.append("timestamped_economic_calendar_and_event_blackout")
         if components["cot_positioning"] is None:
             missing.append("paired_currency_cot_positioning")
         if components["news"] is None:
@@ -214,10 +213,11 @@ def rank_fx_pairs(
         "excluded": excluded,
         "coverage": {
             "fundamental_integrated": False,
-            "economic_calendar_connected": False,
+            "economic_calendar_connected": economic_calendar.get("status") == "available",
             "technical_multitimeframe_entry_validation": False,
             "expert_consensus_threshold": int(policy.get("minimum_independent_expert_publishers", 2)),
             "us_calendar_status": economic_calendar.get("status", "not_connected"),
+            "us_calendar_scope": economic_calendar.get("coverage", "not_connected"),
             "us_calendar_updated_at": economic_calendar.get("updated_at"),
             "non_us_calendar_covered": False,
         },
