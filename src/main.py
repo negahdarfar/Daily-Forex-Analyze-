@@ -20,6 +20,7 @@ from src.analysis.fx_ranker import rank_fx_pairs
 from src.analysis.opportunity_engine import build_opportunity, rank_opportunities, resample_completed_4h, completed_hourly_candles
 from src.analysis.currency_strength import calculate_currency_strength
 from src.analysis.market_structure import analyze_market_structure
+from src.analysis.news_sentiment import score_headline
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -252,6 +253,7 @@ def main() -> None:
     # The 100-source registry is the single authority for activation and access method.
     news_sources = merge_active_rss_sources(configured_news_sources, registry_data)
     news = collect_news(news_sources, settings.get("news", {}))
+    news = [{**item, "sentiment": score_headline(item.get("title", ""))} for item in news]
     known_symbols = [item["symbol"] for category in ("forex", "commodities", "crypto") for item in assets.get(category, []) if item.get("enabled")]
     analysis_candidates = extract_analysis_candidates(news, known_symbols)
     analysis_candidates = annotate_analysis_candidates(analysis_candidates, registry_data)
