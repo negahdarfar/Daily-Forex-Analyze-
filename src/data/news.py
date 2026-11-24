@@ -89,7 +89,7 @@ def collect_news(sources: list[dict], settings: dict | None = None) -> list[dict
                     "collected_at": now.isoformat(), "age_hours": age_hours,
                     "status": "dated" if published_at else "publication_time_unavailable",
                     "relevance": classify_relevance(title, getattr(entry, "summary", "") or ""),
-                    "summary": (getattr(entry, "summary", "") or "").replace("\\n", " ")[:500]
+                    "summary": (getattr(entry, "summary", "") or "").replace("\\n", " ")[:max(100, min(500, int(source.get("summary_max_chars", 500))))]
                 })
         except Exception as exc:
             collected.append({
