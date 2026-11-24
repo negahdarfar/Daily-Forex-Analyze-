@@ -7,7 +7,7 @@ from src.analysis.news_sentiment import score_headline, deduplicate_headlines
 from src.analysis.walk_forward import evaluate_signals
 from src.analysis.market_structure import analyze_market_structure
 from src.analysis.consensus import build_consensus
-from src.analysis.global_economic_calendar import fetch_global_economic_calendar, _numeric
+from src.data.global_economic_calendar import fetch_global_economic_calendar, _numeric
 from src.analysis.ohlc_backtest import backtest_ohlc_signals
 from src.experts.verified_ledger import build_verified_expert_evidence, validate_verified_trade
 
