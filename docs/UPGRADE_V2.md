@@ -67,3 +67,16 @@ python -m unittest discover -s tests -v
 ```
 
 Do not merge until the workflow actually receives a runner and passes, local regression tests pass, data-source terms are reviewed, and a forward paper-trading period has been independently checked.
+
+
+## Dynamic KOROUSH Central data-source integration
+
+The Forex market-data adapter now discovers administrator-registered `kind=data_source` manifests from the central extension registry using the exact repository identity and the `registry:read` tenant scope. It supports the versioned public OHLC protocol documented in `docs/CENTRAL_DATA_SOURCE_PROTOCOL.md`.
+
+- Eligible sources must be active, use `koroush-market-data-v1` / `market.ohlc.v1`, be scoped to Forex/general, declare an administrator-attested USD 0.00 cost and HTTPS terms URL, and expose a safe HTTPS endpoint.
+- Registry discovery is cached for five minutes. At most five sources are queried; redirects are disabled and the tenant key is never sent to provider endpoints.
+- The provider response is validated for exact symbol/interval, UTC timestamps, completed bars, interval duration and OHLC geometry.
+- The freshest valid completed bar is compared with existing Yahoo and (where applicable) Binance results. Invalid or stale central sources do not displace a valid local source.
+- If central configuration, registry access or a provider is unavailable, the existing local provider path continues.
+
+This is a metadata-driven adapter, not arbitrary plugin execution. Only public no-key feeds are supported in v1. Admin registration and the zero-cost attestation still require human review; the central registry does not independently certify licensing, source accuracy or uptime. The Forex tenant key needs `registry:read` in addition to the research scopes. No production central source is claimed until a real manifest is registered and a successful data fetch is observed.
