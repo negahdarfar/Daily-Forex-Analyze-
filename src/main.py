@@ -128,6 +128,12 @@ def main() -> None:
             "collected_at": fetched.get("collected_at", "—"),
             "sources_checked": ", ".join(fetched.get("sources_checked", [])) or "—",
             "source_selection": fetched.get("source_selection", "single_source"),
+            "market_timestamp_basis": fetched.get("market_timestamp_basis"),
+            "source_id": fetched.get("source_id"),
+            "source_version": fetched.get("source_version"),
+            "source_trust": fetched.get("source_trust"),
+            "source_status": fetched.get("source_status", {}),
+            "source_candidates": fetched.get("source_candidates"),
             "reason": fetched.get("reason", "—")
         }
         if fetched.get("status") == "available":
