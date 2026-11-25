@@ -1,7 +1,7 @@
 """Dynamic, metadata-driven KOROUSH Central OHLC source adapter."""
 from __future__ import annotations
 from datetime import datetime, timezone
-import hashlib, ipaddress, os, socket, time
+import hashlib, ipaddress, math, os, socket, time
 from typing import Any
 from urllib.parse import urlsplit
 import pandas as pd
@@ -40,6 +40,20 @@ def _safe_endpoint(value: Any) -> bool:
         return False
 
 
+def _safe_terms_url(value: Any) -> bool:
+    try:
+        parsed = urlsplit(value)
+        host = (parsed.hostname or "").lower().rstrip(".")
+        return bool(
+            parsed.scheme == "https" and host and not parsed.username and not parsed.password
+            and parsed.port in (None, 443)
+            and host not in {"localhost", "metadata.google.internal"}
+            and not host.endswith((".local", ".internal", ".localhost"))
+        )
+    except (TypeError, ValueError):
+        return False
+
+
 def discover_sources(timeout: int = 8, force_refresh: bool = False) -> list[dict[str, Any]]:
     base = os.getenv("KOROUSH_CENTRAL_BASE_URL", "").strip().rstrip("/")
     key = os.getenv("KOROUSH_CENTRAL_TENANT_KEY", "").strip()
@@ -47,7 +61,7 @@ def discover_sources(timeout: int = 8, force_refresh: bool = False) -> list[dict
     if not base or not key or not repo:
         return []
     parsed = urlsplit(base)
-    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.port not in (None, 443):
         return []
     cache_key, now = f"{base}|{repo}|{hashlib.sha256(key.encode()).hexdigest()}", time.monotonic()
     if not force_refresh and _cache["key"] == cache_key and now < _cache["expires"]:
@@ -66,25 +80,31 @@ def discover_sources(timeout: int = 8, force_refresh: bool = False) -> list[dict
         for item in extensions:
             if not isinstance(item, dict) or item.get("kind") != "data_source" or item.get("status") != "active":
                 continue
-            if item.get("protocol") != _PROTOCOL or _CAPABILITY not in item.get("capabilities", []):
+            capabilities, domains = item.get("capabilities"), item.get("domains")
+            repositories = item.get("repositories", [])
+            if not isinstance(capabilities, list) or not isinstance(domains, list) or not isinstance(repositories, list):
                 continue
-            pricing = item.get("pricing") or {}
-            if pricing.get("cost_usd") != 0 or pricing.get("zero_cost_attested_by_admin") is not True:
+            if item.get("protocol") != _PROTOCOL or _CAPABILITY not in capabilities:
                 continue
-            if pricing.get("source_reviewed_by_admin") is not True:
+            pricing = item.get("pricing")
+            if not isinstance(pricing, dict):
                 continue
-            terms_url = pricing.get("terms_url", "")
-            if not isinstance(terms_url, str) or not terms_url.startswith("https://"):
+            cost = pricing.get("cost_usd")
+            if isinstance(cost, bool) or not isinstance(cost, (int, float)) or not math.isfinite(float(cost)) or cost != 0:
                 continue
-            if not ({"forex", "general"} & set(item.get("domains", []))):
+            if pricing.get("zero_cost_attested_by_admin") is not True or pricing.get("source_reviewed_by_admin") is not True:
                 continue
-            if item.get("repositories") and repo not in [str(v).lower() for v in item["repositories"]]:
+            if not _safe_terms_url(pricing.get("terms_url")):
+                continue
+            if not ({"forex", "general"} & set(domains)):
+                continue
+            if repositories and repo not in [str(v).lower() for v in repositories]:
                 continue
             if _safe_endpoint(item.get("endpoint")):
                 eligible.append(item)
         def priority(item):
             value = (item.get("pricing") or {}).get("priority", 0)
-            return int(value) if isinstance(value, (int, float)) else 0
+            return int(value) if isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(float(value)) else 0
         eligible.sort(key=lambda item: (-priority(item), str(item.get("extension_id", "")), str(item.get("version", ""))))
         max_sources = max(1, min(5, int(os.getenv("KOROUSH_CENTRAL_MAX_SOURCES", "2"))))
         eligible = eligible[:max_sources]
@@ -99,9 +119,10 @@ def _validate_candles(payload: dict[str, Any], symbol: str, interval: str):
     if payload.get("symbol") != symbol or payload.get("interval") != interval:
         return None
     candles = payload.get("candles")
-    if not isinstance(candles, list) or not candles:
+    if not isinstance(candles, list) or not candles or len(candles) > 1000:
         return None
     now = pd.Timestamp(datetime.now(timezone.utc))
+    interval_seconds = {"1m": 60, "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400, "1w": 604800}.get(interval)
     rows = []
     for item in candles:
         if not isinstance(item, dict):
@@ -109,19 +130,18 @@ def _validate_candles(payload: dict[str, Any], symbol: str, interval: str):
         opened, closed = _stamp(item.get("open_time")), _stamp(item.get("close_time"))
         if opened is None or closed is None or opened >= closed or closed > now:
             continue
-        interval_seconds = {"1m": 60, "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400, "1w": 604800}.get(payload.get("interval"))
         if interval_seconds is not None and abs((closed - opened).total_seconds() - interval_seconds) > 2:
             continue
         try:
             values = {k: float(item[k]) for k in ("open", "high", "low", "close")}
-            if any(not pd.notna(v) or v <= 0 for v in values.values()):
+            if any(not math.isfinite(v) or v <= 0 for v in values.values()):
                 continue
             if values["high"] < max(values["open"], values["close"], values["low"]):
                 continue
             if values["low"] > min(values["open"], values["close"], values["high"]):
                 continue
             volume = item.get("volume")
-            if volume is not None and (not pd.notna(float(volume)) or float(volume) < 0):
+            if volume is not None and (not math.isfinite(float(volume)) or float(volume) < 0):
                 continue
             rows.append({"Datetime": opened, "Open": values["open"], "High": values["high"],
                 "Low": values["low"], "Close": values["close"],
