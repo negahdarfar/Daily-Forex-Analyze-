@@ -79,5 +79,34 @@ class CentralSourceTests(unittest.TestCase):
         self.assertEqual(result["provider"], "Yahoo Finance")
 
 
+    def test_registry_rejects_boolean_cost_and_untrusted_terms_url(self):
+        good = {"kind": "data_source", "status": "active", "protocol": "koroush-market-data-v1",
+            "capabilities": ["market.ohlc.v1"], "domains": ["forex"],
+            "endpoint": "https://prices.example.org/ohlc", "extension_id": "feed.good",
+            "version": "1.0.0", "name": "Good",
+            "pricing": {"cost_usd": 0, "zero_cost_attested_by_admin": True,
+                        "source_reviewed_by_admin": True, "terms_url": "https://prices.example.org/terms"}}
+        boolean_cost = dict(good, extension_id="feed.boolean-cost",
+                            pricing={**good["pricing"], "cost_usd": False})
+        invalid_terms = dict(good, extension_id="feed.bad-terms",
+                             pricing={**good["pricing"], "terms_url": "javascript:alert(1)"})
+        malformed_contract = dict(good, extension_id="feed.bad-contract", capabilities="market.ohlc.v1")
+        response = Mock()
+        response.json.return_value = {"extensions": [good, boolean_cost, invalid_terms, malformed_contract]}
+        response.raise_for_status.return_value = None
+        with patch.object(central_sources, "_safe_endpoint", return_value=True), patch.object(central_sources.requests, "get", return_value=response):
+            result = central_sources.discover_sources(force_refresh=True)
+        self.assertEqual([item["extension_id"] for item in result], ["feed.good"])
+
+    def test_ohlc_contract_rejects_non_finite_values_and_oversized_payload(self):
+        invalid = {"symbol": "EURUSD", "interval": "1h", "candles": [
+            {"open_time": "2026-11-25T01:00:00Z", "close_time": "2026-11-25T02:00:00Z",
+             "open": 1.1, "high": float("inf"), "low": 1.0, "close": 1.15}]}
+        self.assertIsNone(central_sources._validate_candles(invalid, "EURUSD", "1h"))
+        oversized = {"symbol": "EURUSD", "interval": "1h", "candles": [{}] * 1001}
+        self.assertIsNone(central_sources._validate_candles(oversized, "EURUSD", "1h"))
+
+
+
 if __name__ == "__main__":
     unittest.main()
