@@ -9,6 +9,7 @@ import requests
 import yfinance as yf
 
 from src.data.central_sources import fetch_central_market_history
+from src.data.mcp_sources import fetch_mcp_crypto_history
 
 
 BINANCE_SYMBOLS = {"BTCUSDT": "BTCUSDT", "ETHUSDT": "ETHUSDT"}
@@ -185,7 +186,18 @@ def fetch_asset_history(
         if central.get("status") == "available":
             candidates.append(central)
 
+    mcp_crypto = None
     if asset.get("category") == "crypto" and asset.get("quote_currency") == "USDT":
+        # The MCP adapter is opt-in and read-only. It provides exchange-native
+        # OKX candles, not a fabricated FX/commodity conversion.
+        mcp_crypto = fetch_mcp_crypto_history(
+            asset["symbol"], interval=interval, limit=500 if interval == "1d" else 300,
+            timeout=max(15, timeout),
+        )
+        if mcp_crypto is not None:
+            checked.extend(mcp_crypto.get("sources_checked", []))
+            if mcp_crypto.get("status") == "available":
+                candidates.append(mcp_crypto)
         binance = fetch_binance_history(asset["symbol"], interval=interval)
         checked.append("Binance public API")
         if binance.get("status") == "available":
@@ -194,7 +206,7 @@ def fetch_asset_history(
         binance = None
 
     if not candidates:
-        providers = [yahoo] + ([central] if central is not None else []) + ([binance] if binance else [])
+        providers = [yahoo] + ([central] if central is not None else []) + ([mcp_crypto] if mcp_crypto is not None else []) + ([binance] if binance else [])
         reasons = "; ".join(
             f"{item.get('provider', 'source')}: {item.get('reason', item.get('status', 'unavailable'))}"
             for item in providers
@@ -210,7 +222,7 @@ def fetch_asset_history(
     selected["source_selection"] = "freshest_valid_timestamp"
     selected["source_status"] = {
         item.get("provider", "source"): item.get("status", "unknown")
-        for item in ([yahoo] + ([central] if central is not None else []) + ([binance] if binance else []))
+        for item in ([yahoo] + ([central] if central is not None else []) + ([mcp_crypto] if mcp_crypto is not None else []) + ([binance] if binance else []))
     }
     selected["source_candidates"] = len(candidates)
     return selected
