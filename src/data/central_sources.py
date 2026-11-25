@@ -60,8 +60,12 @@ def discover_sources(timeout: int = 8, force_refresh: bool = False) -> list[dict
     repo = os.getenv("GITHUB_REPOSITORY", "").strip().lower()
     if not base or not key or not repo:
         return []
-    parsed = urlsplit(base)
-    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.port not in (None, 443):
+    try:
+        parsed = urlsplit(base)
+        base_port = parsed.port
+    except ValueError:
+        return []
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or base_port not in (None, 443):
         return []
     cache_key, now = f"{base}|{repo}|{hashlib.sha256(key.encode()).hexdigest()}", time.monotonic()
     if not force_refresh and _cache["key"] == cache_key and now < _cache["expires"]:
