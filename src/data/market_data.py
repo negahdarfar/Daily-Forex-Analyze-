@@ -187,6 +187,7 @@ def fetch_asset_history(
             candidates.append(central)
 
     mcp_crypto = None
+    mcp_quote_proxy_crosscheck = None
     if asset.get("category") == "crypto":
         # The MCP adapter is opt-in and read-only. It provides exchange-native
         # OKX candles, not a fabricated FX/commodity conversion.
@@ -197,7 +198,12 @@ def fetch_asset_history(
         if mcp_crypto is not None:
             checked.extend(mcp_crypto.get("sources_checked", []))
             if mcp_crypto.get("status") == "available":
-                candidates.append(mcp_crypto)
+                if mcp_crypto.get("quote_currency_proxy"):
+                    # USDT is close to USD but not identical. Keep this as a
+                    # cross-check only; never substitute it for a USD quote.
+                    mcp_quote_proxy_crosscheck = mcp_crypto
+                else:
+                    candidates.append(mcp_crypto)
         binance = fetch_binance_history(asset["symbol"], interval=interval)
         checked.append("Binance public API")
         if binance.get("status") == "available":
@@ -225,4 +231,11 @@ def fetch_asset_history(
         for item in ([yahoo] + ([central] if central is not None else []) + ([mcp_crypto] if mcp_crypto is not None else []) + ([binance] if binance else []))
     }
     selected["source_candidates"] = len(candidates)
+    if mcp_quote_proxy_crosscheck is not None:
+        proxy = dict(mcp_quote_proxy_crosscheck)
+        if yahoo.get("status") == "available" and yahoo.get("close"):
+            proxy["difference_pct_vs_yahoo_usd"] = round(
+                (float(proxy["close"]) / float(yahoo["close"]) - 1.0) * 100.0, 5
+            )
+        selected["mcp_quote_proxy_crosscheck"] = proxy
     return selected
