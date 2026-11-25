@@ -236,6 +236,13 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             f"{item.get('market_timestamp','—')} | {item.get('collected_at','—')} | "
             f"{item.get('age_hours','—')} | {item.get('reason','—')} |"
         )
+        if item.get("source_id"):
+            lines.append(
+                f"  - منبع پویا از هسته مرکزی: {item.get('source_id')}@{item.get('source_version', '—')} | "
+                f"اعتماد رجیستری: {item.get('source_trust', 'unverified')} | "
+                f"روش انتخاب: {item.get('source_selection', '—')} | "
+                f"تعداد منابع معتبر بررسی‌شده: {item.get('source_candidates', '—')}"
+            )
 
     lines += ["", "## پوشش رجیستری منابع تحلیلی", ""]
     if source_registry:
