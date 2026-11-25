@@ -116,3 +116,12 @@ python -m src.main
 - GC=F و SI=F و CL=F و BZ=F قراردادهای آتی پیوسته/نماینده‌اند، نه نرخ نقدی اجرایی XAUUSD، XAGUSD، WTI یا Brent.
 - WTI و Brent در فهرست دارایی‌ها جدا هستند.
 - USD_IRR_FREE، USD_IRT_FREE، BTC_IRT و ETH_IRT به‌علاوه نرخ طلای محلی تا زمان اتصال منبع مجاز و timestampدار غیرفعال‌اند؛ ریال و تومان با هم ادغام نمی‌شوند.
+
+
+## Dynamic connection to KOROUSH CENTRAL AI data sources
+
+The v2 branch includes a metadata-driven adapter for centrally registered public OHLC providers. It reads tenant-visible `kind=data_source` manifests from `GET /api/extensions?repository=...&kind=data_source` and selects the freshest valid completed candle from compatible providers, while retaining Yahoo Finance and the existing Binance crypto path as fallbacks.
+
+A compatible new source uses the fixed `koroush-market-data-v1` / `market.ohlc.v1` contract. It can be registered in the central registry without adding provider-specific Forex code. The tenant key must include `registry:read`; the central URL and key are read from Actions secrets/environment only. Only public no-key HTTPS feeds with an administrator-attested zero-dollar price and HTTPS terms URL are eligible.
+
+See `docs/CENTRAL_DATA_SOURCE_PROTOCOL.md` for the manifest, request/response schema, source-selection rules and security boundaries. The registry is metadata-only and does not proxy or verify the provider. No central source is active until a real manifest, tenant scope and successful end-to-end fetch are verified.
