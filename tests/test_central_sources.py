@@ -1,7 +1,7 @@
 import os
 import unittest
 from unittest.mock import Mock, patch
-from src.data import central_sources
+from src.data import central_sources, market_data
 
 
 class CentralSourceTests(unittest.TestCase):
@@ -52,6 +52,31 @@ class CentralSourceTests(unittest.TestCase):
     def test_registry_is_disabled_without_credentials(self):
         with patch.dict(os.environ, {"KOROUSH_CENTRAL_TENANT_KEY": "", "GITHUB_REPOSITORY": ""}):
             self.assertEqual(central_sources.discover_sources(force_refresh=True), [])
+
+    def test_market_data_selects_freshest_valid_central_candidate(self):
+        yahoo = {"symbol": "EURUSD", "status": "available", "provider": "Yahoo Finance",
+                 "market_timestamp": "2026-11-25T02:00:00+00:00", "history": object()}
+        central = {"symbol": "EURUSD", "status": "available", "provider": "Central FX",
+                   "market_timestamp": "2026-11-25T03:00:00+00:00", "history": object(),
+                   "sources_checked": ["provider.fx-public-feed"]}
+        with patch.object(market_data, "fetch_history", return_value=yahoo), \
+             patch.object(market_data, "_exclude_unfinished_daily_bar", return_value=yahoo), \
+             patch.object(market_data, "fetch_central_market_history", return_value=central):
+            result = market_data.fetch_asset_history(
+                {"symbol": "EURUSD", "yahoo": "EURUSD", "category": "forex"}, interval="1h")
+        self.assertEqual(result["provider"], "Central FX")
+
+    def test_local_provider_remains_fallback_when_central_is_unavailable(self):
+        yahoo = {"symbol": "EURUSD", "status": "available", "provider": "Yahoo Finance",
+                 "market_timestamp": "2026-11-25T02:00:00+00:00", "history": object()}
+        central = {"symbol": "EURUSD", "status": "unavailable",
+                   "sources_checked": ["provider.fx-public-feed"]}
+        with patch.object(market_data, "fetch_history", return_value=yahoo), \
+             patch.object(market_data, "_exclude_unfinished_daily_bar", return_value=yahoo), \
+             patch.object(market_data, "fetch_central_market_history", return_value=central):
+            result = market_data.fetch_asset_history(
+                {"symbol": "EURUSD", "yahoo": "EURUSD", "category": "forex"}, interval="1h")
+        self.assertEqual(result["provider"], "Yahoo Finance")
 
 
 if __name__ == "__main__":
