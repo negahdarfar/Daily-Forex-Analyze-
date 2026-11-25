@@ -38,6 +38,18 @@ def fx_rankings() -> dict:
     data = load()
     return {k:v for k,v in data.items() if k in ("status","reason","cutoff_utc","snapshot_age_seconds","coverage","pairs","method","provider")}
 
+@mcp.tool()
+def fx_strength_view(view: str) -> dict:
+    """Read one of timeframe_vs_currencies, currencies_vs_timeframe, historical_strength_data, htf_vs_ltf, stochastic_strength_meter."""
+    data=load()
+    return {"status":data["status"],"cutoff_utc":data.get("cutoff_utc"),"view":view,"data":data.get("views",{}).get(view)}
+
+@mcp.tool()
+def fx_opportunities() -> dict:
+    """Return conditional structural entry, stop, target and gross/net R:R scenarios."""
+    data=load()
+    return {"status":data["status"],"cutoff_utc":data.get("cutoff_utc"),"opportunities":data.get("opportunities",[]),"note":"Research only; not executable orders"}
+
 if __name__ == "__main__":
     transport = os.getenv("MCP_TRANSPORT","stdio")
     if transport not in ("stdio","streamable-http"):
