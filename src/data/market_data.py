@@ -205,7 +205,7 @@ def fetch_asset_history(
             "sources_checked": checked, "reason": reasons or "No valid provider returned data.",
         }
 
-    selected = dict(max(candidates, key=lambda item: item.get("market_timestamp", "")))
+    selected = dict(max(candidates, key=lambda item: pd.Timestamp(item.get("market_timestamp")).timestamp()))
     selected["sources_checked"] = list(dict.fromkeys(checked))
     selected["source_selection"] = "freshest_valid_timestamp"
     selected["source_status"] = {
