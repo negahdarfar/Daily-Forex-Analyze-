@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import pandas as pd
+import hashlib
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -10,14 +12,21 @@ from src.data.market_data import fetch_asset_history
 from src.data.news import collect_news
 from src.data.official_data import fetch_ecb_reference_rates, fetch_world_bank_inflation, fetch_bls_macro, fetch_cftc_cot, fetch_fred_public_series
 from src.data.economic_calendar import fetch_us_economic_calendar
+from src.data.global_economic_calendar import fetch_global_economic_calendar
 from src.data.policy_rates import fetch_bis_policy_rates
 from src.data.source_registry import load_source_registry, summarize_source_registry, annotate_analysis_candidates, summarize_directional_evidence, merge_active_rss_sources
 from src.experts.analysis_ingestion import extract_analysis_candidates
+from src.experts.verified_ledger import build_verified_expert_evidence
 from src.reporting.markdown import render_report
 from src.technical.indicators import analyze
 from src.analysis.market_intelligence import build_market_intelligence
 from src.analysis.fx_ranker import rank_fx_pairs
 from src.analysis.opportunity_engine import build_opportunity, rank_opportunities, resample_completed_4h, completed_hourly_candles
+from src.analysis.currency_strength import calculate_currency_strength
+from src.analysis.market_structure import analyze_market_structure
+from src.analysis.ecb_crosscheck import build_ecb_fx_cross_checks
+from src.analysis.ohlc_backtest import backtest_ohlc_signals
+from src.analysis.news_sentiment import score_headline
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -119,6 +128,12 @@ def main() -> None:
             "collected_at": fetched.get("collected_at", "—"),
             "sources_checked": ", ".join(fetched.get("sources_checked", [])) or "—",
             "source_selection": fetched.get("source_selection", "single_source"),
+            "market_timestamp_basis": fetched.get("market_timestamp_basis"),
+            "source_id": fetched.get("source_id"),
+            "source_version": fetched.get("source_version"),
+            "source_trust": fetched.get("source_trust"),
+            "source_status": fetched.get("source_status", {}),
+            "source_candidates": fetched.get("source_candidates"),
             "reason": fetched.get("reason", "—")
         }
         if fetched.get("status") == "available":
@@ -164,6 +179,7 @@ def main() -> None:
                 "provider_symbol": asset.get("yahoo"),
             },
         )
+        candidate["market_structure"] = analyze_market_structure(hourly_frame) if hourly_frame is not None else {"status": "unavailable", "events": []}
         candidate["data_sources"] = {
             "daily": fetched.get("provider"),
             "hourly": hourly_fetched.get("provider"),
@@ -226,6 +242,29 @@ def main() -> None:
             local_candidate["missing_evidence"].append("authorized_timestamped_local_quote_missing")
             opportunity_candidates.append(local_candidate)
 
+    # Relative strength uses the same daily FX close histories already fetched in this run.
+    fx_close_series = {}
+    result_by_symbol = {row.get("asset"): row for row in results}
+    max_strength_age_hours = float(settings.get("max_quote_age_hours", 36))
+    for fx_asset in assets.get("forex", []):
+        symbol = fx_asset.get("symbol")
+        quality_row = result_by_symbol.get(symbol, {})
+        fetched_pair = fetched_data.get(symbol, ({}, {}))[0]
+        age = quality_row.get("age_hours")
+        is_fresh = (
+            quality_row.get("status") == "available"
+            and isinstance(age, (int, float))
+            and 0 <= float(age) <= max_strength_age_hours
+        )
+        frame_pair = fetched_pair.get("history") if is_fresh and fetched_pair.get("status") == "available" else None
+        if frame_pair is not None and "Close" in frame_pair.columns:
+            fx_close_series[symbol] = frame_pair["Close"]
+    currency_strength = calculate_currency_strength(
+        fx_close_series,
+        lookback=int(settings.get("currency_strength", {}).get("lookback_bars", 20)),
+        min_pairs_per_currency=int(settings.get("currency_strength", {}).get("min_pairs_per_currency", 2)),
+    )
+
     registry_path = ROOT / "config" / "analysis_sources.json"
     registry_data = load_source_registry(registry_path) if registry_path.exists() else {"sources": []}
     source_registry = summarize_source_registry(registry_data) if registry_path.exists() else {}
@@ -235,10 +274,19 @@ def main() -> None:
     # The 100-source registry is the single authority for activation and access method.
     news_sources = merge_active_rss_sources(configured_news_sources, registry_data)
     news = collect_news(news_sources, settings.get("news", {}))
+    news = [{**item, "sentiment": score_headline(item.get("title", ""))} for item in news]
     known_symbols = [item["symbol"] for category in ("forex", "commodities", "crypto") for item in assets.get(category, []) if item.get("enabled")]
     analysis_candidates = extract_analysis_candidates(news, known_symbols)
     analysis_candidates = annotate_analysis_candidates(analysis_candidates, registry_data)
     directional_evidence = summarize_directional_evidence(analysis_candidates)
+    verified_ledger_path = ROOT / "data" / "verified_trades.json"
+    verified_ledger = load_json(verified_ledger_path) if verified_ledger_path.exists() else {"trades": []}
+    verified_expert_evidence = build_verified_expert_evidence(
+        analysis_candidates, verified_ledger,
+        minimum_sample=int(ranking_policy.get("fx_shortlist", {}).get("minimum_verified_expert_trades", 30)),
+    )
+    for symbol, evidence in verified_expert_evidence.items():
+        directional_evidence.setdefault(symbol, {}).update(evidence)
     # Verified public official APIs add slow macro context and ECB reference-rate cross-checks.
     official_macro = [
         fetch_ecb_reference_rates(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 15))),
@@ -247,11 +295,49 @@ def main() -> None:
         fetch_cftc_cot(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 25))),
         fetch_fred_public_series(timeout=int(settings.get("official_data", {}).get("timeout_seconds", 15))),
     ]
-    # One low-frequency, no-key request; the adapter rejects stale snapshots.
-    economic_calendar = fetch_us_economic_calendar(
+    ecb_fx_cross_checks = build_ecb_fx_cross_checks(
+        results, official_macro[0],
+        discrepancy_threshold_pct=float(settings.get("market_data", {}).get("ecb_reference_discrepancy_threshold_pct", 0.75)),
+    )
+    # Global no-key major-FX calendar (consensus + actuals) with official-agency US schedule as a supplemental check.
+    global_calendar = fetch_global_economic_calendar(
+        timeout=int(settings.get("economic_calendar", {}).get("timeout_seconds", 12)),
+        days=int(settings.get("economic_calendar", {}).get("forward_days", 7)),
+        max_generated_age_minutes=float(settings.get("economic_calendar", {}).get("max_generated_age_minutes", 30)),
+    )
+    us_calendar = fetch_us_economic_calendar(
         timeout=int(settings.get("economic_calendar", {}).get("timeout_seconds", 10)),
         max_age_hours=float(settings.get("economic_calendar", {}).get("max_age_hours", 24)),
     )
+    economic_calendar = dict(global_calendar)
+    if global_calendar.get("status") == "available":
+        combined_events = list(global_calendar.get("events", []))
+        seen = {
+            (str(row.get("currency", "")).upper(), str(row.get("name", "")).lower(),
+             str(row.get("scheduled_at_utc", ""))[:16])
+            for row in combined_events
+        }
+        if us_calendar.get("status") == "available":
+            for event in us_calendar.get("events", []):
+                event = {**event, "currency": "USD", "currency_scope": "USD",
+                         "importance": str(event.get("importance", "high")).lower(),
+                         "source": event.get("source") or "XOOMAR"}
+                key = ("USD", str(event.get("name", "")).lower(), str(event.get("scheduled_at_utc", ""))[:16])
+                if key not in seen:
+                    combined_events.append(event)
+                    seen.add(key)
+        economic_calendar["events"] = sorted(combined_events, key=lambda row: row.get("scheduled_at_utc", ""))
+        economic_calendar["supplemental_us_calendar_status"] = us_calendar.get("status")
+        economic_calendar["sources"] = ["ShowMyTrades", "XOOMAR"]
+        economic_calendar["coverage"] = "major_fx_high_medium_with_us_official_schedule_supplement"
+    elif us_calendar.get("status") == "available":
+        economic_calendar = dict(us_calendar)
+        economic_calendar["covered_currencies"] = ["USD"]
+        economic_calendar["coverage"] = "USD_only_fallback_global_feed_unavailable"
+        economic_calendar["sources"] = ["XOOMAR"]
+    else:
+        economic_calendar["sources"] = ["ShowMyTrades", "XOOMAR"]
+        economic_calendar["status"] = "source_error"
     policy_rates = fetch_bis_policy_rates(
         timeout=int(settings.get("policy_rates", {}).get("timeout_seconds", 20)),
         max_age_days=int(settings.get("policy_rates", {}).get("max_age_days", 14)),
@@ -270,6 +356,7 @@ def main() -> None:
         economic_calendar=economic_calendar,
         policy_rates=policy_rates,
         opportunity_candidates=opportunity_candidates,
+        currency_strength=currency_strength,
         policy=ranking_policy.get("fx_shortlist", {}),
 
         max_age_hours=float(settings.get("max_quote_age_hours", 36)),
@@ -281,6 +368,46 @@ def main() -> None:
         correlation_threshold=float(settings.get("ranking", {}).get("correlation_threshold", 0.85)),
         correlation_penalty_points=float(settings.get("ranking", {}).get("correlation_penalty_points", 10.0)),
     )
+    backtest_config_path = ROOT / "config" / "backtest.json"
+    backtest_signals_path = ROOT / "data" / "backtest_signals.json"
+    backtest_config = load_json(backtest_config_path) if backtest_config_path.exists() else {}
+    backtest_input = load_json(backtest_signals_path) if backtest_signals_path.exists() else {"signals": []}
+    backtest_signals = backtest_input.get("signals", []) if isinstance(backtest_input, dict) else []
+    required_costs = ("spread_bps", "commission_bps", "slippage_bps")
+    costs_configured = all(
+        isinstance(backtest_config.get(key), (int, float)) and float(backtest_config[key]) >= 0
+        for key in required_costs
+    )
+    backtest_result = {"status": "awaiting_timestamped_signal_records", "by_timeframe": {}}
+    if backtest_signals and not costs_configured:
+        backtest_result = {"status": "blocked_missing_explicit_transaction_costs", "by_timeframe": {}}
+    elif backtest_signals and costs_configured:
+        for timeframe in sorted({str(row.get("timeframe", "1d")) for row in backtest_signals}):
+            group = [row for row in backtest_signals if str(row.get("timeframe", "1d")) == timeframe]
+            candles_by_symbol = {}
+            for symbol, pair_data in fetched_data.items():
+                selected_data = pair_data[0] if timeframe == "1d" else pair_data[1] if timeframe == "1h" else ({}, {})
+                if selected_data.get("status") == "available" and selected_data.get("history") is not None:
+                    candles_by_symbol[symbol] = selected_data["history"]
+            backtest_result["by_timeframe"][timeframe] = backtest_ohlc_signals(
+                pd.DataFrame(group), candles_by_symbol,
+                initial_equity=float(backtest_config.get("initial_equity", 10000)),
+                risk_fraction=float(backtest_config.get("risk_fraction", 0.01)),
+                spread_bps=float(backtest_config["spread_bps"]),
+                commission_bps=float(backtest_config["commission_bps"]),
+                slippage_bps=float(backtest_config["slippage_bps"]),
+                max_holding_bars=int(backtest_config.get("max_holding_bars", 48)),
+                allow_overlapping_per_symbol=bool(backtest_config.get("allow_overlapping_per_symbol", False)),
+            )
+        backtest_result["status"] = "evaluated" if any(
+            item.get("trade_count", 0) for item in backtest_result["by_timeframe"].values()
+        ) else "no_executable_signals"
+    paper_trading_status = {
+        "mode": settings.get("risk", {}).get("mode", "research_paper_trading_only"),
+        "live_orders_enabled": bool(settings.get("risk", {}).get("live_orders_enabled", False)),
+        "status": "forward_paper_validation_not_yet_run",
+        "note": "A historical OHLC backtest is not forward paper trading. Keep live orders disabled until a forward observation period is logged and independently reviewed.",
+    }
     report = render_report(
         results, settings, local_now, news=news, source_registry=source_registry,
         analysis_candidates=analysis_candidates, forex_symbols=forex_symbols,
@@ -291,26 +418,100 @@ def main() -> None:
         fx_ranking=fx_ranking,
         economic_calendar=economic_calendar,
         policy_rates=policy_rates,
+        currency_strength=currency_strength,
+        ecb_fx_cross_checks=ecb_fx_cross_checks,
+        backtest_result=backtest_result,
+        paper_trading_status=paper_trading_status,
     )
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
+    config_paths = [
+        ROOT / "config" / name for name in (
+            "assets.json", "settings.json", "ranking.json", "risk.json",
+            "markets.json", "backtest.json", "analysis_sources.json", "news_sources.json"
+        ) if (ROOT / "config" / name).exists()
+    ]
+    config_hashes = {
+        item.name: hashlib.sha256(item.read_bytes()).hexdigest()
+        for item in config_paths
+    }
+    run_seed = json.dumps({
+        "analysis_cutoff_utc": analysis_cutoff_utc,
+        "config_hashes": config_hashes,
+    }, sort_keys=True)
+    run_id = hashlib.sha256(run_seed.encode("utf-8")).hexdigest()[:20]
+    report += (
+        "\n\n## شناسه و ممیزی اجرای گزارش\n\n"
+        f"- شناسه اجرا: `{run_id}`\n"
+        f"- زمان قطع داده‌ها (UTC): `{analysis_cutoff_utc}`\n"
+        f"- هش پیکربندی: `{hashlib.sha256(run_seed.encode('utf-8')).hexdigest()}`\n"
+        "- این شناسه برای ردیابی نسخه پیکربندی و زمان قطع داده است؛ به‌تنهایی تضمین بازتولید عین داده‌های بازار نیست.\n"
+    )
     out = report_dir / f"{local_now:%Y-%m-%d}.md"
-    out.write_text(report, encoding="utf-8")
+    report_text = report
+    out.write_text(report_text, encoding="utf-8")
     json_out = report_dir / f"{local_now:%Y-%m-%d}-opportunities.json"
-    json_out.write_text(json.dumps({
-        "schema_version": "1.0.0",
+    payload = {
+        "schema_version": "1.1.0",
+        "run_id": run_id,
         "analysis_cutoff_utc": analysis_cutoff_utc,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "config_sha256": config_hashes,
         "ranking": opportunity_ranking,
         "fx_ranking": fx_ranking,
         "economic_calendar": economic_calendar,
         "policy_rates": policy_rates,
+        "currency_strength": currency_strength,
+        "verified_expert_evidence": verified_expert_evidence,
+        "ecb_fx_cross_checks": ecb_fx_cross_checks,
+        "backtest": backtest_result,
+        "paper_trading": paper_trading_status,
         "candidates": opportunity_candidates,
-    }, ensure_ascii=False, indent=2), encoding="utf-8")
+    }
+    json_text = json.dumps(payload, ensure_ascii=False, indent=2)
+    json_out.write_text(json_text, encoding="utf-8")
+    source_statuses = {
+        "market_assets": {
+            row.get("asset"): {
+                "provider": row.get("provider"),
+                "status": row.get("status"),
+                "market_timestamp": row.get("market_timestamp"),
+            } for row in results
+        },
+        "global_calendar": economic_calendar.get("status"),
+        "BIS_policy_rates": policy_rates.get("status"),
+        "ECB_reference_crosscheck": ecb_fx_cross_checks.get("status"),
+    }
+    manifest = {
+        "manifest_schema_version": "1.0.0",
+        "run_id": run_id,
+        "analysis_cutoff_utc": analysis_cutoff_utc,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "python_version": __import__("sys").version.split()[0],
+        "config_sha256": config_hashes,
+        "source_statuses": source_statuses,
+        "counts": {
+            "market_assets": len(results),
+            "available_assets": sum(1 for row in results if row.get("status") == "available"),
+            "news_items": len(news),
+            "analysis_candidates": len(analysis_candidates),
+            "ranked_fx_pairs": fx_ranking.get("ranked_count", 0),
+            "verified_expert_symbols": len(verified_expert_evidence),
+        },
+        "backtest_status": backtest_result.get("status"),
+        "paper_trading_status": paper_trading_status.get("status"),
+        "report_sha256": hashlib.sha256(report_text.encode("utf-8")).hexdigest(),
+        "opportunities_json_sha256": hashlib.sha256(json_text.encode("utf-8")).hexdigest(),
+        "secret_values_included": False,
+        "reproducibility_note": "Captures config fingerprints, source timestamps/statuses and output hashes. Third-party market feeds can revise historical data; exact replay requires archived raw source payloads and terms permitting storage.",
+    }
+    manifest_out = report_dir / f"{local_now:%Y-%m-%d}-run-manifest.json"
+    manifest_out.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"News items collected: {len(news)}")
     print(f"Analysis candidates extracted: {len(analysis_candidates)}")
     print(f"Report written: {out.relative_to(ROOT)}")
     print(f"Opportunity JSON written: {json_out.relative_to(ROOT)}")
+    print(f"Run manifest written: {manifest_out.relative_to(ROOT)}")
     print(f"Execution-qualified opportunities: {opportunity_ranking['count']}")
 
 

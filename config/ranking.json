@@ -21,18 +21,23 @@
     "max_pairs": 10,
     "minimum_independent_expert_publishers": 2,
     "weights": {
-      "technical": 20,
-      "mtf_confluence": 15,
-      "fundamental": 20,
-      "cot_positioning": 15,
-      "news": 10,
-      "expert_consensus": 10,
+      "technical": 16,
+      "mtf_confluence": 12,
+      "fundamental": 17,
+      "cot_positioning": 13,
+      "news": 8,
+      "expert_consensus": 8,
       "data_freshness": 5,
-      "calendar_risk": 5
+      "calendar_risk": 5,
+      "currency_strength": 8,
+      "market_structure": 8
     },
-    "note": "Provisional research shortlist. The no-key calendar provider covers US high-impact events only; non-US event risk and comparative macro rate-path scoring remain unavailable.",
+    "note": "Provisional research shortlist. The ShowMyTrades no-key calendar covers eight major FX currencies and supplies consensus/actuals; XOOMAR supplements US agency schedules. ECB is a daily reference cross-check, not an intraday price feed. Expert scoring requires matched, independently audited closed trades.",
     "event_blackout_minutes_before": 30,
     "event_blackout_minutes_after": 30,
-    "max_intraday_quote_age_minutes": 180
+    "max_intraday_quote_age_minutes": 180,
+    "minimum_consensus_coverage_pct": 50,
+    "structure_event_max_age_hours": 24,
+    "minimum_verified_expert_trades": 30
   }
 }

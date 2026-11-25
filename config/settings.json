@@ -63,18 +63,31 @@
   "intraday_history_period": "60d",
   "max_intraday_quote_age_minutes": 180,
   "economic_calendar": {
-    "provider": "xoomar_us_high_impact",
-    "timeout_seconds": 10,
+    "provider": "showmytrades_global",
+    "supplemental_provider": "xoomar_us_high_impact",
+    "timeout_seconds": 12,
+    "forward_days": 7,
+    "max_generated_age_minutes": 30,
     "max_age_hours": 24,
     "scope": [
-      "USD"
+      "USD",
+      "EUR",
+      "GBP",
+      "JPY",
+      "CHF",
+      "CAD",
+      "AUD",
+      "NZD"
     ],
     "event_blackout_minutes_before": 30,
     "event_blackout_minutes_after": 30,
-    "consensus_forecast_available": false
+    "consensus_forecast_available": true,
+    "consensus_note": "Provider-supplied consensus is retained with confidence/status fields; no generic bullish/bearish surprise interpretation."
   },
   "market_data": {
-    "timeout_seconds": 10
+    "timeout_seconds": 10,
+    "ecb_reference_crosscheck": true,
+    "ecb_reference_discrepancy_threshold_pct": 0.75
   },
   "policy_rates": {
     "provider": "BIS_WS_CBPOL",

@@ -8,6 +8,9 @@ import pandas as pd
 import requests
 import yfinance as yf
 
+from src.data.central_sources import fetch_central_market_history
+from src.data.mcp_sources import fetch_mcp_crypto_history
+
 
 BINANCE_SYMBOLS = {"BTCUSDT": "BTCUSDT", "ETHUSDT": "ETHUSDT"}
 BINANCE_INTERVALS = {"1d": "1d", "1h": "1h", "4h": "4h", "15m": "15m"}
@@ -164,32 +167,75 @@ def _exclude_unfinished_daily_bar(result: dict[str, Any], interval: str) -> dict
 def fetch_asset_history(
     asset: dict[str, Any], period: str = "6mo", interval: str = "1d", timeout: int = 10
 ) -> dict[str, Any]:
-    """Fetch from configured sources and choose the freshest valid crypto history."""
+    """Select the freshest valid OHLC history across local and central registries."""
     yahoo = fetch_history(asset["yahoo"], period=period, interval=interval, timeout=timeout)
-    # Drop an unfinished daily candle for every asset class, not only crypto.
     yahoo = _exclude_unfinished_daily_bar(yahoo, interval)
-    if asset.get("category") != "crypto" or asset.get("quote_currency") != "USDT":
-        return yahoo
+    checked = ["Yahoo Finance"]
+    candidates = [yahoo] if yahoo.get("status") == "available" else []
 
-    binance = fetch_binance_history(asset["symbol"], interval=interval)
-    checked = ["Yahoo Finance", "Binance public API"]
-    candidates = [item for item in (yahoo, binance) if item.get("status") == "available"]
+    # Central data-source discovery is optional and cached. New admin-approved
+    # sources using the stable market-data protocol are discovered without a
+    # source-specific code release. The central registry credential is never
+    # forwarded to the provider endpoint.
+    central = fetch_central_market_history(
+        asset["symbol"], interval=interval,
+        limit=500 if interval == "1d" else 1000, timeout=timeout,
+    )
+    if central is not None:
+        checked.extend(central.get("sources_checked", []))
+        if central.get("status") == "available":
+            candidates.append(central)
+
+    mcp_crypto = None
+    mcp_quote_proxy_crosscheck = None
+    if asset.get("category") == "crypto":
+        # The MCP adapter is opt-in and read-only. It provides exchange-native
+        # OKX candles, not a fabricated FX/commodity conversion.
+        mcp_crypto = fetch_mcp_crypto_history(
+            asset["symbol"], interval=interval, limit=500 if interval == "1d" else 300,
+            timeout=max(45, timeout),
+        )
+        if mcp_crypto is not None:
+            checked.extend(mcp_crypto.get("sources_checked", []))
+            if mcp_crypto.get("status") == "available":
+                if mcp_crypto.get("quote_currency_proxy"):
+                    # USDT is close to USD but not identical. Keep this as a
+                    # cross-check only; never substitute it for a USD quote.
+                    mcp_quote_proxy_crosscheck = mcp_crypto
+                else:
+                    candidates.append(mcp_crypto)
+        binance = fetch_binance_history(asset["symbol"], interval=interval)
+        checked.append("Binance public API")
+        if binance.get("status") == "available":
+            candidates.append(binance)
+    else:
+        binance = None
+
     if not candidates:
+        providers = [yahoo] + ([central] if central is not None else []) + ([mcp_crypto] if mcp_crypto is not None else []) + ([binance] if binance else [])
         reasons = "; ".join(
-            f"{item.get('provider')}: {item.get('reason', 'unavailable')}"
-            for item in (yahoo, binance)
+            f"{item.get('provider', 'source')}: {item.get('reason', item.get('status', 'unavailable'))}"
+            for item in providers
         )
         return {
             "symbol": asset["symbol"], "status": "unavailable",
-            "provider": "Yahoo Finance + Binance public API",
-            "collected_at": utc_now_iso(), "sources_checked": checked, "reason": reasons
+            "provider": "multi-source", "collected_at": utc_now_iso(),
+            "sources_checked": checked, "reason": reasons or "No valid provider returned data.",
         }
 
-    selected = max(candidates, key=lambda item: item.get("market_timestamp", ""))
-    selected = dict(selected)
-    selected["sources_checked"] = checked
-    selected["source_selection"] = "freshest_available_timestamp"
-    selected["alternate_source_status"] = {
-        item["provider"]: item["status"] for item in (yahoo, binance)
+    selected = dict(max(candidates, key=lambda item: pd.Timestamp(item.get("market_timestamp")).timestamp()))
+    selected["sources_checked"] = list(dict.fromkeys(checked))
+    selected["source_selection"] = "freshest_valid_timestamp"
+    selected["source_status"] = {
+        item.get("provider", "source"): item.get("status", "unknown")
+        for item in ([yahoo] + ([central] if central is not None else []) + ([mcp_crypto] if mcp_crypto is not None else []) + ([binance] if binance else []))
     }
+    selected["source_candidates"] = len(candidates)
+    if mcp_quote_proxy_crosscheck is not None:
+        proxy = dict(mcp_quote_proxy_crosscheck)
+        if yahoo.get("status") == "available" and yahoo.get("close"):
+            proxy["difference_pct_vs_yahoo_usd"] = round(
+                (float(proxy["close"]) / float(yahoo["close"]) - 1.0) * 100.0, 5
+            )
+        selected["mcp_quote_proxy_crosscheck"] = proxy
     return selected

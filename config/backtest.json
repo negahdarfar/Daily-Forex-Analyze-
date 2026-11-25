@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "initial_equity": 10000,
+  "risk_fraction": 0.01,
+  "max_holding_bars": 48,
+  "allow_overlapping_per_symbol": false,
+  "spread_bps": null,
+  "commission_bps": null,
+  "slippage_bps": null,
+  "cost_note": "All three cost fields must be explicitly set from the intended broker/instrument. Null values block performance claims; zero must be an intentional, justified value."
+}

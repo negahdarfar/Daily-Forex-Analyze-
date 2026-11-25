@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from math import tanh
 from typing import Any
 
+from src.analysis.consensus import build_consensus
+
 
 CURRENCY_CODES = {"USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"}
 
@@ -42,6 +44,7 @@ def rank_fx_pairs(
     economic_calendar: dict[str, Any] | None = None,
     policy_rates: dict[str, Any] | None = None,
     opportunity_candidates: list[dict[str, Any]] | None = None,
+    currency_strength: dict[str, Any] | None = None,
     *,
     policy: dict[str, Any] | None = None,
     max_age_hours: float = 36.0,
@@ -65,7 +68,7 @@ def rank_fx_pairs(
     })
     weights = {
         key: float(value) for key, value in configured_weights.items()
-        if key in {"technical", "mtf_confluence", "fundamental", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk"}
+        if key in {"technical", "mtf_confluence", "fundamental", "cot_positioning", "news", "expert_consensus", "data_freshness", "calendar_risk", "currency_strength", "market_structure"}
         and isinstance(value, (int, float)) and float(value) > 0
     }
     total_weight = sum(weights.values())
@@ -74,6 +77,7 @@ def rank_fx_pairs(
         for row in intelligence.get("currency_strength", [])
         if row.get("currency")
     }
+    strength_rows = (currency_strength or {}).get("currencies", {})
     ranked = []
     excluded = {"unavailable": 0, "stale": 0, "invalid": 0, "neutral": 0}
 
@@ -121,34 +125,48 @@ def rank_fx_pairs(
             fundamental_score = _clamp(50.0 + 50.0 * direction_sign * raw_fundamental)
             fundamental_status = "policy_rate_carry_and_90d_change_proxy"
         calendar_score = None
-        calendar_status = "non_us_currency_calendar_not_covered"
-        if "USD" in {base, quote}:
-            if economic_calendar.get("status") == "available":
-                now = datetime.now(timezone.utc)
-                before = float(policy.get("event_blackout_minutes_before", 30))
-                after = float(policy.get("event_blackout_minutes_after", 30))
-                near_events = []
-                for event in economic_calendar.get("events", []):
-                    try:
-                        event_time = datetime.fromisoformat(
-                            str(event.get("scheduled_at_utc", "")).replace("Z", "+00:00")
-                        )
-                        if event_time.tzinfo is None:
-                            event_time = event_time.replace(tzinfo=timezone.utc)
-                        minutes = (event_time.astimezone(timezone.utc) - now).total_seconds() / 60.0
-                        if -after <= minutes <= before:
-                            near_events.append(event)
-                    except (TypeError, ValueError):
-                        continue
-                calendar_score = 0.0 if near_events else 100.0
-                calendar_status = (
-                    "high_impact_us_event_blackout" if near_events
-                    else "us_calendar_no_near_high_impact_event_partial_coverage"
-                )
-            elif economic_calendar.get("status") == "stale":
-                calendar_status = "stale_us_calendar_unknown"
-            else:
-                calendar_status = "us_calendar_unavailable_unknown"
+        calendar_status = "currency_calendar_not_covered"
+        covered_currencies = set(
+            economic_calendar.get("covered_currencies")
+            or economic_calendar.get("scope")
+            or []
+        )
+        pair_currencies = {base, quote}
+        if pair_currencies.issubset(covered_currencies) and economic_calendar.get("status") == "available":
+            now = datetime.now(timezone.utc)
+            before = float(policy.get("event_blackout_minutes_before", 30))
+            after = float(policy.get("event_blackout_minutes_after", 30))
+            near_high, near_medium = [], []
+            for event in economic_calendar.get("events", []):
+                event_currency = str(event.get("currency") or event.get("currency_scope") or "").upper()
+                if event_currency not in pair_currencies:
+                    continue
+                if str(event.get("status", "")).lower() in {"cancelled", "canceled"}:
+                    continue
+                try:
+                    event_time = datetime.fromisoformat(
+                        str(event.get("scheduled_at_utc", "")).replace("Z", "+00:00")
+                    )
+                    if event_time.tzinfo is None:
+                        event_time = event_time.replace(tzinfo=timezone.utc)
+                    minutes = (event_time.astimezone(timezone.utc) - now).total_seconds() / 60.0
+                    if -after <= minutes <= before:
+                        impact = str(event.get("importance", "high")).lower()
+                        (near_high if impact == "high" else near_medium).append(event)
+                except (TypeError, ValueError):
+                    continue
+            calendar_score = 0.0 if near_high else (50.0 if near_medium else 100.0)
+            calendar_status = (
+                "high_impact_pair_currency_blackout" if near_high
+                else "medium_impact_pair_currency_caution" if near_medium
+                else "covered_pair_currencies_no_near_scheduled_release"
+            )
+        elif economic_calendar.get("status") == "stale":
+            calendar_status = "stale_calendar_unknown"
+        elif economic_calendar.get("status") != "available":
+            calendar_status = "calendar_unavailable_unknown"
+        else:
+            calendar_status = "partial_pair_currency_coverage_unknown"
         candidate = candidate_by_symbol.get(symbol, {})
         timeframe_analyses = candidate.get("timeframes", {})
         required_timeframes = ("1d", "4h", "1h")
@@ -176,6 +194,52 @@ def rank_fx_pairs(
             freshness_score = _clamp(0.35 * daily_freshness + 0.65 * hourly_freshness)
         else:
             freshness_score = daily_freshness
+        base_strength = strength_rows.get(base, {})
+        quote_strength = strength_rows.get(quote, {})
+        base_relative = base_strength.get("relative_score")
+        quote_relative = quote_strength.get("relative_score")
+        pair_strength_score = None
+        if (base_strength.get("status") == "available"
+                and quote_strength.get("status") == "available"
+                and isinstance(base_relative, (int, float))
+                and isinstance(quote_relative, (int, float))):
+            relative_diff = float(base_relative) - float(quote_relative)
+            sign = 1.0 if direction == "bullish" else -1.0
+            pair_strength_score = _clamp(50.0 + sign * relative_diff / 2.0)
+        structure = candidate.get("market_structure", {})
+        structure_score = None
+        recent_structure = []
+        if structure.get("status") == "available":
+            now_utc = datetime.now(timezone.utc)
+            for event in structure.get("events", []):
+                stamp_text = event.get("confirmed_at") or event.get("at")
+                try:
+                    stamp = datetime.fromisoformat(str(stamp_text).replace("Z", "+00:00"))
+                    if stamp.tzinfo is None:
+                        stamp = stamp.replace(tzinfo=timezone.utc)
+                    age_hours_event = (now_utc - stamp.astimezone(timezone.utc)).total_seconds() / 3600
+                    if 0 <= age_hours_event <= float(policy.get("structure_event_max_age_hours", 24)):
+                        event_type = str(event.get("type", ""))
+                        event_direction = event.get("direction")
+                        if event_type.lower().startswith("bullish"):
+                            event_direction = "bullish"
+                        elif event_type.lower().startswith("bearish"):
+                            event_direction = "bearish"
+                        if event_direction in {"bullish", "bearish"}:
+                            recent_structure.append((event_type, event_direction))
+                except (TypeError, ValueError):
+                    continue
+        aligned_bos = any(kind in {"BOS", "CHoCH"} and side == direction for kind, side in recent_structure)
+        opposed_bos = any(kind in {"BOS", "CHoCH"} and side != direction for kind, side in recent_structure)
+        aligned_fvg = any("FVG" in kind and side == direction for kind, side in recent_structure)
+        if aligned_bos and aligned_fvg:
+            structure_score = 90.0
+        elif aligned_bos:
+            structure_score = 75.0
+        elif aligned_fvg:
+            structure_score = 60.0
+        elif opposed_bos:
+            structure_score = 20.0
         components: dict[str, float | None] = {
             "technical": _clamp(float(analysis.get("score", 0.0))),
             "mtf_confluence": mtf_score,
@@ -189,17 +253,50 @@ def rank_fx_pairs(
             "expert_consensus": None,
             "data_freshness": freshness_score,
             "calendar_risk": calendar_score,
+            "currency_strength": pair_strength_score,
+            "market_structure": structure_score,
         }
         expert = directional_evidence.get(symbol, {})
-        publishers = int(expert.get("bullish_publishers", 0) or 0) + int(expert.get("bearish_publishers", 0) or 0)
+        publishers = int(expert.get("verified_analyst_publishers", 0) or 0)
         # A single unverified publisher is shown in the report but is not treated
         # as a consensus component.
-        if publishers >= int(policy.get("minimum_independent_expert_publishers", 2)):
+        verified_sample = int(expert.get("verified_trade_sample_size", 0) or 0)
+        verified_expectancy = expert.get("verified_expectancy_r")
+        verified_profit_factor = expert.get("verified_profit_factor")
+        verified_performance = (
+            expert.get("performance_verification_status") == "independently_verified"
+            and verified_sample >= int(policy.get("minimum_verified_expert_trades", 30))
+            and isinstance(verified_expectancy, (int, float)) and float(verified_expectancy) > 0
+            and isinstance(verified_profit_factor, (int, float)) and float(verified_profit_factor) > 1
+        )
+        if publishers >= int(policy.get("minimum_independent_expert_publishers", 2)) and verified_performance:
             net_bias = expert.get("net_bias")
             if isinstance(net_bias, (int, float)):
                 sign = 1.0 if direction == "bullish" else -1.0
                 components["expert_consensus"] = _clamp(50.0 + 50.0 * sign * float(net_bias))
 
+        consensus = build_consensus(
+            {
+                "technical": {"score": components["technical"], "verified": True, "fresh": True,
+                              "source": "current-run technical analysis"},
+                "macro": {"score": fundamental_score, "verified": fundamental_score is not None,
+                          "fresh": policy_rates.get("status") == "available",
+                          "source": policy_rates.get("source")},
+                "currency_strength": {"score": pair_strength_score, "verified": pair_strength_score is not None,
+                                      "fresh": True, "source": "current-run relative FX closes"},
+            },
+            weights={"technical": 1.0, "macro": 1.0, "currency_strength": 1.0},
+            minimum_coverage_pct=float(policy.get("minimum_consensus_coverage_pct", 50.0)),
+        )
+        consensus["pair_direction"] = direction
+        consensus["alignment_status"] = (
+            "strong_alignment" if isinstance(consensus.get("score"), (int, float)) and consensus["score"] > 55
+            else "opposed_evidence" if isinstance(consensus.get("score"), (int, float)) and consensus["score"] < 45
+            else "mixed_or_neutral_evidence" if isinstance(consensus.get("score"), (int, float))
+            else "insufficient_evidence"
+        )
+        consensus["direction"] = direction
+        consensus["score_type"] = "pair_aligned_evidence_index_not_probability"
         available = {
             key: value for key, value in components.items()
             if key in weights and isinstance(value, (int, float))
@@ -223,7 +320,13 @@ def rank_fx_pairs(
         if components["news"] is None:
             missing.append("directional_currency_news")
         if components["expert_consensus"] is None:
-            missing.append("two_or_more_independent_named_forex_analysts")
+            missing.append("independently_verified_expert_trade_history_missing_or_below_sample_threshold")
+        if pair_strength_score is None:
+            missing.append("relative_currency_strength_pair_coverage_missing")
+        if structure_score is None:
+            missing.append("recent_confirmed_market_structure_event_missing")
+        if consensus.get("status") != "available":
+            missing.append("verified_consensus_coverage_below_threshold")
         if calendar_score is None:
             missing.append(
                 "fresh_us_economic_calendar_required" if "USD" in {base, quote}
@@ -236,6 +339,7 @@ def rank_fx_pairs(
             "symbol": symbol,
             "direction": direction,
             "score": round(score, 2),
+            "consensus": consensus,
             "score_type": "provisional_evidence_weighted_shortlist_not_probability",
             "score_coverage_pct": round(coverage_pct, 1),
             "score_components": components,
@@ -262,7 +366,13 @@ def rank_fx_pairs(
             "execution_status": "not_trade_qualified",
         })
 
-    ranked.sort(key=lambda row: (row["score"], row["score_coverage_pct"], -row["data_age_hours"]), reverse=True)
+    ranked.sort(key=lambda row: (
+        row["score"],
+        row.get("consensus", {}).get("coverage_pct", 0.0),
+        row.get("consensus", {}).get("score") if isinstance(row.get("consensus", {}).get("score"), (int, float)) else -1.0,
+        row["score_coverage_pct"],
+        -row["data_age_hours"],
+    ), reverse=True)
     selected = [{**row, "rank": rank} for rank, row in enumerate(ranked[:max_pairs], 1)]
     return {
         "schema_version": "1.0.0",
@@ -278,11 +388,15 @@ def rank_fx_pairs(
             "fundamental_scope": "BIS policy-rate carry and 90-day change proxy only",
             "policy_rate_source_status": policy_rates.get("status", "not_connected"),
             "economic_calendar_connected": economic_calendar.get("status") == "available",
+            "calendar_covered_currencies": sorted(covered_currencies),
             "mtf_confluence_integrated": any(
                 isinstance(row.get("score_components", {}).get("mtf_confluence"), (int, float))
                 for row in selected
             ),
             "technical_multitimeframe_entry_validation": False,
+            "relative_currency_strength_integrated": bool(currency_strength and currency_strength.get("status") == "available"),
+            "recent_market_structure_integrated": any(isinstance(row.get("score_components", {}).get("market_structure"), (int, float)) for row in selected),
+            "evidence_consensus_integrated": True,
             "expert_consensus_threshold": int(policy.get("minimum_independent_expert_publishers", 2)),
             "us_calendar_status": economic_calendar.get("status", "not_connected"),
             "us_calendar_scope": economic_calendar.get("coverage", "not_connected"),

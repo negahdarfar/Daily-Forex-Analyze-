@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 
-def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None, economic_calendar: dict | None = None, policy_rates: dict | None = None) -> str:
+def render_report(results: list[dict], settings: dict, local_now: datetime, news: list[dict] | None = None, source_registry: dict | None = None, analysis_candidates: list[dict] | None = None, forex_symbols: list[str] | None = None, directional_evidence: dict | None = None, official_macro: list[dict] | None = None, market_intelligence: dict | None = None, opportunity_ranking: dict | None = None, opportunity_candidates: list[dict] | None = None, fx_ranking: dict | None = None, economic_calendar: dict | None = None, policy_rates: dict | None = None, currency_strength: dict | None = None, ecb_fx_cross_checks: dict | None = None, backtest_result: dict | None = None, paper_trading_status: dict | None = None) -> str:
     news = news or []
     source_registry = source_registry or {}
     analysis_candidates = analysis_candidates or []
@@ -16,6 +16,9 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
     fx_ranking = fx_ranking or {}
     economic_calendar = economic_calendar or {}
     policy_rates = policy_rates or {}
+    ecb_fx_cross_checks = ecb_fx_cross_checks or {}
+    backtest_result = backtest_result or {}
+    paper_trading_status = paper_trading_status or {}
     date_text = local_now.strftime("%Y-%m-%d")
     lines = [
         f"# گزارش روزانه تحلیل بازار — {date_text}", "",
@@ -107,19 +110,40 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             lines.append(f"  - شواهد ناقص: {', '.join(row.get('missing_evidence', []))}")
     if not fx_ranking.get("opportunities"):
         lines.append("| — | جفت‌ارز واجد شرایط برای رتبه‌بندی با داده تازه پیدا نشد | — | — | — | — | — | — | — | — | — | — | — |")
-    lines.append("**محدودیت‌های قطعی این نسخه:** مؤلفه نرخ سیاستی BIS فقط proxy اختلاف carry و تغییر ۹۰روزه است؛ تورم/رشد/اشتغال و سورپرایزهای consensus هنوز محاسبه نمی‌شوند. تقویم متصل فقط رویدادهای پراثر آمریکا را پوشش می‌دهد و برای هفت ارز دیگر پوشش ندارد. نظرهای کارشناسی فقط از ناشران تخصصی فارکس و با حداقل دو ناشر مستقل وارد امتیاز می‌شوند. این امتیاز احتمال برد نیست.")
+    lines.append("**محدودیت‌های قطعی این نسخه:** مؤلفه نرخ سیاستی BIS فقط proxy اختلاف carry و تغییر ۹۰روزه است؛ اثر جهت‌دار سورپرایز هر شاخص، مدل تورم/رشد/اشتغال و مسیر انتظارات بانک مرکزی هنوز در امتیاز بنیادی کامل نشده‌اند. تقویم اصلی ShowMyTrades رویدادهای پراثر و متوسط هشت ارز اصلی را با پیش‌بینی اجماع ارائه می‌کند؛ XOOMAR منبع تکمیلی آمریکا است. این پوشش تضمین کامل‌بودن رویدادها نیست. امتیاز تحلیلگر تنها با تطبیق نویسندهٔ نام‌دار با حداقل ۳۰ معامله بسته‌شدهٔ مستقل و حداقل دو تحلیلگر تأییدشده فعال می‌شود. این امتیاز احتمال برد نیست.")
+
+    lines += ["", "## قدرت نسبی هشت ارز — Currency Strength", ""]
+    lines.append(
+        f"وضعیت: {currency_strength.get('status', 'not_calculated')} | "
+        f"تعداد جفت‌ارزهای دارای داده: {currency_strength.get('coverage_pairs', 0)} | "
+        f"دوره محاسبه: {currency_strength.get('lookback_bars', '—')} کندل روزانه."
+    )
+    lines.append("| ارز | امتیاز نسبی | تغییر میانگین دوره (%) | تعداد جفت‌ارز | وضعیت |")
+    lines.append("|---|---:|---:|---:|---|")
+    for currency, row in currency_strength.get("currencies", {}).items():
+        strength = row.get("strength_pct")
+        score = row.get("relative_score")
+        lines.append(
+            f"| {currency} | {score if score is not None else '—'} | "
+            f"{strength if strength is not None else '—'} | {row.get('pair_count', 0)} | {row.get('status', '—')} |"
+        )
+    lines.append(
+        f"قوی‌ترین ارز: {currency_strength.get('strongest') or 'نامشخص'}؛ "
+        f"ضعیف‌ترین ارز: {currency_strength.get('weakest') or 'نامشخص'}. "
+        "این شاخص نسبی و توصیفی است، نه سیگنال مستقل ورود."
+    )
 
     lines += ["", "## تقویم اقتصادی و فیلتر رویداد", ""]
     lines.append(
-        f"منبع: {economic_calendar.get('source', '—')} | وضعیت: {economic_calendar.get('status', 'not_connected')} | "
+        f"منبع: {', '.join(economic_calendar.get('sources', [economic_calendar.get('source', '—')]))} | وضعیت: {economic_calendar.get('status', 'not_connected')} | "
         f"محدوده: {economic_calendar.get('coverage', '—')} | آخرین به‌روزرسانی: {economic_calendar.get('updated_at', '—')} | "
-        f"سن داده: {economic_calendar.get('age_hours', '—')} ساعت."
+        f"سن داده: {economic_calendar.get('age_minutes', economic_calendar.get('age_hours', '—'))} {'دقیقه' if economic_calendar.get('age_minutes') is not None else 'ساعت'}."
     )
     lines.append(economic_calendar.get("data_note", "تقویم اقتصادی در این اجرا در دسترس نبود؛ ریسک رویداد نامشخص است."))
     if economic_calendar.get("attribution"):
         lines.append(f"انتساب منبع: {economic_calendar.get('attribution')}")
-    lines.append(f"[تقویم XOOMAR]({economic_calendar.get('source_url', 'https://xoomar.com/markets/calendar')}) | [مستندات API]({economic_calendar.get('docs_url', 'https://xoomar.com/markets/api')}) | [شرایط استفاده]({economic_calendar.get('license_url', 'https://xoomar.com/terms')})")
-    lines.append("این منبع فقط تقویم رویدادهای پراثر آمریکا را می‌دهد؛ پیش‌بینی اجماعی بازار را ارائه نمی‌کند. رویدادهای USD در پنجره ±۳۰ دقیقه به‌عنوان ریسک بالا علامت می‌خورند. برای EUR/GBP/JPY/CHF/CAD/AUD/NZD نبود رویداد در این فید به معنی نبود ریسک نیست.")
+    lines.append("[تقویم ShowMyTrades](https://showmytrades.com/tools/economic-calendar) | [مستندات API](https://showmytrades.com/docs/api/economic-calendar) | [تقویم تکمیلی XOOMAR](https://xoomar.com/markets/calendar)")
+    lines.append("تقویم اصلی شامل رویدادهای High/Medium برای USD/EUR/GBP/JPY/CHF/CAD/AUD/NZD و forecast/previous/actual ارائه‌شده توسط منبع است. وضعیت tentative/moved و confidence حفظ می‌شود. سورپرایز عددی actual−forecast فقط در صورت تبدیل‌پذیری مقادیر گزارش می‌شود؛ جهت اثر بدون شناخت ماهیت شاخص حدس زده نمی‌شود. XOOMAR منبع تکمیلی آمریکا است.")
     future_events = []
     for event in (economic_calendar.get("events", []) if economic_calendar.get("status") == "available" else []):
         try:
@@ -131,12 +155,13 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         except (TypeError, ValueError):
             continue
     if future_events:
-        lines += ["", "| زمان UTC | رویداد | اهمیت | دوره | مقدار قبلی | مقدار واقعی | پیش‌بینی |", "|---|---|---|---|---:|---:|---:|"]
+        lines += ["", "| زمان UTC | ارز | رویداد | اهمیت | وضعیت/اطمینان | دوره | قبلی | واقعی | اجماع | سورپرایز عددی |", "|---|---|---|---|---|---|---:|---:|---:|---:|"]
         for event in future_events[:20]:
             lines.append(
-                f"| {event.get('scheduled_at_utc')} | {event.get('name')} | {event.get('importance')} | "
-                f"{event.get('period') or '—'} | {event.get('previous') or '—'} | "
-                f"{event.get('actual') or '—'} | {event.get('forecast') or '—'} |"
+                f"| {event.get('scheduled_at_utc')} | {event.get('currency', event.get('currency_scope', 'USD'))} | {event.get('name')} | {event.get('importance')} | "
+                f"{event.get('status', '—')}/{event.get('confidence', '—')} | {event.get('period') or '—'} | "
+                f"{event.get('previous') or '—'} | {event.get('actual') or '—'} | "
+                f"{event.get('forecast') or '—'} | {event.get('surprise_raw_same_unit', '—')} |"
             )
     else:
         lines.append("رویداد آینده‌ای در داده دریافت‌شده وجود ندارد یا تقویم قابل‌استفاده نیست؛ این وضعیت فقط با timestamp تازه منبع قابل تفسیر است.")
@@ -167,6 +192,41 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         lines.append("داده نرخ سیاستی در این اجرا دریافت نشد؛ امتیاز بنیادی برای جفت‌ارزها خالی می‌ماند.")
     lines.append(policy_rates.get("methodology_note", "نرخ سیاستی باید همراه با منابع رسمی بانک مرکزی و زمان انتشار بررسی شود."))
 
+    lines += ["", "## کنترل متقابل قیمت با نرخ مرجع ECB", ""]
+    lines.append(
+        f"وضعیت: {ecb_fx_cross_checks.get('status', 'not_available')} | "
+        f"جفت‌ارزهای قابل مقایسه: {ecb_fx_cross_checks.get('coverage_pairs', 0)} | "
+        f"آستانه اختلاف هشدار: {ecb_fx_cross_checks.get('discrepancy_threshold_pct', '—')}٪."
+    )
+    lines.append(ecb_fx_cross_checks.get("methodology", "ECB reference rates were not available."))
+    checks = ecb_fx_cross_checks.get("checks", [])
+    if checks:
+        lines += ["", "| جفت‌ارز | قیمت اصلی | نرخ مرجع ECB | اختلاف٪ | وضعیت |", "|---|---:|---:|---:|---|"]
+        for check in checks:
+            lines.append(
+                f"| {check.get('symbol')} | {check.get('primary_close')} | "
+                f"{check.get('ecb_reference_rate')} | {check.get('difference_pct')} | {check.get('status')} |"
+            )
+    lines += ["", "## بک‌تست OHLC و وضعیت Paper Trading", ""]
+    lines.append(
+        f"وضعیت بک‌تست: {backtest_result.get('status', 'not_run')}؛ "
+        f"تعداد تایم‌فریم‌های ارزیابی‌شده: {len(backtest_result.get('by_timeframe', {}))}."
+    )
+    for timeframe, metrics in backtest_result.get("by_timeframe", {}).items():
+        lines.append(
+            f"- {timeframe}: {metrics.get('status')} | معاملات: {metrics.get('trade_count', 0)} | "
+            f"بازده خالص: {metrics.get('net_return_pct', '—')}٪ | "
+            f"Win rate: {metrics.get('win_rate_pct', '—')}٪ | "
+            f"Profit factor: {metrics.get('profit_factor', '—')} | "
+            f"Max DD: {metrics.get('max_drawdown_pct', '—')}٪."
+        )
+    lines.append(
+        f"Paper Trading: {paper_trading_status.get('status', 'not_run')} | "
+        f"حالت: {paper_trading_status.get('mode', '—')} | "
+        f"سفارش واقعی فعال: {paper_trading_status.get('live_orders_enabled', False)}."
+    )
+    lines.append(paper_trading_status.get("note", "Historical backtest results do not constitute forward paper validation."))
+
     lines += ["", "## وضعیت داده دارایی‌ها", "",
               "| دارایی | منبع | وضعیت | آخرین timestamp بازار | زمان جمع‌آوری UTC | عمر داده (ساعت) | توضیح |",
               "|---|---|---|---|---|---:|---|"]
@@ -176,6 +236,13 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
             f"{item.get('market_timestamp','—')} | {item.get('collected_at','—')} | "
             f"{item.get('age_hours','—')} | {item.get('reason','—')} |"
         )
+        if item.get("source_id"):
+            lines.append(
+                f"  - منبع پویا از هسته مرکزی: {item.get('source_id')}@{item.get('source_version', '—')} | "
+                f"اعتماد رجیستری: {item.get('source_trust', 'unverified')} | "
+                f"روش انتخاب: {item.get('source_selection', '—')} | "
+                f"تعداد منابع معتبر بررسی‌شده: {item.get('source_candidates', '—')}"
+            )
 
     lines += ["", "## پوشش رجیستری منابع تحلیلی", ""]
     if source_registry:
@@ -274,7 +341,7 @@ def render_report(results: list[dict], settings: dict, local_now: datetime, news
         for item in relevant_news[:40]:
             lines.append(
                 f"- **{item['title']}** — {item['source']} | انتشار: {item['published_at']} | "
-                f"اعتبار منبع: {item['reliability']} | جمع‌آوری: {item['collected_at']} | "
+                f"اعتبار منبع: {item['reliability']} | سنتیمنت تیتر: {item.get('sentiment', {}).get('label', 'not_scored')} | جمع‌آوری: {item['collected_at']} | "
                 f"[منبع]({item['url']})"
             )
             if item.get("summary"):
