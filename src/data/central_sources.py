@@ -1,7 +1,7 @@
 """Dynamic, metadata-driven KOROUSH Central OHLC source adapter."""
 from __future__ import annotations
 from datetime import datetime, timezone
-import ipaddress, os, socket, time
+import hashlib, ipaddress, os, socket, time
 from typing import Any
 from urllib.parse import urlsplit
 import pandas as pd
@@ -49,14 +49,14 @@ def discover_sources(timeout: int = 8, force_refresh: bool = False) -> list[dict
     parsed = urlsplit(base)
     if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
         return []
-    cache_key, now = f"{base}|{repo}|{key[:8]}", time.monotonic()
+    cache_key, now = f"{base}|{repo}|{hashlib.sha256(key.encode()).hexdigest()}", time.monotonic()
     if not force_refresh and _cache["key"] == cache_key and now < _cache["expires"]:
         return list(_cache["sources"])
     try:
         response = requests.get(base + "/api/extensions",
             params={"repository": repo, "kind": "data_source"},
             headers={"X-Tenant-Key": key, "Accept": "application/json"},
-            timeout=max(1, min(int(timeout), 20)))
+            timeout=max(1, min(int(timeout), 20)), allow_redirects=False)
         response.raise_for_status()
         payload = response.json()
         extensions = payload.get("extensions") if isinstance(payload, dict) else None
@@ -67,6 +67,12 @@ def discover_sources(timeout: int = 8, force_refresh: bool = False) -> list[dict
             if not isinstance(item, dict) or item.get("kind") != "data_source" or item.get("status") != "active":
                 continue
             if item.get("protocol") != _PROTOCOL or _CAPABILITY not in item.get("capabilities", []):
+                continue
+            pricing = item.get("pricing") or {}
+            if pricing.get("cost_usd") != 0 or pricing.get("zero_cost_attested_by_admin") is not True:
+                continue
+            terms_url = pricing.get("terms_url", "")
+            if not isinstance(terms_url, str) or not terms_url.startswith("https://"):
                 continue
             if not ({"forex", "general"} & set(item.get("domains", []))):
                 continue
@@ -98,6 +104,9 @@ def _validate_candles(payload: dict[str, Any], symbol: str, interval: str):
             continue
         opened, closed = _stamp(item.get("open_time")), _stamp(item.get("close_time"))
         if opened is None or closed is None or opened >= closed or closed > now:
+            continue
+        interval_seconds = {"1m": 60, "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400, "1w": 604800}.get(payload.get("interval"))
+        if interval_seconds is not None and abs((closed - opened).total_seconds() - interval_seconds) > 2:
             continue
         try:
             values = {k: float(item[k]) for k in ("open", "high", "low", "close")}
