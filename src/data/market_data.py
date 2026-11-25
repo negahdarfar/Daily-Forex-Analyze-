@@ -187,7 +187,7 @@ def fetch_asset_history(
             candidates.append(central)
 
     mcp_crypto = None
-    if asset.get("category") == "crypto" and asset.get("quote_currency") == "USDT":
+    if asset.get("category") == "crypto":
         # The MCP adapter is opt-in and read-only. It provides exchange-native
         # OKX candles, not a fabricated FX/commodity conversion.
         mcp_crypto = fetch_mcp_crypto_history(
