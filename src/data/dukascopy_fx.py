@@ -6,10 +6,13 @@ import requests
 
 BASE = "https://datafeed.dukascopy.com/datafeed"
 
+def empty_ohlc():
+    return pd.DataFrame(columns=["Open","High","Low","Close"],index=pd.DatetimeIndex([],tz="UTC"),dtype=float)
+
 def decode_candles(payload, period_start, interval, symbol):
     """Decode 24-byte big-endian seconds/open/close/low/high/volume records."""
     if not payload:
-        return pd.DataFrame(columns=['Open','High','Low','Close'])
+        return empty_ohlc()
     raw = lzma.decompress(payload)
     if len(raw) % 24:
         raise ValueError("truncated candle record")
@@ -45,7 +48,7 @@ def fetch_series(session, symbol, cutoff):
         hour_parts.append(decode_candles(r.content,month,"1h",symbol))
     def join(parts):
         if not parts:
-            return pd.Series(dtype=float)
+            return empty_ohlc()
         s = pd.concat(parts).sort_index()
         return s[(~s.index.duplicated(keep="last")) & (s.index<=cutoff)]
     minute = join(minute_parts)
