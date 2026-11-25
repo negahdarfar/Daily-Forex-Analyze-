@@ -22,7 +22,7 @@ class CentralSourceTests(unittest.TestCase):
         good = {"kind": "data_source", "status": "active", "protocol": "koroush-market-data-v1",
             "capabilities": ["market.ohlc.v1"], "domains": ["forex"],
             "endpoint": "https://prices.example.org/ohlc", "extension_id": "feed.good",
-            "version": "1.0.0", "name": "Good", "pricing": {"cost_usd": 0, "zero_cost_attested_by_admin": True, "terms_url": "https://prices.example.org/terms"}}
+            "version": "1.0.0", "name": "Good", "pricing": {"cost_usd": 0, "zero_cost_attested_by_admin": True, "source_reviewed_by_admin": True, "terms_url": "https://prices.example.org/terms"}}
         off = dict(good, status="disabled", extension_id="feed.off")
         bad = dict(good, protocol="other", extension_id="feed.bad")
         unknown_cost = dict(good, extension_id="feed.unknown", pricing={"status": "unverified"})
