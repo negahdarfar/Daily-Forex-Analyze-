@@ -1,5 +1,6 @@
 import os
 import unittest
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 from src.data import central_sources, market_data
 
@@ -115,10 +116,6 @@ class CentralSourceTests(unittest.TestCase):
 
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class MCPMarketDataTests(unittest.TestCase):
     def test_okx_mcp_parser_keeps_only_confirmed_valid_candles(self):
         from src.data.mcp_sources import normalize_okx_candles
@@ -148,3 +145,7 @@ class MCPMarketDataTests(unittest.TestCase):
              patch.object(mcp_sources.shutil, "which", return_value=None):
             self.assertIsNone(mcp_sources.fetch_mcp_crypto_history("BTCUSDT", "1d"))
             self.assertIsNone(mcp_sources.fetch_mcp_crypto_history("EURUSD", "1d"))
+
+
+if __name__ == "__main__":
+    unittest.main()
