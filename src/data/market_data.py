@@ -8,6 +8,8 @@ import pandas as pd
 import requests
 import yfinance as yf
 
+from src.data.central_sources import fetch_central_market_history
+
 
 BINANCE_SYMBOLS = {"BTCUSDT": "BTCUSDT", "ETHUSDT": "ETHUSDT"}
 BINANCE_INTERVALS = {"1d": "1d", "1h": "1h", "4h": "4h", "15m": "15m"}
@@ -164,32 +166,51 @@ def _exclude_unfinished_daily_bar(result: dict[str, Any], interval: str) -> dict
 def fetch_asset_history(
     asset: dict[str, Any], period: str = "6mo", interval: str = "1d", timeout: int = 10
 ) -> dict[str, Any]:
-    """Fetch from configured sources and choose the freshest valid crypto history."""
+    """Select the freshest valid OHLC history across local and central registries."""
     yahoo = fetch_history(asset["yahoo"], period=period, interval=interval, timeout=timeout)
-    # Drop an unfinished daily candle for every asset class, not only crypto.
     yahoo = _exclude_unfinished_daily_bar(yahoo, interval)
-    if asset.get("category") != "crypto" or asset.get("quote_currency") != "USDT":
-        return yahoo
+    checked = ["Yahoo Finance"]
+    candidates = [yahoo] if yahoo.get("status") == "available" else []
 
-    binance = fetch_binance_history(asset["symbol"], interval=interval)
-    checked = ["Yahoo Finance", "Binance public API"]
-    candidates = [item for item in (yahoo, binance) if item.get("status") == "available"]
+    # Central data-source discovery is optional and cached. New admin-approved
+    # sources using the stable market-data protocol are discovered without a
+    # source-specific code release. The central registry credential is never
+    # forwarded to the provider endpoint.
+    central = fetch_central_market_history(
+        asset["symbol"], interval=interval,
+        limit=500 if interval == "1d" else 1000, timeout=timeout,
+    )
+    if central is not None:
+        checked.extend(central.get("sources_checked", []))
+        if central.get("status") == "available":
+            candidates.append(central)
+
+    if asset.get("category") == "crypto" and asset.get("quote_currency") == "USDT":
+        binance = fetch_binance_history(asset["symbol"], interval=interval)
+        checked.append("Binance public API")
+        if binance.get("status") == "available":
+            candidates.append(binance)
+    else:
+        binance = None
+
     if not candidates:
+        providers = [yahoo] + ([central] if central is not None else []) + ([binance] if binance else [])
         reasons = "; ".join(
-            f"{item.get('provider')}: {item.get('reason', 'unavailable')}"
-            for item in (yahoo, binance)
+            f"{item.get('provider', 'source')}: {item.get('reason', item.get('status', 'unavailable'))}"
+            for item in providers
         )
         return {
             "symbol": asset["symbol"], "status": "unavailable",
-            "provider": "Yahoo Finance + Binance public API",
-            "collected_at": utc_now_iso(), "sources_checked": checked, "reason": reasons
+            "provider": "multi-source", "collected_at": utc_now_iso(),
+            "sources_checked": checked, "reason": reasons or "No valid provider returned data.",
         }
 
-    selected = max(candidates, key=lambda item: item.get("market_timestamp", ""))
-    selected = dict(selected)
-    selected["sources_checked"] = checked
-    selected["source_selection"] = "freshest_available_timestamp"
-    selected["alternate_source_status"] = {
-        item["provider"]: item["status"] for item in (yahoo, binance)
+    selected = dict(max(candidates, key=lambda item: item.get("market_timestamp", "")))
+    selected["sources_checked"] = list(dict.fromkeys(checked))
+    selected["source_selection"] = "freshest_valid_timestamp"
+    selected["source_status"] = {
+        item.get("provider", "source"): item.get("status", "unknown")
+        for item in ([yahoo] + ([central] if central is not None else []) + ([binance] if binance else []))
     }
+    selected["source_candidates"] = len(candidates)
     return selected
