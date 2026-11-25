@@ -144,7 +144,7 @@ def fetch_central_market_history(symbol: str, interval: str = "1d", limit: int =
         try:
             response = requests.get(source["endpoint"],
                 params={"symbol": symbol, "interval": interval, "limit": min(max(int(limit), 2), 1000)},
-                headers={"Accept": "application/json"}, timeout=max(1, min(int(timeout), 20)))
+                headers={"Accept": "application/json"}, timeout=max(1, min(int(timeout), 20)), allow_redirects=False)
             response.raise_for_status()
             payload = response.json()
             if not isinstance(payload, dict):
