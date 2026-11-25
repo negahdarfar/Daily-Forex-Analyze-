@@ -6,6 +6,8 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import yfinance as yf
+import os
+from src.data.dukascopy_fx import fetch_dukascopy
 
 ROOT = Path(__file__).resolve().parents[2]
 CURRENCIES = ("USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD")
@@ -92,9 +94,15 @@ def snapshot():
     if len(pairs)!=28 or len({frozenset((p[:3],p[3:])) for p in pairs})!=28 or any(p[:3] not in CURRENCIES or p[3:] not in CURRENCIES or p[:3]==p[3:] for p in pairs):
         raise ValueError("expected complete 28-pair universe")
     cutoff = pd.Timestamp.now(tz="UTC").floor("5min")
-    data,errors = fetch_yahoo(assets,cutoff)
+    provider = os.getenv("FX_PROVIDER","dukascopy")
+    if provider == "dukascopy":
+        data,errors = fetch_dukascopy(assets,cutoff,HORIZONS,observation)
+    elif provider == "yahoo":
+        data,errors = fetch_yahoo(assets,cutoff)
+    else:
+        raise ValueError("FX_PROVIDER must be dukascopy or yahoo")
     strengths,coverage,rows = score_matrix(data,pairs)
-    return {"schema_version":"1.0","cutoff_utc":cutoff.isoformat(),"provider":"Yahoo Finance (unofficial, may be delayed)","method":"rolling log returns; min-max currency scores; equal horizon weights; MN=30 days, W1=7 days; not CSZ proprietary formula","horizons":HORIZONS,"strengths":strengths,"coverage":coverage,"pairs":rows,"observations":data,"errors":errors}
+    return {"schema_version":"1.0","cutoff_utc":cutoff.isoformat(),"provider":provider,"price_basis":"historical BID" if provider=="dukascopy" else "provider reference close","method":"rolling log returns; min-max currency scores; equal horizon weights; MN=30 days, W1=7 days; not CSZ proprietary formula","horizons":HORIZONS,"strengths":strengths,"coverage":coverage,"pairs":rows,"observations":data,"errors":errors}
 
 def main():
     result = snapshot()
