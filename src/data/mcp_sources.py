@@ -134,7 +134,11 @@ def fetch_mcp_crypto_history(
     if bar is None:
         return None
     inst_id = symbol.upper().replace("/", "-").replace("_", "-")
-    if "-" not in inst_id and inst_id.endswith("USDT"):
+    quote_proxy = False
+    if "-" not in inst_id and inst_id.endswith("USD"):
+        inst_id = inst_id[:-3] + "-USDT"
+        quote_proxy = True
+    elif "-" not in inst_id and inst_id.endswith("USDT"):
         inst_id = inst_id[:-4] + "-USDT"
     if not inst_id.endswith("-USDT"):
         return None
@@ -150,6 +154,10 @@ def fetch_mcp_crypto_history(
         ))
         result = normalize_okx_candles(payload, symbol, interval)
         if result is not None:
+            if quote_proxy:
+                result["market_quote_currency"] = "USDT"
+                result["quote_currency_proxy"] = True
+                result["quote_proxy_note"] = "OKX USDT-quoted spot proxy; not an exact USD-quoted instrument."
             _CACHE[cache_key] = (now + 45, result)
         return result
     except Exception as exc:
