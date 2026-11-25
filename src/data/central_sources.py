@@ -84,10 +84,12 @@ def discover_sources(timeout: int = 8, force_refresh: bool = False) -> list[dict
             value = (item.get("pricing") or {}).get("priority", 0)
             return int(value) if isinstance(value, (int, float)) else 0
         eligible.sort(key=lambda item: (-priority(item), str(item.get("extension_id", "")), str(item.get("version", ""))))
-        eligible = eligible[:5]
+        max_sources = max(1, min(5, int(os.getenv("KOROUSH_CENTRAL_MAX_SOURCES", "2"))))
+        eligible = eligible[:max_sources]
         _cache.update({"key": cache_key, "sources": eligible, "expires": now + _CACHE_TTL})
         return list(eligible)
     except Exception:
+        _cache.update({"key": cache_key, "sources": [], "expires": now + 60})
         return []
 
 
@@ -117,6 +119,8 @@ def _validate_candles(payload: dict[str, Any], symbol: str, interval: str):
             if values["low"] > min(values["open"], values["close"], values["high"]):
                 continue
             volume = item.get("volume")
+            if volume is not None and (not pd.notna(float(volume)) or float(volume) < 0):
+                continue
             rows.append({"Datetime": opened, "Open": values["open"], "High": values["high"],
                 "Low": values["low"], "Close": values["close"],
                 "Volume": float(volume) if volume is not None else None, "_close": closed})
