@@ -22,11 +22,12 @@ class CentralSourceTests(unittest.TestCase):
         good = {"kind": "data_source", "status": "active", "protocol": "koroush-market-data-v1",
             "capabilities": ["market.ohlc.v1"], "domains": ["forex"],
             "endpoint": "https://prices.example.org/ohlc", "extension_id": "feed.good",
-            "version": "1.0.0", "name": "Good"}
+            "version": "1.0.0", "name": "Good", "pricing": {"cost_usd": 0, "zero_cost_attested_by_admin": True, "terms_url": "https://prices.example.org/terms"}}
         off = dict(good, status="disabled", extension_id="feed.off")
         bad = dict(good, protocol="other", extension_id="feed.bad")
+        unknown_cost = dict(good, extension_id="feed.unknown", pricing={"status": "unverified"})
         response = Mock()
-        response.json.return_value = {"extensions": [good, off, bad]}
+        response.json.return_value = {"extensions": [good, off, bad, unknown_cost]}
         response.raise_for_status.return_value = None
         with patch.object(central_sources, "_safe_endpoint", return_value=True), patch.object(central_sources.requests, "get", return_value=response):
             result = central_sources.discover_sources(force_refresh=True)
