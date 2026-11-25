@@ -107,7 +107,7 @@ async def _call_crypto_candles(inst_id: str, bar: str, limit: int) -> Any:
 
     params = StdioServerParameters(
         command="npx",
-        args=["--yes", "github:CohenD/fin-data-mcp"],
+        args=["--yes", "github:CohenD/fin-data-mcp#b4060af854e8ea4292156c675a1de9718893d5cb"],
         env={**os.environ, "NO_COLOR": "1"},
     )
     async with stdio_client(params) as (read_stream, write_stream):
@@ -123,7 +123,7 @@ async def _call_crypto_candles(inst_id: str, bar: str, limit: int) -> Any:
 
 
 def fetch_mcp_crypto_history(
-    symbol: str, interval: str = "1d", limit: int = 300, timeout: int = 25
+    symbol: str, interval: str = "1d", limit: int = 300, timeout: int = 45
 ) -> dict[str, Any] | None:
     """Fetch public OKX OHLC through MCP; disabled unless explicitly enabled."""
     if os.getenv("KOROUSH_FIN_DATA_MCP_ENABLED", "false").strip().lower() not in {"1", "true", "yes"}:
