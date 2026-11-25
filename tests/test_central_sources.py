@@ -107,6 +107,13 @@ class CentralSourceTests(unittest.TestCase):
         self.assertIsNone(central_sources._validate_candles(oversized, "EURUSD", "1h"))
 
 
+    def test_malformed_central_base_url_fails_closed_without_network_call(self):
+        with patch.dict(os.environ, {"KOROUSH_CENTRAL_BASE_URL": "https://central.example.org:invalid"}), \
+             patch.object(central_sources.requests, "get") as request:
+            self.assertEqual(central_sources.discover_sources(force_refresh=True), [])
+            request.assert_not_called()
+
+
 
 if __name__ == "__main__":
     unittest.main()
