@@ -21,7 +21,7 @@ Only administrator-registered, active manifests with all of the following are el
 - `domains` contains `forex` or `general`
 - The exact repository is allowed by the manifest, or the manifest is explicitly global
 - HTTPS endpoint on the default port, no embedded credentials, and no local/private destination
-- Explicit admin attestation of zero cost: `pricing.cost_usd=0`, `pricing.zero_cost_attested_by_admin=true`, and an HTTPS `pricing.terms_url`
+- Explicit admin attestation of zero cost: `pricing.cost_usd=0`, `pricing.zero_cost_attested_by_admin=true`, `pricing.source_reviewed_by_admin=true`, and an HTTPS `pricing.terms_url`
 
 The registry response is cached for five minutes. Up to five eligible providers are checked. The client never forwards the tenant key to a provider endpoint and never downloads or executes provider code. Redirects are disabled for provider calls.
 
