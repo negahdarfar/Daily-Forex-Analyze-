@@ -117,3 +117,34 @@ class CentralSourceTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MCPMarketDataTests(unittest.TestCase):
+    def test_okx_mcp_parser_keeps_only_confirmed_valid_candles(self):
+        from src.data.mcp_sources import normalize_okx_candles
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+        payload = [
+            [str(now_ms - 3_600_000), "100", "110", "95", "105", "12", "12", "1200", "1"],
+            [str(now_ms - 1_800_000), "100", "90", "95", "105", "12", "12", "1200", "1"],
+            [str(now_ms - 900_000), "100", "110", "95", "105", "12", "12", "1200", "0"],
+        ]
+        result = normalize_okx_candles(payload, "BTCUSDT", "1h")
+        self.assertIsNotNone(result)
+        self.assertEqual(result["provider"], "OKX via fin-data-mcp")
+        self.assertEqual(len(result["history"]), 1)
+        self.assertEqual(float(result["history"]["Close"].iloc[-1]), 105.0)
+
+    def test_mcp_crypto_source_is_opt_in_and_does_not_start_without_node(self):
+        from src.data import mcp_sources
+        with patch.dict(os.environ, {"KOROUSH_FIN_DATA_MCP_ENABLED": "false"}), \
+             patch.object(mcp_sources.shutil, "which", return_value="/usr/bin/npx"), \
+             patch.object(mcp_sources, "_call_crypto_candles") as call:
+            self.assertIsNone(mcp_sources.fetch_mcp_crypto_history("BTCUSDT", "1d"))
+            call.assert_not_called()
+
+    def test_mcp_crypto_symbol_normalization_and_interval_allowlist(self):
+        from src.data import mcp_sources
+        with patch.dict(os.environ, {"KOROUSH_FIN_DATA_MCP_ENABLED": "true"}), \
+             patch.object(mcp_sources.shutil, "which", return_value=None):
+            self.assertIsNone(mcp_sources.fetch_mcp_crypto_history("BTCUSDT", "1d"))
+            self.assertIsNone(mcp_sources.fetch_mcp_crypto_history("EURUSD", "1d"))
