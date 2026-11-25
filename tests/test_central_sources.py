@@ -147,5 +147,26 @@ class MCPMarketDataTests(unittest.TestCase):
             self.assertIsNone(mcp_sources.fetch_mcp_crypto_history("EURUSD", "1d"))
 
 
+    def test_usdt_proxy_is_cross_check_only_for_usd_quoted_crypto(self):
+        yahoo = {"symbol": "BTCUSD", "status": "available", "provider": "Yahoo Finance",
+                 "market_timestamp": "2026-11-25T02:00:00+00:00", "close": 100000.0,
+                 "history": object()}
+        proxy = {"symbol": "BTCUSD", "status": "available", "provider": "OKX via fin-data-mcp",
+                 "market_timestamp": "2026-11-25T03:00:00+00:00", "close": 100050.0,
+                 "history": object(), "quote_currency_proxy": True, "market_quote_currency": "USDT"}
+        unavailable = {"symbol": "BTCUSD", "status": "unavailable"}
+        with patch.object(market_data, "fetch_history", return_value=yahoo), \
+             patch.object(market_data, "_exclude_unfinished_daily_bar", return_value=yahoo), \
+             patch.object(market_data, "fetch_central_market_history", return_value=None), \
+             patch.object(market_data, "fetch_mcp_crypto_history", return_value=proxy), \
+             patch.object(market_data, "fetch_binance_history", return_value=unavailable):
+            result = market_data.fetch_asset_history(
+                {"symbol": "BTCUSD", "yahoo": "BTC-USD", "category": "crypto"}, interval="1h")
+        self.assertEqual(result["provider"], "Yahoo Finance")
+        self.assertEqual(result["close"], 100000.0)
+        self.assertEqual(result["mcp_quote_proxy_crosscheck"]["market_quote_currency"], "USDT")
+        self.assertAlmostEqual(result["mcp_quote_proxy_crosscheck"]["difference_pct_vs_yahoo_usd"], 0.05, places=4)
+
+
 if __name__ == "__main__":
     unittest.main()
