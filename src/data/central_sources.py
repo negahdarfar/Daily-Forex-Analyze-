@@ -71,6 +71,8 @@ def discover_sources(timeout: int = 8, force_refresh: bool = False) -> list[dict
             pricing = item.get("pricing") or {}
             if pricing.get("cost_usd") != 0 or pricing.get("zero_cost_attested_by_admin") is not True:
                 continue
+            if pricing.get("source_reviewed_by_admin") is not True:
+                continue
             terms_url = pricing.get("terms_url", "")
             if not isinstance(terms_url, str) or not terms_url.startswith("https://"):
                 continue
