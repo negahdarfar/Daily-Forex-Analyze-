@@ -5,7 +5,7 @@
 This branch contains the first executable, read-only MCP client integration:
 - MCP server: [CohenD/fin-data-mcp](https://github.com/CohenD/fin-data-mcp)
 - Provider used for OHLC: OKX public market data through the MCP tool `crypto_candles`
-- Transport: MCP over stdio, launched with `npx --yes github:CohenD/fin-data-mcp`
+- Transport: MCP over stdio, launched with `npx --yes github:CohenD/fin-data-mcp#b4060af854e8ea4292156c675a1de9718893d5cb` (immutable commit pin)
 - Runtime: Python MCP client + Node.js 20
 - Activation: `KOROUSH_FIN_DATA_MCP_ENABLED=true` (enabled in the scheduled daily-analysis workflow)
 - Scope: BTC and ETH cross-check candles. USD-quoted configured symbols are explicitly marked as using an OKX USDT-quoted proxy; the adapter never claims USDT is exactly USD.
