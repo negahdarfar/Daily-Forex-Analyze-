@@ -74,14 +74,24 @@ def normalize_okx_candles(
     frame = pd.DataFrame(rows).set_index("Datetime").sort_index()
     frame = frame[~frame.index.duplicated(keep="last")]
     last_stamp = frame.index[-1]
+    if interval in {"1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h"}:
+        close_stamp = last_stamp + pd.Timedelta(minutes={"1m": 1, "5m": 5, "15m": 15, "30m": 30, "1h": 60, "2h": 120, "4h": 240, "6h": 360, "12h": 720}[interval])
+    elif interval == "1d":
+        close_stamp = last_stamp + pd.Timedelta(days=1)
+    elif interval == "1w":
+        close_stamp = last_stamp + pd.Timedelta(weeks=1)
+    elif interval == "1mo":
+        close_stamp = last_stamp + pd.DateOffset(months=1)
+    else:
+        close_stamp = last_stamp
     return {
         "symbol": symbol,
         "status": "available",
         "provider": "OKX via fin-data-mcp",
         "source_protocol": "MCP stdio / tools.call",
         "collected_at": datetime.now(timezone.utc).isoformat(),
-        "market_timestamp": last_stamp.isoformat(),
-        "market_timestamp_basis": "confirmed_exchange_candle_timestamp",
+        "market_timestamp": close_stamp.isoformat(),
+        "market_timestamp_basis": "confirmed_bar_open_plus_interval_close_estimate",
         "close": float(frame["Close"].iloc[-1]),
         "high": float(frame["High"].iloc[-1]),
         "low": float(frame["Low"].iloc[-1]),
@@ -124,6 +134,8 @@ def fetch_mcp_crypto_history(
     if bar is None:
         return None
     inst_id = symbol.upper().replace("/", "-").replace("_", "-")
+    if "-" not in inst_id and inst_id.endswith("USDT"):
+        inst_id = inst_id[:-4] + "-USDT"
     if not inst_id.endswith("-USDT"):
         return None
     cache_key = (inst_id, bar, min(max(int(limit), 2), 300))
