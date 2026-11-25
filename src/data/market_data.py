@@ -192,7 +192,7 @@ def fetch_asset_history(
         # OKX candles, not a fabricated FX/commodity conversion.
         mcp_crypto = fetch_mcp_crypto_history(
             asset["symbol"], interval=interval, limit=500 if interval == "1d" else 300,
-            timeout=max(15, timeout),
+            timeout=max(45, timeout),
         )
         if mcp_crypto is not None:
             checked.extend(mcp_crypto.get("sources_checked", []))
