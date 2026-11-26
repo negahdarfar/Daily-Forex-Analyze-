@@ -1,0 +1,38 @@
+name: FX strength research
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/analysis/fx_strength_mtf.py'
+      - 'src/fx_mcp_server.py'
+      - 'src/analysis/fx_strength_views.py'
+      - 'src/data/dukascopy_fx.py'
+      - 'tests/test_fx_strength_views.py'
+      - 'tests/test_fx_strength_mtf.py'
+      - 'requirements-mcp.txt'
+      - '.github/workflows/fx-strength.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements-mcp.txt
+      - run: python -m unittest discover -s tests -p 'test_fx_strength*.py'
+      - run: python -c "from src.fx_mcp_server import mcp; print(mcp.name)"
+      - if: github.event_name == 'workflow_dispatch'
+        run: python -m src.analysis.fx_strength_mtf
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fx-strength
+          path: |
+            reports/fx-strength-latest.json
+            reports/fx-strength-latest.md
+            reports/fx-strength-history.json
+          if-no-files-found: error
